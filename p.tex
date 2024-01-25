@@ -1,0 +1,55 @@
+\documentclass[11pt,letterpaper,twocolumn]{article}
+
+% conference specific style
+\usepackage[11pt,nocopyright]{sigmin}
+\usepackage[square,comma,numbers,sort&compress]{natbib}
+
+% common packages
+\include{pkgs}
+
+\newcommand{\sys}{\mbox{\textsc{Die}}\xspace}
+
+\input{cmds}
+\input{rev}
+
+\begin{document}
+
+\input{hdr}
+\date{}
+\maketitle
+
+\sloppy
+
+\input{abstract}
+\input{intro}
+\input{overview}
+\input{design}
+\input{impl}
+\input{eval}
+\input{relwk}
+\input{conclusion}
+\input{ack}
+
+
+% % use with balance package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \balance
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% use multicol if you are using pygmentize package along with multicol package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\onecolumn
+\begin{multicols}{2}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{abbrvnat}
+\footnotesize
+\setlength{\bibsep}{3pt}
+\bibliography{p,rs3lab,conf}
+
+% for multicol
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{multicols}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
