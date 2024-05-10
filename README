@@ -14,11 +14,11 @@ die: a paper template
 
   - if you have none,
 
-    $ git clone --depth=1 git@github.com:rs3lab/die.git
+    $ git clone --depth=1 git@github.com:TELOS-syslab/paper-template.git
 
   - if you have a git-repo to work on,
 
-    $ git subtree add --squash git@github.com:rs3lab/die.git master -P paper
+    $ git subtree add --squash git@github.com:TELOS-syslab/paper-template.git master -P paper
 
 2. build it:
 
@@ -79,6 +79,8 @@ die: a paper template
     $ make spell
 
 ## Acknowledgment
+
+This template is forked from https://github.com/tsgates/die
 
 This template contains a few files copied/stolen from the Internet and
 mainly from my past collaborators (e.g., sty/*, conf.bib, some bin/),
