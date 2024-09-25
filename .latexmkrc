@@ -13,7 +13,7 @@ sub c2tex { system("pygmentize -P tabsize=4 -P mathescape -f latex $_[0].c > $_[
 sub cc2tex { system("pygmentize -P tabsize=4 -P mathescape -f latex $_[0].cc > $_[0].tex"); }
 sub js2tex { system("pygmentize -P linenos=1 -f latex $_[0].js > $_[0].tex"); }
 sub py2tex { system("pygmentize -P tabsize=4 -P mathescape -f latex $_[0].py > $_[0].tex"); }
-sub js2tex { system("pygmentize -P linenos=1 -f latex $_[0].js > $_[0].tex"); }
 sub svg2pdf { system("inkscape --without-gui -f $_[0].svg -D -A $_[0].pdf"); }
 sub gp2tex { system("gnuplot $_[0].gp"); }
 
+$pdflatex = 'pdflatex -shell-escape %O %S';
