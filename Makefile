@@ -81,7 +81,7 @@ distclean: clean ## clean up completely
 	rm -rf _minted_p
 	rm -rf latex.out
 
-abstract.txt: abstract.tex $(MAIN).tex ## generate abstract.txt
+abstract.txt: 00abstract.tex $(MAIN).tex ## generate abstract.txt
 	@bin/mkabstract $(MAIN).tex $< | fmt -w72 > $@
 
 .PHONY: all help FORCE draft clean spell distclean init bib
