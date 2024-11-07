@@ -78,10 +78,6 @@ die: a paper template
 
     $ make spell
 
-##vscode json
-
-Directory sty is essential for environments, using "-e", "$ENV{TEXINPUTS}='sty:'", as args in vscode latex-workshop
-
 ## Acknowledgment
 
 This template is forked from https://github.com/tsgates/die
