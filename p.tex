@@ -1,13 +1,16 @@
-\documentclass[11pt,letterpaper,twocolumn]{article}
+%\documentclass[11pt,letterpaper,twocolumn]{article}
+\documentclass[sigplan,10pt]{acmart}
+%\renewcommand\footnotetextcopyrightpermission[1]{}
 
+%\pagestyle{plain}
 % conference specific style
-\usepackage[11pt,nocopyright]{sty/sigmin}
-\usepackage[square,comma,numbers,sort&compress]{natbib}
+%\usepackage[11pt,nocopyright]{sty/sigmin}
+%\usepackage[square,comma,numbers,sort&compress]{natbib}
 
 % common packages
 \include{pkgs}
 
-\newcommand{\sys}{\mbox{\textsc{Die}}\xspace}
+\newcommand{\sys}{\mbox{\textsc{Flexcache}}\xspace}
 
 \input{cmds}
 \input{rev}
@@ -15,12 +18,14 @@
 \begin{document}
 
 \input{hdr}
+\input{00abstract}
 \date{}
+
 \maketitle
 
 \sloppy
 
-\input{00abstract}
+
 \input{01intro}
 \input{02overview}
 \input{03design}
@@ -38,18 +43,18 @@
 
 % use multicol if you are using pygmentize package along with multicol package
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\onecolumn
-\begin{multicols}{2}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\bibliographystyle{abbrvnat}
+\bibliographystyle{plain}
 \footnotesize
 \setlength{\bibsep}{3pt}
 \bibliography{p,conf}
 
 % for multicol
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\end{multicols}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
