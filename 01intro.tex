@@ -2,3 +2,11 @@
 \label{s:intro}
 
 see~\cite{latex}
+
+We divide the trace into phases based on cache size and flexibly adjust the criteria for determining object types according to their popularity in different phases. 
+%
+The replacement policy decides whether to retain an object based on its type. 
+%
+After integrating prefetching, it identifies prefetchable objects and attempts to evict and prefetch them in the next time.
+%
+This dynamic replacement policy, which adapts to the relationship between cache size and trace, ensures suitability across various cache sizes.
