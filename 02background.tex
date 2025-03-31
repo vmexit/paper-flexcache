@@ -6,8 +6,6 @@ In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web 
 %
 We have many tools to analyze the trace, determine the access pattern, and design the best cache replacement policy for a specific cache size. 
 %
-%However, the specific cache replacement policy will not be suitable for other access patterns or even another cache size, leading to a sub-optimal situation.
-%
 This section introduces the basic access patterns~(\S\ref{ss:access-patterns}) and how prior work designs the cache replacement policy for them~(\autoref{ss:static-criteria}).
 
 \subsection{Access patterns}
@@ -30,11 +28,11 @@ Prior work splits the cache into different parts to handle access patterns or fi
 %
 They change the part size according to the hit information and tag the object type with static criteria.
 
-LRU and scan-resistance.
+LRU-friendly and scan-resistance.
 
-LFU and period repeated access-resistance.
+LFU-friendly and period repeated access-resistance.
 
-Dueling for recency and frequency.
+Dueling for LRU-friendly and LFU-friendly.
 
-One-hit-wonder, accessed only once.
+One-hit-wonder, many objects accessed only once.
 

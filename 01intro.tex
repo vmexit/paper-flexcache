@@ -3,6 +3,11 @@
 
 see~\cite{latex}
 
+%
+However, the specific cache replacement policy will not be suitable for other access patterns or another cache size, leading to a sub-optimal situation.
+%
+S3-FIFO~\cite{} is the best policy when the cache size is tiny (0.3\%) to the working set size(WSS), but when the cache size is 20\% of the WSS in Cloudphysics~\cite{}, it achieves 90\% hit ratio to the optimal policy.
+
 We divide the trace into phases based on cache size and flexibly adjust the criteria for determining object types according to their popularity in different phases. 
 %
 The replacement policy decides whether to retain an object based on its type. 

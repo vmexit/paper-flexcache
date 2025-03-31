@@ -1,10 +1,90 @@
 \section{Moltivation}
 \label{s:moltivation}
+Prior work designs the cache replacement policy for a specific access pattern and cache size, so its performance decreases when the access pattern changes or even the cache size varies.
+%
+We propose a method to split the trace based on the cache size into phases and mark objects into different types according to their popularity in different phases.
+%
+\sys decides whether to retain an object based on its type and phases information to fit in various cache sizes and access patterns.
+%
 
-\subsection{The best policy changes with cache size}
-\label{ss:best-policy-change}
-TODO: figure
+\subsection{The performance of the policy changes with cache size and access pattern}
+\label{ss:performance-policy-change}
+Many policies suffer performance degradation when the cache size and access pattern change, even if they promise the ability to adapt. 
+%
+We evaluate XX policies in XX traces with different cache sizes and calculate the relative hit ratio to the the best policy in the policy set.
+%
+It is common that almost all policies achieve the best performance in a specific cache size and suffer from a tail performance about 30\% to 60\% relative hit ratio to the best policy.
+
+As shown in the figure ~\autoref{fig:cloudphysics}, we evaluate the performance of the cache replacement policies XXX~\cite{} in Cloudphysics~\cite{} with the same relative cache size. (this is to state that prior work cannot do well in all access pattern in Cloudphysics)
+
+As shown in the figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve different performance in different cache sizes in systor~\cite{}. (maybe this state average performance in different access patterns)
+%
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/demo-cloudphysics}
+    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(todo maybe a specific trace)}
+    \label{fig:cloudphysics}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/demo-cachesize.pdf}
+    \caption{Cache replacement policies' performance with different cache sizes.}
+    \label{fig:cache-size}
+\end{figure}
+
+
+TODO: discuss why they fail?
 
 \subsection{Split the trace based on cache size into phases}
 \label{ss:split-trace}
+To design a cache size aware replacement policy, we analyze the relationship between the cache size and the trace by splitting the trace into phases based on the cache size.
+%
+Prior work~\cite{} analyzes the trace based on a period of time or a fix numbers of accesses, and when the miss ratio changes, they think there is a phase change.
+%
+This method reveals that requests for objects change with time, but it is not accurate to adjust the cache replacement policy.
+%
+We propose that if a set of requests' footprint is equal to the cache size, they are in the same phase.
+%
+
+We use this cache size aware method to analyze the trace in Alibaba~\cite{} and find a different way to mark the object types. figure~\ref{fig:wss}
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/demo-wss002.png}
+    \caption{In different cache sizes, the object types change in Alibaba.}
+    \label{fig:wss}
+\end{figure}
+
+
+According to how many times the object accessed and how many phases it appears, we mark the object into four types dynamicly. 
+
+Figure ~\ref{fig:exapmle} shows the object types changes in different cache sizes.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/demo-exapmle.png}
+    \caption{An exapmle for the object types changes in different cache sizes.}
+    \label{fig:exapmle}
+\end{figure}
+
+\subsection{Dynamicly adjust the criteria based on the pahses information}
+\label{ss:dynamic-adjust}
+When the cache size changes, objects are marked as different types, so we must dynamically change the criteria to collect important objects.
+%
+We analyze all traces and find that only small parts of objects are frequently accessed.
+%
+In the large cache sizes, most objects are accessed many times, so we need to improve the criteria; otherwise, in the small cache sizes, most objects are accessed a few times, so we need to relax the criteria or even hold suspected objects.
+
+We analyze the trace by counting the times an object is accessed and calculating the average resue time, discovering a linear-logarithmic relationship between them.
+%
+A small amount of objects are accessed many times, while a large amount are accessed only a few times. 
+%
+The object accessed frequently has a very short average reuse time, meaning that an object accessed multiple times within a phase is more likely to be important.
+%
+As figure~\ref{}
+
+In the large cache size \dots
+
+In the small cache size \dots
+
 
