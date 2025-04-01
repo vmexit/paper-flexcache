@@ -15,9 +15,9 @@ We evaluate XX policies in XX traces with different cache sizes and calculate th
 %
 It is common that almost all policies achieve the best performance in a specific cache size and suffer from a tail performance about 30\% to 60\% relative hit ratio to the best policy.
 
-As shown in the figure ~\autoref{fig:cloudphysics}, we evaluate the performance of the cache replacement policies XXX~\cite{} in Cloudphysics~\cite{} with the same relative cache size. (this is to state that prior work cannot do well in all access pattern in Cloudphysics)
+As shown in the figure ~\autoref{fig:cloudphysics}, we evaluate the performance of the cache replacement policies XXX~\cite{} in Cloudphysics~\cite{} with the same relative cache size. (this is to state that prior work cannot do well in all access pattern in Cloudphysics) \dots
 
-As shown in the figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve different performance in different cache sizes in systor~\cite{}. (maybe this state average performance in different access patterns)
+As shown in the figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve different performance in different cache sizes in systor~\cite{}. (maybe this state average performance in different access patterns) \dots
 %
 \begin{figure}[t]
     \centering
@@ -48,7 +48,7 @@ This method reveals that requests for objects change with time, but it is not ac
 We propose that if a set of requests' footprint is equal to the cache size, they are in the same phase.
 %
 
-We use this cache size aware method to analyze the trace in Alibaba~\cite{} and find a different way to mark the object types. figure~\ref{fig:wss}
+We use this cache size aware method to analyze the trace in Alibaba~\cite{} and find a different way to mark the object types. figure~\ref{fig:wss} \dots
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/demo-wss002.png}
@@ -57,9 +57,9 @@ We use this cache size aware method to analyze the trace in Alibaba~\cite{} and 
 \end{figure}
 
 
-According to how many times the object accessed and how many phases it appears, we mark the object into four types dynamicly. 
+According to how many times the object accessed and how many phases it appears, we mark the object into four types dynamicly. \dots
 
-Figure ~\ref{fig:exapmle} shows the object types changes in different cache sizes.
+Figure ~\ref{fig:exapmle} shows the object types changes in different cache sizes. \dots
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/demo-exapmle.png}
@@ -81,10 +81,11 @@ A small amount of objects are accessed many times, while a large amount are acce
 %
 The object accessed frequently has a very short average reuse time, meaning that an object accessed multiple times within a phase is more likely to be important.
 %
-As figure~\ref{}
+As figure~\ref{} \dots
 
-In the large cache size \dots
+If the cache size is relatively large, there are too many objects accessed many times, so we need to improve the criteria to filter out the important objects. \dots
+%
 
-In the small cache size \dots
+If the cache size is relatively small, some data may not be accessed until several phases later. We need to speculatively retain these data. \dots
 
 
