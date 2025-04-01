@@ -57,7 +57,17 @@ We use this cache size aware method to analyze the trace in Alibaba~\cite{} and 
 \end{figure}
 
 
-According to how many times the object accessed and how many phases it appears, we mark the object into four types dynamicly. \dots
+%According to how many times the object accessed and how many phases it appears, we mark the object into four types dynamicly.  \dots
+We categorize objects into four types based on the number of accesses and phases in which they appear. 
+%
+They are classified as frequently accessed (FA) and infrequently accessed (IA) objects based on their access frequency and divided into multi-phase (MP) and few-phase (FP) objects based on their occurrence across phases.
+%
+Without a doubt, prior work designs replacement policies~\cite{} to retain FA-MP objects while quickly evicting IA-FP objects.
+%
+For instance, LFU is good at retaining FA objects, while LRU prefers MP objects.
+%
+However, they use static criteria to categorize objects and fail to analyze the type distribution to fit the cache size, leading to huge performance variations with different cache sizes.(maybe figure cacheus in fiu, mrc waves)
+
 
 Figure ~\ref{fig:exapmle} shows the object types changes in different cache sizes. \dots
 \begin{figure}[t]
@@ -83,9 +93,9 @@ The object accessed frequently has a very short average reuse time, meaning that
 %
 As figure~\ref{} \dots
 
-If the cache size is relatively large, there are too many objects accessed many times, so we need to improve the criteria to filter out the important objects. \dots
+If the cache size is relatively large, there are too many objects accessed many times, so we need to improve the criteria to filter out the important objects. \dots (fiu analyze)
 %
 
-If the cache size is relatively small, some data may not be accessed until several phases later. We need to speculatively retain these data. \dots
+If the cache size is relatively small, some data may not be accessed until several phases later. We need to speculatively retain these data. \dots (small cache analyze)
 
 
