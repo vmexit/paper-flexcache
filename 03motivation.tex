@@ -7,7 +7,7 @@ We propose a method to split the trace based on the cache size into phases and m
 \sys decides whether to retain an object based on its type and phases information to fit in various cache sizes and access patterns.
 %
 
-\subsection{The performance of the policy changes with cache size and access pattern}
+\subsection{Performance degradation with cache size}
 \label{ss:performance-policy-change}
 Many policies suffer performance degradation when the cache size and access pattern change, even if they promise the ability to adapt. 
 %
@@ -37,7 +37,7 @@ As shown in the figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} a
 
 TODO: discuss why they fail?
 
-\subsection{Split the trace based on cache size into phases}
+\subsection{Phase aware to cache size aware}
 \label{ss:split-trace}
 To design a cache size aware replacement policy, we analyze the relationship between the cache size and the trace by splitting the trace into phases based on the cache size.
 %
@@ -77,7 +77,7 @@ Figure ~\ref{fig:exapmle} shows the object types changes in different cache size
     \label{fig:exapmle}
 \end{figure}
 
-\subsection{Dynamicly adjust the criteria based on the pahses information}
+\subsection{Dynamicly fit the phase and cache size}
 \label{ss:dynamic-adjust}
 When the cache size changes, objects are marked as different types, so we must dynamically change the criteria to collect important objects.
 %

@@ -6,7 +6,7 @@ In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web 
 %
 We have many tools to analyze the trace, determine the access pattern, and design the best cache replacement policy for a specific cache size. 
 %
-This section introduces the basic access patterns~(\S\ref{ss:access-patterns}) and how prior work designs the cache replacement policy for them~(\autoref{ss:static-criteria}).
+This section introduces the basic access patterns~(\S\ref{ss:access-patterns}) and how prior work designs the cache replacement policy for them~(\autoref{ss:adaption-criteria}).
 
 \subsection{Access patterns}
 \label{ss:access-patterns}
@@ -22,8 +22,8 @@ Prior work classifies the access patterns into four basic types and a mixture of
 
 \textbf{Mixture of the basic types} \dots
 
-\subsection{Static criteria for mixed access patterns}
-\label{ss:static-criteria}
+\subsection{Adaption for mixed access patterns}
+\label{ss:adaption-criteria}
 Prior work splits the cache into different parts to handle access patterns or filter interference between them.
 %
 They change the part size according to the hit information and tag the object type with static criteria.

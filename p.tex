@@ -1,8 +1,7 @@
 %\documentclass[11pt,letterpaper,twocolumn]{article}
-\documentclass[sigplan,10pt]{acmart}
-%\renewcommand\footnotetextcopyrightpermission[1]{}
-
-%\pagestyle{plain}
+\documentclass[sigplan,10pt,anonymous=true]{acmart}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
 % conference specific style
 %\usepackage[11pt,nocopyright]{sty/sigmin}
 %\usepackage[square,comma,numbers,sort&compress]{natbib}
@@ -14,13 +13,14 @@
 
 \input{cmds}
 \input{rev}
+\acmConference[SOSP '23]{ACM SIGOPS 29th Symposium on Operating Systems Principles}{October 23--26, 2023}{Koblenz, Germany}
 
 \begin{document}
 
 \input{hdr}
 \input{00abstract}
 \date{}
-
+\settopmatter{printfolios=true,printacmref=false}
 \maketitle
 
 \sloppy
