@@ -1,6 +1,6 @@
 \section{Background}
 \label{s:background}
-Software caches are wildly implemented in various systems to handle diverse data access patterns.
+Software caches are wildly implemented in various fields to handle different access patterns, but their adaptability to mixed access patterns are limited.
 %
 In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web objects, and data blocks, respectively, and we use the term \textit{object} to represent the data unit stored in the cache.
 %
@@ -10,17 +10,34 @@ This section introduces the basic access patterns~(\S\ref{ss:access-patterns}) a
 
 \subsection{Access patterns}
 \label{ss:access-patterns}
-Prior work classifies the access patterns into four basic types and a mixture of the basic types.
+Prior work classifies the access patterns into four basic types and a mixture of the basic types. 
+%
+This classification method is very intuitive, but we can determine the trace type only after the analysis (e.g., implementing the replacement policy).
 
-\textbf{LRU-friendly} \dots
+\textbf{LRU-friendly} is a set of access that the \cc{least recently used} (LRU) replacement policy is the best choice.
 
-\textbf{LFU-friendly} \dots
+\textbf{LFU-friendly} is a set of access that the \cc{least frequently used} (LFU) replacement policy is the best choice.
 
-\textbf{Scan} \dots
+\textbf{Scan} is a set of access that all objects are accessed only once, which means no replacement policy can deal with it.
 
-\textbf{Period repeated access} \dots
+\textbf{Period repeated access} is a set of repeated accesses, and a more restrictive definition is that the objects are accessed with equal probability~\cite{}(cacheus), which means the hit ratio is related to the cache size. If the cache size is larger than the repeated objects, the hit ratio is 100\%, and if the cache size is smaller than the repeated objects, the hit ratio is a fixed number.
 
-\textbf{Mixture of the basic types} \dots
+%\textbf{Mixture of the basic types} \dots
+%This classification method is neither object-based nor access sequence-based, but only for the trace type.
+This classification method cannot tell us the object type, only the trace type, and even if the cache size changes, the trace type will change.
+%so defining a mixture of the basic types is confusing. 
+%
+If an object is accessed many times in a short sequence, without access for a long sequence, and then reaccessed, we cannot determine whether it is LRU-friendly or LFU-friendly. 
+%
+If the footprint of the long access sequence is smaller than the cache size, is the object both LRU-friendly and LFU-friendly? 
+%
+This classification method is retrospective — the first access to each object is treated as part of a scan, and only after the second access can the object be classified as another type.
+%
+For trace $\text{AAAABBCCCDDCCA}$, if the cache size is 2, the base policy is LRU, so it is LRU-friendly, but if the cache size is 3, the base policy is LFU, so it is LFU-friendly.
+%
+
+\textbf{Summary: We nned a method to classify the object type with cache size awareness.}
+
 
 \subsection{Adaption for mixed access patterns}
 \label{ss:adaption-criteria}
