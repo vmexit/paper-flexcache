@@ -36,20 +36,27 @@ This classification method is retrospective — the first access to each object 
 For trace $\text{AAAABBCCCDDCCA}$, if the cache size is 2, the base policy is LRU, so it is LRU-friendly, but if the cache size is 3, the base policy is LFU, so it is LFU-friendly.
 %
 
-\textbf{Summary: We nned a method to classify the object type with cache size awareness.}
+\textbf{Summary: We need a method to classify the object type with cache size awareness.}
 
 
 \subsection{Adaption for mixed access patterns}
 \label{ss:adaption-criteria}
 Prior work splits the cache into different parts to handle access patterns or filter interference between them.
 %
-They change the part size according to the hit information and tag the object type with static criteria.
+They commonly split the cache into three functional parts: the main cache, the filter cache, and the ghost cache.
+%
+If the access patterns are a major pattern and an interference pattern, the main cache stores the major pattern, and the filter cache filters the interference pattern.
+%
+If there are two major patterns, they split the main cache into two parts, one for each major pattern. 
+%
+Many policies use the ghost cache to store the metadata of the evicted objects~\cite{}, which can be used to adjust the size of other parts.
+%The miss records in the ghost cache can help adjust the size of the main cache and filter cache.
 
-LRU-friendly and scan-resistance. \dots
+%They change the part size according to the hit information and tag the object type with static criteria.
 
-LFU-friendly and period repeated access-resistance. \dots
+\textbf{The major pattern and interference pattern.} LRU-friendly and scan-resistance (LIRS,SegCache). LFU-friendly and period repeated access-resistance(TinyLFU). scan with others (One-hit-wonder)S3-FIFO
 
-Dueling for LRU-friendly and LFU-friendly. \dots
+\textbf{Dueling for two major patterns.} Dueling for LRU-friendly and LFU-friendly. ARC, CAR, MQ, LeCaR,Cacheus,2Q
+Hyperbolic?
 
-One-hit-wonder, many objects accessed only once. \dots
 
