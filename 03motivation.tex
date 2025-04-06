@@ -1,11 +1,14 @@
-\section{Moltivation}
-\label{s:moltivation}
-Prior work designs the cache replacement policy for a specific access pattern and cache size, so its performance decreases when the access pattern changes or even the cache size varies.
+\section{Motivation}
+\label{s:motivation}
+Prior work designs the cache replacement policy for a specific access pattern and cache size, but its performance decreases when the access pattern changes or even the cache size varies (\S\ref{ss:performance-policy-change}).
 %
-We propose a method to split the trace based on the cache size into phases and mark objects into different types according to their popularity in different phases.
+We propose a method to split the trace based on the cache size into phases and mark objects into different types according to their popularity in different phases (\S\ref{ss:split-trace}).
 %
-\sys decides whether to retain an object based on its type and phases information to fit in various cache sizes and access patterns.
+Based on the phase aware and cache size aware method, we will discuss why we should take the overall cache access behavior into account and design an adaptive cache replacement policy (\S\ref{ss:dynamic-adjust}).
+%\sys decides whether to retain an object based on its type and phases information to fit in various cache sizes and access patterns.
 %
+
+This section presents why we need a phase aware and cache size aware method to implement a replacement policy (\S\ref{ss:performance-policy-change}), how we implement it (\S\ref{ss:split-trace}), and what to do for adaption (\S\ref{ss:dynamic-adjust}).
 
 \subsection{Performance degradation with different cache size}
 \label{ss:performance-policy-change}
@@ -13,11 +16,44 @@ Many policies suffer performance degradation when the cache size and access patt
 %
 We evaluate XX policies in XX traces with different cache sizes and calculate the relative hit ratio to the the best policy in the policy set.
 %
-It is common that almost all policies achieve the best performance in a specific cache size and suffer from a tail performance about 30\% to 60\% relative hit ratio to the best policy.
+All policies achieve the best performance in a specific cache size and suffer from a tail performance about 20\% to 60\% relative hit ratio to the best policy.
+%
+Therefore, if we use a specific replacement policy for all traces in the benchmkars, there are xx\% of traces that will lose xx\% performance.
+%
+What's more even, with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
+%
+It is a disaster in the production environments.
+%It is common that a designed replacement policy perform well in a specific access pattern, so we should choose a policy for a trace in the production environments.
+%
 
-As shown in the figure ~\autoref{fig:cloudphysics}, we evaluate the performance of the cache replacement policies XXX~\cite{} in Cloudphysics~\cite{} with the same relative cache size. (this is to state that prior work cannot do well in all access pattern in Cloudphysics) \dots
+As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of XXX cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
+%
+CloudPhysics provides XX traces. 
+%
+We evaluate the hit ratio of XX replacement policies under a given cache size. 
+%
+For each trace, we select the replacement policy with the highest hit ratio as the optimal policy. 
+%
+Then, we calculate the performance of each policy relative to the optimal policy and compute the geometric mean across all traces.
+%
+We observe that S3FIFO performs better when the cache size is small, while LIRS performs better when the cache size is large. 
+%
+Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
+%
+While \sys is the best policy in all cache sizes, it is the best policy in xx\% percent of traces.
 
-As shown in the figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve different performance in different cache sizes in systor~\cite{}. (maybe this state average performance in different access patterns) \dots
+
+As shown in figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
+%
+We select the replacement policy with the highest hit ratio as the optimal policy and compute the relative hit ratio of each policy to the optimal policy.
+%
+In figure ~\autoref{fig:cache-size}, when the cache size enlarges from 5GB to 6GB(todo), LIRS is the best policy, and others performance degrade about 5\%.
+%
+When the cache size is larger than 7 GB to 20BG, QDLP is the best policy.
+%
+When we take \sys into consideration, it is the best policy and outperforms other policies about 2\%.
+
+
 %
 \begin{figure}[t]
     \centering
@@ -34,8 +70,6 @@ As shown in the figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} a
     \label{fig:cache-size}
 \end{figure}
 
-
-TODO: discuss why they fail?
 
 \subsection{Phase aware to cache size aware}
 \label{ss:split-trace}
