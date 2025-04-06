@@ -4,7 +4,7 @@ Software caches are wildly implemented in various fields to handle different acc
 %
 In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web objects, and data blocks, respectively, and we use the term \textit{object} to represent the data unit stored in the cache.
 %
-We have many tools to analyze the trace, determine the access pattern, and design the best cache replacement policy for a specific cache size. 
+We have many tools to analyze the benchmkars, determine the access pattern, and design the best cache replacement policy for a specific cache size. 
 %
 This section introduces the basic access patterns~(\S\ref{ss:access-patterns}) and how prior work designs the cache replacement policy for them~(\autoref{ss:adaption-criteria}).
 
@@ -51,12 +51,42 @@ If there are two major patterns, they split the main cache into two parts, one f
 %
 Many policies use the ghost cache to store the metadata of the evicted objects~\cite{}, which can be used to adjust the size of other parts.
 %The miss records in the ghost cache can help adjust the size of the main cache and filter cache.
+The access patterns in (\S\ref{ss:access-patterns}) and incomplete criteria for adjustment mechanisms limit the capability of the replacement policy.
 
 %They change the part size according to the hit information and tag the object type with static criteria.
 
-\textbf{The major pattern and interference pattern.} LRU-friendly and scan-resistance (LIRS,SegCache). LFU-friendly and period repeated access-resistance(TinyLFU). scan with others (One-hit-wonder)S3-FIFO
+\textbf{The major pattern and interference pattern.} In order to filter scan in the LRU-friendly pattern, SLRU~\cite{} adds the new object to the filter cache and promotes it to the main cache if it is reaccessed.
+%
+LIRS~\cite{} uses the ghost cache to identify the recently accessed objects and promotes them to the main cache if they are reaccessed.
+%
+In order to filter period repeated access in the LFU-friendly pattern, MQ~\cite{} splits the cache into many parts to store the objects with different access frequencies and evicts the object with the lowest access frequency.
+%
+TinyLFU~\cite{} uses the filter part to record the access frequency, and only those with high access frequency are admitted into the main cache.
+%
+S3-FIFO~\cite{} analyzes the access pattern and finds that most benchmarks consist of many scan accesses (named One-hit-wonder), so it uses a small filter cache to decrease newly accessed objects and a ghost cache to pick up the wrongly evicted objects.
+% 
 
-\textbf{Dueling for two major patterns.} Dueling for LRU-friendly and LFU-friendly. ARC, CAR, MQ, LeCaR,Cacheus,2Q
-Hyperbolic?
+\textbf{Dueling for two major patterns.} Others think that the replacement policy should adapt to the access pattern, so they design the policy to cover both LRU-friendly and LFU-friendly patterns.
+%
+LeCaR~\cite{} and Cacheus~\cite{} leverage two major replacement policies (e.g., LRU and LFU) and adjust the probability of applying each policy based on the hit information collected from the ghost cache.
+%
+2Q~\cite{}, ARC~\cite{} and CAR~\cite{} consider that the first access to objects and subsequent accesses exhibit different patterns, and therefore we need to manage them separately. 
+%
+They use ghost caches to adjust the proportion of different types of objects accordingly.
+%Dueling for LRU-friendly and LFU-friendly. ARC, CAR, 2Q,LeCaR,Cacheus,LRFU
+
+These policies based on basic access patterns are insufficient and suffer from severe performance degradation with incomplete criteria.% different access pattern. 
+%
+First, basic access patterns are unaware of the cache size, causing the replacement policy's performance to fluctuate significantly as the cache size changes. 
+%
+(todo, figure)
+%
+Second, relying solely on the objects in the ghost cache may lead to misjudgments about the overall access behavior.
+%
+If a request hits the ghost cache, these policies increase the cache size of the corresponding pattern or the usage probability of the competing pattern as compensation. 
+%
+However, these policies do not account for hits in the main cache, in ARC and CAR, many objects that are accessed only twice consecutively can cause cache pollution by evicting important objects from the main cache.
+
+\textbf{Summary:We need to take the overall cache access behavior into account to adapt to mixed access patterns.}
 
 

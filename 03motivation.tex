@@ -7,9 +7,9 @@ We propose a method to split the trace based on the cache size into phases and m
 \sys decides whether to retain an object based on its type and phases information to fit in various cache sizes and access patterns.
 %
 
-\subsection{Performance degradation with cache size}
+\subsection{Performance degradation with different cache size}
 \label{ss:performance-policy-change}
-Many policies suffer performance degradation when the cache size and access pattern change, even if they promise the ability to adapt. 
+Many policies suffer performance degradation when the cache size and access pattern change. 
 %
 We evaluate XX policies in XX traces with different cache sizes and calculate the relative hit ratio to the the best policy in the policy set.
 %
@@ -22,7 +22,7 @@ As shown in the figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} a
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/demo-cloudphysics}
-    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(todo maybe a specific trace)}
+    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(todo maybe a specific trace or violin plot)}
     \label{fig:cloudphysics}
 \end{figure}
 
