@@ -14,11 +14,11 @@ This section presents why we need a phase aware and cache size aware method to i
 \label{ss:performance-policy-change}
 Many policies suffer performance degradation when the cache size and access pattern change. 
 %
-We evaluate XX policies in XX traces with different cache sizes and calculate the relative hit ratio to the the best policy in the policy set.
+We evaluate \XXX{XX} policies in \XXX{XX} traces with different cache sizes and calculate the relative hit ratio to the the best policy in the policy set.
 %
 All policies achieve the best performance in a specific cache size and suffer from a tail performance about 20\% to 60\% relative hit ratio to the best policy.
 %
-Therefore, if we use a specific replacement policy for all traces in the benchmkars, there are xx\% of traces that will lose xx\% performance.
+Therefore, if we use a specific replacement policy for all traces in the benchmkars, there are \XXX{XX}\% of traces that will lose \XXX{XX}\% performance.
 %
 What's more even, with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
 %
@@ -26,11 +26,11 @@ It is a disaster in the production environments.
 %It is common that a designed replacement policy perform well in a specific access pattern, so we should choose a policy for a trace in the production environments.
 %
 
-As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of XXX cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
+As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of \XXX{XX} cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
 %
-CloudPhysics provides XX traces. 
+CloudPhysics provides \XXX{XX} traces. 
 %
-We evaluate the hit ratio of XX replacement policies under a given cache size. 
+We evaluate the hit ratio of \XXX{XX} replacement policies under a given cache size. 
 %
 For each trace, we select the replacement policy with the highest hit ratio as the optimal policy. 
 %
@@ -40,14 +40,14 @@ We observe that S3FIFO performs better when the cache size is small, while LIRS 
 %
 Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
 %
-While \sys is the best policy in all cache sizes, it is the best policy in xx\% percent of traces.
+While \sys is the best policy in all cache sizes, it is the best policy in \XXX{XX}\% percent of traces.
 
 
 As shown in figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
 %
 We select the replacement policy with the highest hit ratio as the optimal policy and compute the relative hit ratio of each policy to the optimal policy.
 %
-In figure ~\autoref{fig:cache-size}, when the cache size enlarges from 5GB to 6GB(todo), LIRS is the best policy, and others performance degrade about 5\%.
+In figure ~\autoref{fig:cache-size}, when the cache size enlarges from 5GB to 6GB(\TODO{true cache size}), LIRS is the best policy, and others performance degrade about 5\%.
 %
 When the cache size is larger than 7 GB to 20BG, QDLP is the best policy.
 %
@@ -58,7 +58,7 @@ When we take \sys into consideration, it is the best policy and outperforms othe
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/demo-cloudphysics}
-    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(todo maybe a specific trace or violin plot)}
+    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(\TODO{maybe a specific trace or violin plot})}
     \label{fig:cloudphysics}
 \end{figure}
 
@@ -79,10 +79,13 @@ Prior work~\cite{} analyzes the trace based on a period of time or a fix numbers
 %
 This method reveals that requests for objects change with time, but it is not accurate to adjust the cache replacement policy.
 %
-We propose that if a set of requests' footprint is equal to the cache size, they are in the same phase.
+We propose that if a set of requests' footprint is less than the cache size, they are in the same phase.
 %
 
-We use this cache size aware method to analyze the trace in Alibaba~\cite{} and find a different way to mark the object types. figure~\ref{fig:wss} \dots
+We use this cache size aware method to analyze the trace in Alibaba~\cite{} and find a different way to mark the object types. 
+%
+As shown in figure~\ref{fig:wss}, we set the cache size as 0.02 and 0.03 working set size, split the trace into phases, with each phase's footprint equal to the cache size, and count the frequency of each object in the phase. (\TODO{find a real world trace})
+%
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/demo-wss002.png}
@@ -96,14 +99,46 @@ We categorize objects into four types based on the number of accesses and phases
 %
 They are classified as frequently accessed (FA) and infrequently accessed (IA) objects based on their access frequency and divided into multi-phase (MP) and few-phase (FP) objects based on their occurrence across phases.
 %
-Without a doubt, prior work designs replacement policies~\cite{} to retain FA-MP objects while quickly evicting IA-FP objects.
+\sys dynamically marks the objects into four types: FA-MP, FA-FP, IA-MP, and IA-FP.
+%
+It hold FA-MP objects, treats FA-FP and IA-MP as suspected objects, and filters IA-FP objects.
+
+
+Prior work cannot dynamically mark the object types, because they are too positive to the objects in the filter cache and ghost cache.
+%
+They designs replacement policies~\cite{} to retain FA-MP objects while quickly evicting IA-FP objects.
 %
 For instance, LFU is good at retaining FA objects, while LRU prefers MP objects.
 %
-However, they use static criteria to categorize objects and fail to analyze the type distribution to fit the cache size, leading to huge performance variations with different cache sizes.(maybe figure cacheus in fiu, mrc waves)
+However, they do not analyze the object from the whole trace, but only from the ghost and filter cache, which is not enough to determine the object type.
+%
+Cacheus and LeCaR adjust the policy based on the access in the ghost cache, and their miss ratio waves greatly when the cache size changes in figure \TODO{}.
+%
+ARC thinks a request hitting in the filter cache or the ghost cache is important, so it moves the object to the main cache.
+%
+This behavior do not discover the overall access behavior, which hurts the performance even if enlarges the cache size in figure \TODO{}.
+%However, they use static criteria to categorize objects and fail to analyze the type distribution to fit the cache size, leading to huge performance variations with different cache sizes.(\TODO{ figure maybe figure cacheus in fiu, mrc waves})
 
 
-Figure ~\ref{fig:exapmle} shows the object types changes in different cache sizes. \dots
+Figure ~\ref{fig:exapmle} shows the object types changes in different cache sizes. 
+%
+For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, only \cc{A} is FA-MP object. 
+%
+\cc{B} and \cc{C} are FA-FP and IA-MP objects, and others are IA-FP objects. 
+%
+While if we use footprint six to split the trace, \cc{A}, \cc{B}, and \cc{C} are FA-MP objects. 
+%
+With this method, the access pahses change with the cache size, and the object types change with the access phases and cache size.
+%
+We use a sliding window and an appropriate aging function to dynamicly discover what objects are in the same phase.
+%
+In figure ~\ref{fig:exapmle}, when the footptint is four, there is a request for \cc{E}, we age \cc{A}, \cc{B}, and \cc{C}, and finally we decide to evict \cc{C} in the sliding window.
+%
+While if the footprint is six and there is a request for \cc{G}, we keep \cc{A}, \cc{B}, and \cc{C} after aging, and evict \cc{D} to keep the phase.
+%
+\sys intergrates the sliding window and aging function to the replacement policy only with a few bits as S3-FIFO.
+
+
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/demo-exapmle.png}

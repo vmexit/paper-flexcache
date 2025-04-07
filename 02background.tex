@@ -43,7 +43,7 @@ For trace $\text{AAAABBCCCDDCCA}$, if the cache size is 2, the base policy is LR
 \label{ss:adaption-criteria}
 Prior work splits the cache into different parts to handle access patterns or filter interference between them.
 %
-They commonly split the cache into three functional parts: the main cache, the filter cache, and the ghost cache.
+They commonly split the cache into three functional parts: \cc{the main cache}, \cc{the filter cache}, and \cc{the ghost cache}.
 %
 If the access patterns are a major pattern and an interference pattern, the main cache stores the major pattern, and the filter cache filters the interference pattern.
 %
@@ -75,17 +75,20 @@ LeCaR~\cite{} and Cacheus~\cite{} leverage two major replacement policies (e.g.,
 They use ghost caches to adjust the proportion of different types of objects accordingly.
 %Dueling for LRU-friendly and LFU-friendly. ARC, CAR, 2Q,LeCaR,Cacheus,LRFU
 
-These policies based on basic access patterns are insufficient and suffer from severe performance degradation with incomplete criteria.% different access pattern. 
+These policies based on basic access patterns are insufficient and suffer from severe performance degradation.% different access pattern. 
 %
 First, basic access patterns are unaware of the cache size, causing the replacement policy's performance to fluctuate significantly as the cache size changes. 
 %
-(todo, figure)
+(\TODO{figure} )
 %
-Second, relying solely on the objects in the ghost cache may lead to misjudgments about the overall access behavior.
+Second, they are too positive to the objects in the filter cache and ghost cache, leading to misjudgment about the overall access behavior. 
+%relying solely on the objects in the ghost cache may lead to misjudgments about the overall access behavior.
 %
-If a request hits the ghost cache, these policies increase the cache size of the corresponding pattern or the usage probability of the competing pattern as compensation. 
+If a request hits the ghost cache, these policies increase the cache size of the corresponding pattern or the usage probability of the competing pattern as compensation.
 %
-However, these policies do not account for hits in the main cache, in ARC and CAR, many objects that are accessed only twice consecutively can cause cache pollution by evicting important objects from the main cache.
+What's more, these policies do not account for hits in the main cache, in ARC and CAR, many objects that are accessed only twice consecutively can cause cache pollution by evicting important objects from the main cache.
+%
+We will discuss it in (\S\ref{ss:split-trace}). 
 
 \textbf{Summary:We need to take the overall cache access behavior into account to adapt to mixed access patterns.}
 
