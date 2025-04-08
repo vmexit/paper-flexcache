@@ -1,14 +1,14 @@
 \section{Motivation}
 \label{s:motivation}
-Prior work designs the cache replacement policy for a specific access pattern and cache size, but its performance decreases when the access pattern changes or even the cache size varies (\S\ref{ss:performance-policy-change}).
+Prior work designs the cache replacement policy for a specific access pattern and cache size, but its performance decreases when the access pattern changes or even the cache size varies ~(\S\ref{ss:performance-policy-change}).
 %
-We propose a method to split the trace based on the cache size into phases and mark objects into different types according to their popularity in different phases (\S\ref{ss:split-trace}).
+We propose a method to split the trace based on the cache size into phases and mark objects into different types according to their popularity in different phases ~(\S\ref{ss:split-trace}).
 %
-Based on the phase aware and cache size aware method, we will discuss why we should consider the overall cache access behavior and design an adaptive cache replacement policy (\S\ref{ss:dynamic-adjust}).
+Based on the phase aware and cache size aware method, we will discuss why we should consider the overall cache access behavior and design an adaptive cache replacement policy ~(\S\ref{ss:dynamic-adjust}).
 %\sys decides whether to retain an object based on its type and phases information to fit in various cache sizes and access patterns.
 %
 
-This section presents why we need a phase aware and cache size aware method to implement a replacement policy (\S\ref{ss:performance-policy-change}), how we implement it (\S\ref{ss:split-trace}), and what to do for adaption (\S\ref{ss:dynamic-adjust}).
+This section presents why we need a phase aware and cache size aware method to implement a replacement policy ~(\S\ref{ss:performance-policy-change}), how we implement it ~(\S\ref{ss:split-trace}), and what to do for adaption ~(\S\ref{ss:dynamic-adjust}).
 
 \subsection{Performance degradation with different cache size}
 \label{ss:performance-policy-change}
@@ -188,7 +188,9 @@ These objects pollute the cache and hurt the performance.
 %
 It repeats six times in the trace; only a large cache size can discover it and suffer from it.
 %
-\sys decides to discard the repeated access objects or hold part of objects based on the overall cache access behavior (e.g., improve the threshold to two or three).
+\sys dynamically increases the number of accesses required for an object to be promoted into the main cache~(\S\ref{ss:integrate}).
+%
+What's more, \sys leverages the space of the ghost cache to prefetch the objects that are accessed in sequence~(\S\ref{ss:ghost}).
 
 
 If the cache size is relatively small, some data may not be accessed until several phases later. 

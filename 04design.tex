@@ -1,12 +1,53 @@
 \section{Design}
 \label{s:design}
-This section describes the design of \sys, which is \dots we wiil discuss the overview of \sys in \autoref{ss:overview}, 
+This section describes the design of \sys, a phase-aware and cache-size-aware replacement policy to be or near the optimal replacement policy in all cache sizes.
+%
+We will discuss the overview of \sys in ~(\autoref{ss:overview}), and how it handles the FA-MP and IF-FP objects in ~(\autoref{ss:filter-hold}).
+%
+With limited space, we leverage the ghost cache to store the metadata of the evicted objects to find FA-FP objects and prefetch sequence accessed objects in ~(\autoref{ss:ghost}).
+%
+We also introduce an extra suspected area to record IA-MP objects in ~(\autoref{ss:dueling}).
+%
+Finally, we discuss how to integrate \sys with phase-aware and dynamically adjust the criteria in ~(\autoref{ss:integrate}) and prefetch objects in ~(\autoref{ss:duplicate-metadata}).
+
 
 \subsection{Overview}
 \label{ss:overview}
-\sys separates the cache into five parts to handle different types of objects.
+\sys separates the cache into five parts to handle different types of objects as in figure~\ref{}.
 %
-We mark the object types as frequently accessed in all phases, continuously accessed in some phases, sparsely accessed in some phases, and 
+
+\textbf{A filter cache} to record the behavior of new objects and evict IA-FP objects quickly.
+
+\textbf{A main cache} to hold the most FA-MP objects and true FA-FP and IA-MP objects.
+
+\textbf{A suspected cache} to keep the suspected FA-FP and IA-MP objects for a while.
+
+\textbf{A ghost cache} to store the metadata of the evicted objects, help to find FA-FP objects, and prefetch for sequence accessed objects.
+
+\textbf{A counting bloom filter(CBF)} to discover the IA-MP objects.
+
+%We mark the object types as frequently accessed in all phases, continuously accessed in some phases, sparsely accessed in some phases, and 
+The workflow of \sys is as follows:
+%
+All the sub-caches in the \sys are FIFO-based to emulate the sliding window discussed in \autoref{ss:split-trace} with a fixed capability. 
+%
+%
+\BC{1} All new objects and prefetched objects are inserted into the filter cache.
+%
+\BC{2} Whenever a cache hit occurs, we record the access frequency distribution of all the objects in the cache and adjust the criteria for FA objects.
+%
+We only decrease the access frequency when the object is evicted from the ghost or ages in the suspected cache.
+%
+\BC{3} If the access frequency of an object in the filter or ghost cache exceeds the threshold, it will be promoted to the main cache
+%
+\BC{4} Objects that hit the ghost cache and objects in the filter suspected by the CBF will be placed into the suspected cache.
+%
+\BC{5} When eviction occurs, objects in the filter are moved to the ghost cache, while objects in the ghost cache are discarded.
+%
+\BC{6} For simplicity, the suspected cache is a small part of the main cache, so we move the objects in the main cache to the suspected cache and use the aging function to judge whether objects in the suspected cache are evicted or promoted to the main cache when eviction occurs.
+%
+\BC{7} CBF records all objects' movement in the filter, ghost, and suspected cache.
+%
 
 \subsection{Fliter and hold for important (FA-MP) objects}
 \label{ss:filter-hold}
@@ -20,5 +61,5 @@ We mark the object types as frequently accessed in all phases, continuously acce
 \subsection{Integrate \sys with phase aware}
 \label{ss:integrate}
 
-\subsection{Duplicate metadata for prefetch}
+\subsection{Duplicate metadata for suspected objects}
 \label{ss:duplicate-metadata}
