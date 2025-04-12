@@ -1,18 +1,97 @@
-\section{Background}
+\section{Background and Motivation}
 \label{s:background}
-Software caches are wildly implemented in various fields to handle different access patterns, but their adaptability to mixed access patterns are limited.
+This section presents a background on software cache systems~(\autoref{ss:background-software-cache}), and a phonomenon that most current replacement policies operate in a metastable state~(\autoref{ss:performance-policy-change}).
+%
+We analyze the root causes of this issue from two perspectives: basic access pattern classification~(\autoref{ss:access-patterns}) and replacement policy design~(\autoref{ss:adaption-criteria}).
+
+\subsection{Background on software cache systems}
+\label{ss:background-software-cache}
+Software cache systems are widely implemented in various fields to improve service performance.
+%
+In storage systems, faster devices are typically more expensive and have smaller capacities. 
+%
+To reduce costs and minimize data access latency, we place a subset of the data on high-speed devices to form a cache system.
 %
 In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web objects, and data blocks, respectively, and we use the term \textit{object} to represent the data unit stored in the cache.
 %
-We have many tools to analyze the benchmkars, determine the access pattern, and design the best cache replacement policy for a specific cache size. 
+
+Generally, cache systems have three main research directions: access pattern analysis, cache replacement policies, and cache prefetching. 
 %
-This section introduces the basic access patterns~(\S\ref{ss:access-patterns}) and how prior work designs the cache replacement policy for them~(\autoref{ss:adaption-criteria}).
+Access pattern analysis helps in designing replacement policies or adjusting parameters in real-time to adapt to different situations.
+%
+Cache replacement policies determine which object to retain or evict; a higher hit ratio indicates better performance. 
+%
+When data access patterns are predictable, prefetching can anticipate future accesses and load data into the cache. 
+%
+For ease of deployment, cache systems typically use a specific replacement policy to handle the current workload, decoupling prefetching from the replacement strategy.
+
+
+\subsection{The metastable policies}
+\label{ss:performance-policy-change}
+Current replacement policies are in a metastable state, which means that if data access patterns or cache size change, the overall performance will degrade accordingly.
+%
+In production environments, the policy perform particularly poorly under certain characteristics, and increasing the cache size can sometimes lead to negative returns.
+%
+We evaluate \XXX{XX} policies in \XXX{XX} traces with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
+%
+All policies achieve the best performance in a specific cache size and suffer from a tail performance about 20\% to 60\% relative hit ratio to the best policy.
+%
+
+%If we use a specific replacement policy for all traces in the benchmarks, there are \XXX{XX}\% of traces that will lose \XXX{XX}\% performance.
+%
+%What's more, even with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
+
+
+As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of \XXX{XX} cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
+%
+CloudPhysics provides \XXX{XX} traces. 
+%
+We evaluate the hit ratio of \XXX{XX} replacement policies under a given cache size. 
+%
+For each trace, we select the replacement policy with the highest hit ratio as the optimal policy. 
+%
+Then, we calculate each policy's performance relative to the optimal policy and compute the geometric mean across all traces.
+%
+We observe that S3FIFO performs better when the cache size is small, while LIRS performs better when the cache size is large. 
+%
+Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
+%
+While \sys is the best policy in all cache sizes, it is the best policy in \XXX{XX}\% percent of traces.
+
+
+As shown in figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
+%
+We select the replacement policy with the highest hit ratio as the optimal policy and compute the relative hit ratio of each policy to the optimal policy.
+%
+In figure ~\autoref{fig:cache-size}, when the cache size enlarges from 5GB to 6GB(\TODO{true cache size}), LIRS is the best policy, and others performance degrades about 5\%.
+%
+When the cache size is larger than 7 GB to 20BG, QDLP is the best policy.
+%
+When we consider \sys, it is the best policy and outperforms other policies by about 2\%.
+
+
+%
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/demo-cloudphysics}
+    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(\TODO{maybe a specific trace or violin plot})}
+    \label{fig:cloudphysics}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/demo-cachesize.pdf}
+    \caption{Cache replacement policies' performance with different cache sizes.}
+    \label{fig:cache-size}
+\end{figure}
+
 
 \subsection{Access patterns}
 \label{ss:access-patterns}
 Prior work classifies the access patterns into four basic types and a mixture of the basic types. 
 %
-This classification method is very intuitive, but we can determine the trace type only after the analysis (e.g., implementing the replacement policy).
+This classification method is very intuitive, and we determine the trace type only after the analysis (e.g., implementing the replacement policy).
 
 \textbf{LRU-friendly} is a set of access that the \cc{least recently used} (LRU) replacement policy is the best choice.
 
@@ -24,7 +103,9 @@ This classification method is very intuitive, but we can determine the trace typ
 
 %\textbf{Mixture of the basic types} \dots
 %This classification method is neither object-based nor access sequence-based, but only for the trace type.
-This classification method cannot tell us the object type, only the trace type, and even if the cache size changes, the trace type will change.
+This classification method cannot tell us the object type, only the trace type.
+%
+When the cache size changes, the trace type will change.
 %so defining a mixture of the basic types is confusing. 
 %
 If an object is accessed many times in a short sequence, without access for a long sequence, and then reaccessed, we cannot determine whether it is LRU-friendly or LFU-friendly. 
@@ -88,7 +169,7 @@ If a request hits the ghost cache, these policies increase the cache size of the
 %
 What's more, these policies do not account for hits in the main cache, in ARC and CAR, many objects that are accessed only twice consecutively can cause cache pollution by evicting important objects from the main cache.
 %
-We will discuss it in (\S\ref{ss:split-trace}). 
+We will discuss it in (\S\ref{ss:dynamic-adjust}). 
 
 \textbf{Summary:We need to take the overall cache access behavior into account to adapt to mixed access patterns.}
 

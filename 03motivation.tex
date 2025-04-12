@@ -1,87 +1,23 @@
-\section{Motivation}
-\label{s:motivation}
-Prior work designs the cache replacement policy for a specific access pattern and cache size, but its performance decreases when the access pattern changes or even the cache size varies ~(\S\ref{ss:performance-policy-change}).
-%
-We propose a method to split the trace based on the cache size into phases and mark objects into different types according to their popularity in different phases ~(\S\ref{ss:split-trace}).
-%
-Based on the phase aware and cache size aware method, we will discuss why we should consider the overall cache access behavior and design an adaptive cache replacement policy ~(\S\ref{ss:dynamic-adjust}).
-%\sys decides whether to retain an object based on its type and phases information to fit in various cache sizes and access patterns.
-%
+\section{Phase-aware and cache size-aware}
+\label{s:phase-aware}
+This section presents a new perspective on phase aware and cache size aware classification of objects~(\S\ref{ss:split-trace}), and how to dynamically adapt to the changed access patterns~(\S\ref{ss:dynamic-adjust}).
 
-This section presents why we need a phase aware and cache size aware method to implement a replacement policy ~(\S\ref{ss:performance-policy-change}), how we implement it ~(\S\ref{ss:split-trace}), and what to do for adaption ~(\S\ref{ss:dynamic-adjust}).
-
-\subsection{Performance degradation with different cache size}
-\label{ss:performance-policy-change}
-Many policies suffer performance degradation when the cache size and access pattern change. 
-%
-We evaluate \XXX{XX} policies in \XXX{XX} traces with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
-%
-All policies achieve the best performance in a specific cache size and suffer from a tail performance about 20\% to 60\% relative hit ratio to the best policy.
-%
-Therefore, if we use a specific replacement policy for all traces in the benchmarks, there are \XXX{XX}\% of traces that will lose \XXX{XX}\% performance.
-%
-What's more, even with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
-%
-It is a disaster in the production environment.
-%It is common that a designed replacement policy perform well in a specific access pattern, so we should choose a policy for a trace in the production environments.
-%
-
-As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of \XXX{XX} cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
-%
-CloudPhysics provides \XXX{XX} traces. 
-%
-We evaluate the hit ratio of \XXX{XX} replacement policies under a given cache size. 
-%
-For each trace, we select the replacement policy with the highest hit ratio as the optimal policy. 
-%
-Then, we calculate each policy's performance relative to the optimal policy and compute the geometric mean across all traces.
-%
-We observe that S3FIFO performs better when the cache size is small, while LIRS performs better when the cache size is large. 
-%
-Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
-%
-While \sys is the best policy in all cache sizes, it is the best policy in \XXX{XX}\% percent of traces.
-
-
-As shown in figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
-%
-We select the replacement policy with the highest hit ratio as the optimal policy and compute the relative hit ratio of each policy to the optimal policy.
-%
-In figure ~\autoref{fig:cache-size}, when the cache size enlarges from 5GB to 6GB(\TODO{true cache size}), LIRS is the best policy, and others performance degrades about 5\%.
-%
-When the cache size is larger than 7 GB to 20BG, QDLP is the best policy.
-%
-When we consider \sys, it is the best policy and outperforms other policies by about 2\%.
-
-
-%
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/demo-cloudphysics}
-    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(\TODO{maybe a specific trace or violin plot})}
-    \label{fig:cloudphysics}
-\end{figure}
-
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/demo-cachesize.pdf}
-    \caption{Cache replacement policies' performance with different cache sizes.}
-    \label{fig:cache-size}
-\end{figure}
-
-
-\subsection{Phase-aware to cache size-aware}
+\subsection{Phase- and cache size-aware patterns}
 \label{ss:split-trace}
-To design a cache size-aware replacement policy, we analyze the relationship between the cache size and the trace by splitting the trace into phases based on the cache size.
+To design a cache size-aware replacement policy, we need to condiser the cache size when we analyze the access pattern.
 %
 Prior work~\cite{} analyzes the trace based on a period or a fixed number of accesses, and when the miss ratio changes, they think there is a phase change.
 %
 This method reveals that requests for objects change with time, but it is not accurate in adjusting the cache replacement policy.
 %
+\textbf{Our insights is that: if the phases of data access are related to the cache size, then analyzing phase information includes information about the cache size.}
+%
 We propose that if a set of requests' footprint is less than the cache size, they are in the same phase.
 %
+%To design a cache size-aware replacement policy, we analyze the relationship between the cache size and the trace by splitting the trace into phases based on the cache size.
 
+For the basic cache size aware, we split the trace into phases when the footprint is the same as the cache size.
+%
 We use this cache size-aware method to analyze the trace in Alibaba~\cite{} and find a different way to mark the object types. 
 %
 As shown in figure~\ref{fig:wss}, we set the cache size as 0.02 and 0.03 working set size, split the trace into phases, with each phase's footprint equal to the cache size, and count the frequency of each object in the phase. (\TODO{find a real-world trace})
@@ -103,6 +39,42 @@ They are classified as frequently accessed (FA) and infrequently accessed (IA) o
 %
 It hold FA-MP objects~(\S\ref{ss:filter-hold}), treats FA-FP and IA-MP as suspected objects~(\S\ref{ss:ghost},\S\ref{ss:dueling}), and filters IA-FP objects.
 
+Figure ~\ref{fig:exapmle} shows the object type changes in different cache sizes. 
+%
+For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, only \cc{A} is an FA-MP object. 
+%
+\cc{B} and \cc{C} are FA-FP and IA-MP objects, and others are IA-FP objects. 
+%
+While if we use footprint six to split the trace, \cc{A}, \cc{B}, and \cc{C} are FA-MP objects. 
+%
+With this method, the access pahses change with the cache size, and the object types change with the access phases and cache size.
+%
+To optimize the basic version, we use a sliding window and an appropriate aging function to dynamically discover what objects are in the same phase.
+%
+In figure ~\ref{fig:exapmle}, when the footprint is four, there is a request for \cc{E}, we age \cc{A}, \cc{B}, and \cc{C}, and finally we decide to evict \cc{C} in the sliding window.
+%
+While if the footprint is six and there is a request for \cc{G}, we keep \cc{A}, \cc{B}, and \cc{C} after aging and evict \cc{D} to keep the phase.
+%
+\sys integrates the sliding window and aging function to the replacement policy only with a few bits as S3-FIFO (\S\ref{ss:integrate}).
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/demo-exapmle.png}
+    \caption{An exapmle for the object types changes in different cache sizes.}
+    \label{fig:exapmle}
+\end{figure}
+
+\subsection{Dynamicly fit the phase and cache size}
+\label{ss:dynamic-adjust}
+After applying the classification method~(\autoref{ss:split-trace}), we describe the relationship between access patterns and cache size from the perspective of access phases.
+%
+The more hits within a phase, the more suitable the access pattern is for caching, and it also indicates that the cache is relatively large with a higher hit rate.
+%
+When we analyze the whole trace, it means the cache size is equal to the working set size with only a phase.
+%
+When we reduce the cache size, the number of phases in which frequently accessed object(\cc{FA-MP}) appears increases, and the access become either more concentrated(\cc{FA-FP}) or more evenly distributed across different phases(\cc{IF-MP}).
+%
+We dynamically adjust the criteria for caching objects based on the overall access information of the cache, in order to adapt to changes in phase characteristics.
 
 Prior work cannot dynamically mark the object types because it is too optimistic about the objects in the filter cache and ghost cache.
 %
@@ -119,51 +91,11 @@ ARC thinks a request hitting the filter or ghost cache is important, so it moves
 This behavior does not discover the overall access behavior, which hurts the performance even if it enlarges the cache size in figure \TODO{}.
 %However, they use static criteria to categorize objects and fail to analyze the type distribution to fit the cache size, leading to huge performance variations with different cache sizes.(\TODO{ figure maybe figure cacheus in fiu, mrc waves})
 
-
-Figure ~\ref{fig:exapmle} shows the object type changes in different cache sizes. 
+We analyze \XXX{} workloads and decide to cache part of the objects.
 %
-For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, only \cc{A} is an FA-MP object. 
+We count the frequency at which an object is accessed and calculating the average resue time, discovering a linear-logarithmic relationship between them. 
 %
-\cc{B} and \cc{C} are FA-FP and IA-MP objects, and others are IA-FP objects. 
-%
-While if we use footprint six to split the trace, \cc{A}, \cc{B}, and \cc{C} are FA-MP objects. 
-%
-With this method, the access pahses change with the cache size, and the object types change with the access phases and cache size.
-%
-We use a sliding window and an appropriate aging function to dynamically discover what objects are in the same phase.
-%
-In figure ~\ref{fig:exapmle}, when the footprint is four, there is a request for \cc{E}, we age \cc{A}, \cc{B}, and \cc{C}, and finally we decide to evict \cc{C} in the sliding window.
-%
-While if the footprint is six and there is a request for \cc{G}, we keep \cc{A}, \cc{B}, and \cc{C} after aging and evict \cc{D} to keep the phase.
-%
-\sys integrates the sliding window and aging function to the replacement policy only with a few bits as S3-FIFO (\S\ref{ss:integrate}).
-
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/demo-exapmle.png}
-    \caption{An exapmle for the object types changes in different cache sizes.}
-    \label{fig:exapmle}
-\end{figure}
-
-\subsection{Dynamicly fit the phase and cache size}
-\label{ss:dynamic-adjust}
-Objects are marked as different types, when the cache size changes,  so we should dynamically change the criteria to collect important objects.
-%
-When we analyze the whole trace, it means the cache size is equal to the working set size with only a phase, and a small number of objects are accessed many times.
-%
-If we split the trace with a large cache size, the frequently accessed objects distribute in many phases with \cc{FA-MP} tags.
-%
-When we divide phases with a small cache size, if the object is accessed intensively in certain phases, it will be labeled as \cc{FA-FP} object. 
-%
-If the object is accessed in many phases, it is \cc{IF-MP} object.
-
-%We analyze all traces and find that only small parts of objects are frequently accessed, so \sys leverage the main cache, the filter cache, and the ghost cache to record the phase information (\S\ref{ss:integrate}).
-%
-%In the large cache sizes, most objects are accessed many times, so we need to improve the criteria; otherwise, in the small cache sizes, most objects are accessed a few times, so we need to relax the criteria or even hold suspected objects.
-%While in different cache sizes, the object types change, and we need to adjust the criteria dynamically.
-
-We analyze the trace by counting the frequency at which an object is accessed and calculating the average resue time, discovering a linear-logarithmic relationship between them.
+With the metadata in the ghost cache, \sys discover the access frequency distribution of the objects more than a phase and cache FA or MP objects dynamically~(\autoref{ss:integrate}). 
 %
 A small amount of objects are accessed many times, while a large amount are accessed only a few times. 
 %
@@ -178,7 +110,7 @@ The average reuse time of the objects accessed less than \textbf{10} times is ab
 %\sys leverage phase and aging function to hold \cc{FA-FP} objects for a period of time (\S\ref{ss:ghost}) and speculatively retain \cc{IA-MP} objects (\S\ref{ss:dueling}).
 %
 
-If the cache size is relatively large, there are too many objects accessed more than once, so we need to improve the criteria to discover the important objects. 
+If the cache size is relatively large, there are too many objects accessed more than once, so we improve the criteria to discover the important objects. 
 %
 As shown in figure ~\TODO{fiu access}, most of the objects are accessed only once, and then here comes repeated access for about \TODO{40\%} cache size.
 %
@@ -192,7 +124,6 @@ It repeats six times in the trace; only a large cache size can discover it and s
 %
 What's more, \sys leverages the space of the ghost cache to prefetch the objects that are accessed in sequence~(\S\ref{ss:ghost}).
 
-
 If the cache size is relatively small, some data may not be accessed until several phases later. 
 %
 As discussed in S3-FIFO~\cite{}, there are many objects accessed only once in the trace (one-hit-wonder), and S3-FIFO evicts them quickly and retrieves reaccessed objects from the ghost cache.
@@ -201,7 +132,7 @@ In many policies, the number of objects in the ghost cache is equal to or less t
 %
 If this happens commonly, the miss ratio is larger than 50\%, and we need to guess which objects are important, because the cache size is too small or the trace is not suitable for the cache.
 %
-Therefore, \sys speculatively retains these objects to get close to the optimal policy.
+Therefore, \sys speculatively retains these objects to get close to the optimal policy~(\autoref{ss:dueling}).
 %
 As in figure ~\TODO{cloudphisis}, the cache size is 0.3\% of the working set size, and \sys achieves 95\% performance of the optimal policy.
 %

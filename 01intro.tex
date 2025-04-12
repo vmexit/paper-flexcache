@@ -1,17 +1,55 @@
 \section{Introduction}
 \label{s:intro}
+Software caches, e.g., Memcached~\cite{}, Redis~\cite{}, and Linux page cache~\cite{}, are widely adapted in various fields to improve the service performance.
+%
+In production environments, software cache systems have a fixed memory space and a specific cache replacement policy for all data sets.
+%
+In the system, there are various workloads with different access patterns, and some of these patterns change over time. 
+%
+Many works analyze the characteristics of the traces and design the best policy for the system to improve performance.
 
-see~\cite{latex}
+Cache replacement policies are designed to handle different access patterns adaptively.
+%
+Prior work~\cite{} classifies the access patterns into four basic types and designs the policy for the mixture of the basic patterns.
+%
+To design an adaptive policy, they split the cache into different functional parts to filter the interference pattern from the major pattern and duel for two major patterns.
+%
+Furthermore, some workloads also exhibit regular access patterns, and many studies focus on prefetching such data with additional space.
 
+However, existing cache replacement policies are not adaptive to the \textit{access patterns} and \textit{cache size}, leading to a sub-optimal situation.
 %
-However, the specific cache replacement policy will not be suitable for other access patterns or another cache size, leading to a sub-optimal situation.
+We evaluate \XXX{} policies with different cache sizes and workloads, choose the highest hit ratio as the optimal ratio, and compare the hit ratio of the policies with the optimal ratio.
 %
-S3-FIFO~\cite{} is the best policy when the cache size is tiny (0.3\%) to the working set size(WSS), but when the cache size is 20\% of the WSS in Cloudphysics~\cite{}, it achieves 90\% hit ratio to the optimal policy.
+As shown in \TODO{figure~\ref{}}, when the cache size is \XXX{} of the working set size(WSS), \XXX{} achieve \XXX{} performance on average.
+%
+\XXX{} consists of \XXX{} workloads, so there are \XXX{} workloads suffer from a \XXX{} performance drop.
+%
+In \TODO{figure~\ref{}}, when we increase the cache size, the hit ratio even drops.
 
-We divide the trace into phases based on cache size and flexibly adjust the criteria for determining object types according to their popularity in different phases. 
+This performance degradation is caused by the limitations of access pattern classification and cache design.
 %
-The replacement policy decides whether to retain an object based on its type. 
+The access pattern classification does not take cache size into account, causing the same access pattern to be classified into different categories under different cache sizes~(\autoref{ss:access-patterns}).
 %
-After integrating prefetching, it identifies prefetchable objects and attempts to evict and prefetch them in the next time.
+Cache replacement policies, when performing adaptive adjustments, also fail to consider global access information comprehensively~(\autoref{ss:adaption-criteria}). 
 %
-This dynamic replacement policy, which adapts to the relationship between cache size and trace, ensures suitability across various cache sizes.
+This leads to design flaws in the adjustment mechanism, resulting in extremely poor performance in certain scenarios.
+
+This paper explores the relationship between access patterns and cache size and proposes \sys, a phase-aware and cache-size-aware replacement policy that can adapt to different access patterns and cache sizes.
+%
+We design \sys based on three \textit{insights}:
+%
+First, splitting the access trace into phases according to the cache size is a method for cache-size-aware.
+%
+Second, to classify the object type dynamically, we consider the access frequency distribution in different phases.
+%
+Third, the policy should consider the overall cache access behavior to adapt to mixed access patterns.
+
+\TODO{\sys}
+
+\TODO{performance}
+
+In summary, we make the following contributions:
+\squishlist
+\item{\textbf{todo.}}
+\squishend
+%
