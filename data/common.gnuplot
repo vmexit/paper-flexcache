@@ -141,6 +141,7 @@ hist_pattern_1=1
 hist_pattern_2=2
 hist_pattern_3=7
 
+# line style
 stock = 1
 cna = 2
 cst = 3
@@ -153,7 +154,7 @@ malthusian = 8
 bravo = 6
 sysbravo = 7
 
-
+# color
 cstock = C1
 ccna = C2
 ccst = C3

@@ -26,6 +26,12 @@ As shown in \TODO{figure~\ref{}}, when the cache size is \XXX{} of the working s
 %
 In \TODO{figure~\ref{}}, when we increase the cache size, the hit ratio even drops.
 
+\begin{figure}
+\centering
+\input{data/cachesize}
+\end{figure}
+
+
 This performance degradation is caused by the limitations of access pattern classification and cache design.
 %
 The access pattern classification does not take cache size into account, causing the same access pattern to be classified into different categories under different cache sizes~(\autoref{ss:access-patterns}).
