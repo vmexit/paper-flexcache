@@ -18,17 +18,19 @@ Furthermore, some workloads also exhibit regular access patterns, and many studi
 
 However, existing cache replacement policies are not adaptive to the \textit{access patterns} and \textit{cache size}, leading to a sub-optimal situation.
 %
-We evaluate \XXX{} policies with different cache sizes and workloads, choose the highest hit ratio as the optimal ratio, and compare the hit ratio of the policies with the optimal ratio.
+We evaluate \XXX{13} policies with different cache sizes and workloads, choose the highest hit ratio as the optimal ratio, and compare the hit ratio of the policies with the optimal ratio.
 %
-As shown in \TODO{figure~\ref{}}, when the cache size is \XXX{} of the working set size(WSS), \XXX{} achieve \XXX{} performance on average.
+As shown in figure~\ref{fig:cloudphysics}(a),  as the cache size increases, the performance of S3FIFO gradually decreases from 95.7\% to 89.6\%, while the performance of LIRS steadily increases from 89.6\% to 96\%.
 %
-\XXX{} consists of \XXX{} workloads, so there are \XXX{} workloads suffer from a \XXX{} performance drop.
+However, as shown in figure~\ref{fig:cloudphysics}(b), the worst-performing 5\% of workloads for both S3FIFO and LIRS only achieve 69.5\% performance, when the cache size is 3\% of the working set size(WSS).
 %
-In \TODO{figure~\ref{}}, when we increase the cache size, the hit ratio even drops.
+While S3FIFO and LIRS perform better overall, they fail to adapt to certain access patterns; in contrast, ARC shows lower overall performance but provides a more balanced effectiveness across different workloads.
 
-\begin{figure}
+\begin{figure}[t]
 \centering
 \input{data/cachesize}
+\caption{Replacement policies' performance in Cloudphysics.}
+\label{fig:cloudphysics}
 \end{figure}
 
 
@@ -39,6 +41,8 @@ The access pattern classification does not take cache size into account, causing
 Cache replacement policies, when performing adaptive adjustments, also fail to consider global access information comprehensively~(\autoref{ss:adaption-criteria}). 
 %
 This leads to design flaws in the adjustment mechanism, resulting in extremely poor performance in certain scenarios.
+%
+In some policies, as the cache size increases, the hit ratio actually worsens\TODO{figure}.
 
 This paper explores the relationship between access patterns and cache size and proposes \sys, a phase-aware and cache-size-aware replacement policy that can adapt to different access patterns and cache sizes.
 %

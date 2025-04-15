@@ -15,7 +15,7 @@ To reduce costs and minimize data access latency, we place a subset of the data 
 In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web objects, and data blocks, respectively, and we use the term \textit{object} to represent the data unit stored in the cache.
 %
 
-Generally, cache systems have three main research directions: access pattern analysis, cache replacement policies, and cache prefetching. 
+Generally, cache systems have three main research directions: \cc{access pattern analysis}, \cc{cache replacement policies}, and \cc{cache prefetching}. 
 %
 Access pattern analysis helps in designing replacement policies or adjusting parameters in real-time to adapt to different situations.
 %
@@ -32,7 +32,7 @@ Current replacement policies are in a metastable state, which means that if data
 %
 In production environments, the policy perform particularly poorly under certain characteristics, and increasing the cache size can sometimes lead to negative returns.
 %
-We evaluate \XXX{XX} policies in \XXX{XX} traces with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
+We evaluate \XXX{13} policies in \XXX{XX} traces with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
 %
 All policies achieve the best performance in a specific cache size and suffer from a tail performance about 20\% to 60\% relative hit ratio to the best policy.
 %
@@ -42,11 +42,11 @@ All policies achieve the best performance in a specific cache size and suffer fr
 %What's more, even with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
 
 
-As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of \XXX{XX} cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
+As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of \XXX{13} cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
 %
-CloudPhysics provides \XXX{XX} traces. 
+CloudPhysics provides \XXX{104} traces. 
 %
-We evaluate the hit ratio of \XXX{XX} replacement policies under a given cache size. 
+We evaluate the hit ratio of replacement policies under a given cache size. 
 %
 For each trace, we select the replacement policy with the highest hit ratio as the optimal policy. 
 %
@@ -56,7 +56,8 @@ We observe that S3FIFO performs better when the cache size is small, while LIRS 
 %
 Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
 %
-While \sys is the best policy in all cache sizes, it is the best policy in \XXX{XX}\% percent of traces.
+While \sys is the best policy in all cache sizes, it is the \textbf{best} policy in \textbf{50\%} percent of traces, and achieves \textbf{95\%} performance in \textbf{95\%} of traces.
+%
 
 
 As shown in figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
@@ -73,16 +74,8 @@ When we consider \sys, it is the best policy and outperforms other policies by a
 %
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{fig/demo-cloudphysics}
-    \caption{Cache replacement policies' performance with different cache sizes in Cloudphysics.(\TODO{maybe a specific trace or violin plot})}
-    \label{fig:cloudphysics}
-\end{figure}
-
-
-\begin{figure}[t]
-    \centering
     \includegraphics[width=\columnwidth]{fig/demo-cachesize.pdf}
-    \caption{Cache replacement policies' performance with different cache sizes.}
+    \caption{Cache replacement policies' performance in Cloudphysics.}
     \label{fig:cache-size}
 \end{figure}
 
@@ -103,7 +96,9 @@ This classification method is very intuitive, and we determine the trace type on
 
 %\textbf{Mixture of the basic types} \dots
 %This classification method is neither object-based nor access sequence-based, but only for the trace type.
-This classification method cannot tell us the object type, only the trace type.
+\textbf{This classification is not a cache size-aware method.}
+%
+It cannot tell us the object type, only the trace type.
 %
 When the cache size changes, the trace type will change.
 %so defining a mixture of the basic types is confusing. 
@@ -156,6 +151,8 @@ LeCaR~\cite{} and Cacheus~\cite{} leverage two major replacement policies (e.g.,
 They use ghost caches to adjust the proportion of different types of objects accordingly.
 %Dueling for LRU-friendly and LFU-friendly. ARC, CAR, 2Q,LeCaR,Cacheus,LRFU
 
+\textbf{The adaptation process in prior work is short-sighted.}
+%
 These policies based on basic access patterns are insufficient and suffer from severe performance degradation.% different access pattern. 
 %
 First, basic access patterns are unaware of the cache size, causing the replacement policy's performance to fluctuate significantly as the cache size changes. 
