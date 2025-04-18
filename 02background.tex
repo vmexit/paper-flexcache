@@ -32,7 +32,7 @@ Current replacement policies are in a metastable state, which means that if data
 %
 In production environments, the policy perform particularly poorly under certain characteristics, and increasing the cache size can sometimes lead to negative returns.
 %
-We evaluate \XXX{13} policies in \XXX{XX} traces with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
+We evaluate 16 policies in \XXX{5000+} workloads with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
 %
 All policies achieve the best performance in a specific cache size and suffer from a tail performance about 20\% to 60\% relative hit ratio to the best policy.
 %
@@ -41,32 +41,38 @@ All policies achieve the best performance in a specific cache size and suffer fr
 %
 %What's more, even with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
 
-
-As shown in figure ~\autoref{fig:cloudphysics}, we evaluate the performance of \XXX{13} cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
+Prior work cannot fit various \textbf{access patterns} in a benchmark.
 %
-CloudPhysics provides \XXX{104} traces. 
+As shown in figure ~\autoref{fig:cloudphysics}(a), we evaluate the performance of 16 cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
 %
-We evaluate the hit ratio of replacement policies under a given cache size. 
+CloudPhysics provides \XXX{106} traces. 
 %
-For each trace, we select the replacement policy with the highest hit ratio as the optimal policy. 
+We evaluate the hit ratio of replacement policies under a given cache size, which is a relative size to working set size(WSS). 
+%
+For each workload, we select the replacement policy with the highest hit ratio as the optimal policy. 
 %
 Then, we calculate each policy's performance relative to the optimal policy and compute the geometric mean across all traces.
 %
-We observe that S3FIFO performs better when the cache size is small, while LIRS performs better when the cache size is large. 
+We observe that S3FIFO~\cite{} performs better when the cache size is small, while LIRS performs better when the cache size is large. 
 %
 Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
+%
+As shown in figure ~\autoref{fig:cloudphysics}(b), the worst-performing 10\% of workloads for both S3FIFO and ARC only achieve 80\% performance, when the cache size is 3\% WSS.
 %
 While \sys is the best policy in all cache sizes, it is the \textbf{best} policy in \textbf{50\%} percent of traces, and achieves \textbf{95\%} performance in \textbf{95\%} of traces.
 %
 
-
-As shown in figure ~\autoref{fig:mrcdemo}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
+For the same workload, the performance of different policies varies significantly with different \textbf{cache sizes}.
+%
+As shown in figure~\autoref{fig:mrcdemo}(a), ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
 %
 We select the replacement policy with the highest hit ratio as the optimal policy and compute the relative hit ratio of each policy to the optimal policy.
 %
-In figure ~\autoref{fig:mrcdemo}, when the cache size enlarges from 5GB to 6GB(\TODO{true cache size}), LIRS is the best policy, and others performance degrades about 5\%.
+In figure~\autoref{fig:mrcdemo}(b), when the cache size enlarges from 80GB to 140GB, ARC closely follows the optimal policy, but when we enlarge the cache size to 1600GB, the performance of ARC degrades by about 20\%.
 %
-When the cache size is larger than 7 GB to 20BG, QDLP is the best policy.
+What's more, the performance of WTinyLFU~\cite{} is metastable at all cache sizes.
+%
+When the cache size is 50GB, it achieves 99.3\% hit ratio of the best policy, but when the cache size is 40BG or 60GB, it degrades to 88.7\% and 90.0\% respectively.
 %
 When we consider \sys, it is the best policy and outperforms other policies by about 2\%.
 
@@ -75,11 +81,11 @@ When we consider \sys, it is the best policy and outperforms other policies by a
 \label{ss:access-patterns}
 Prior work classifies the access patterns into four basic types and a mixture of the basic types. 
 %
-This classification method is very intuitive, and we determine the trace type only after the analysis (e.g., implementing the replacement policy).
+This classification method is very intuitive, and we determine the trace type after the analysis (e.g., implementing the replacement policy).
 
-\textbf{LRU-friendly} is a set of access that the \cc{least recently used} (LRU) replacement policy is the best choice.
+\textbf{LRU-friendly} is a set of access that the \cc{least recently used} (LRU) replacement policy is the best choice for the workload.
 
-\textbf{LFU-friendly} is a set of access that the \cc{least frequently used} (LFU) replacement policy is the best choice.
+\textbf{LFU-friendly} is a set of access that the \cc{least frequently used} (LFU) replacement policy is the best choice for the workload.
 
 \textbf{Scan} is a set of access that all objects are accessed only once, which means no replacement policy can deal with it.
 
@@ -118,7 +124,7 @@ If there are two major patterns, they split the main cache into two parts, one f
 %
 Many policies use the ghost cache to store the metadata of the evicted objects~\cite{}, which can be used to adjust the size of other parts.
 %The miss records in the ghost cache can help adjust the size of the main cache and filter cache.
-The access patterns in (\S\ref{ss:access-patterns}) and incomplete criteria for adjustment mechanisms limit the capability of the replacement policy.
+The access patterns in~(\S\ref{ss:access-patterns}) and incomplete criteria for adjustment mechanisms limit the capability of the replacement policy.
 
 %They change the part size according to the hit information and tag the object type with static criteria.
 
@@ -148,7 +154,7 @@ These policies based on basic access patterns are insufficient and suffer from s
 %
 First, basic access patterns are unaware of the cache size, causing the replacement policy's performance to fluctuate significantly as the cache size changes. 
 %
-(\TODO{figure} )
+As shown is figure~\ref{fig:mrcdemo}(b) and figure~\ref{fig:alibb}(a), the performance of ARC, WTinyLFU, and LeCaR degrade when the cache size is larger.
 %
 Second, they are too positive to the objects in the filter cache and ghost cache, leading to misjudgment about the overall access behavior. 
 %relying solely on the objects in the ghost cache may lead to misjudgments about the overall access behavior.

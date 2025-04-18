@@ -40,7 +40,7 @@ set yrange [0:1]
 set ytics 0.2
 set xtics 0.2
 #set xtics rotate by -30 ('\sys' 0, "S3FIFO" 1, "LIRS" 2, "ARC" 3)
-set xlabel 'CDF'
+set xlabel 'CDF for 3\% WSS'
 set title '(b)Performance CDF' offset 0,-1
 #set key at 0.8,0.5
 
