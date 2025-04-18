@@ -24,7 +24,7 @@ As shown in figure~\ref{fig:wss}, we set the cache size as 0.02 and 0.03 working
 %
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{fig/demo-wss002.png}
+    \includegraphics[width=\columnwidth]{fig/phase.png}
     \caption{In different cache sizes, the object types change in Alibaba.}
     \label{fig:wss}
 \end{figure}
@@ -59,8 +59,8 @@ While if the footprint is six and there is a request for \cc{G}, we keep \cc{A},
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\columnwidth]{fig/demo-exapmle.png}
-    \caption{An exapmle for the object types changes in different cache sizes.}
+    \includegraphics[width=\columnwidth]{fig/cachesizeaware.drawio.pdf}
+    \caption{Phase for cache size-aware.}
     \label{fig:exapmle}
 \end{figure}
 
@@ -110,6 +110,13 @@ The average reuse time of the objects accessed less than \textbf{10} times is ab
 %\sys leverage phase and aging function to hold \cc{FA-FP} objects for a period of time (\S\ref{ss:ghost}) and speculatively retain \cc{IA-MP} objects (\S\ref{ss:dueling}).
 %
 
+\begin{figure}[t]
+    \centering
+    \input{data/pop}
+    \caption{Popularity.}
+    \label{fig:alibb}
+\end{figure}
+
 If the cache size is relatively large, there are too many objects accessed more than once, so we improve the criteria to discover the important objects. 
 %
 As shown in figure ~\TODO{fiu access}, most of the objects are accessed only once, and then here comes repeated access for about \TODO{40\%} cache size.
@@ -136,3 +143,11 @@ Therefore, \sys speculatively retains these objects to get close to the optimal 
 %
 As in figure ~\TODO{cloudphisis}, the cache size is 0.3\% of the working set size, and \sys achieves 95\% performance of the optimal policy.
 %
+
+\begin{figure}
+    \centering
+    \subfigure[MRC]{\input{data/fiumrc}}
+    \subfigure[Phases for 2MB]{\includegraphics[width=0.47\columnwidth]{fig/fiuwss.png}}
+    \caption{Miss ratio and analysis for fiu.}
+    \label{fig:fiu}
+\end{figure}

@@ -60,24 +60,15 @@ While \sys is the best policy in all cache sizes, it is the \textbf{best} policy
 %
 
 
-As shown in figure ~\autoref{fig:cache-size}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
+As shown in figure ~\autoref{fig:mrcdemo}, ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
 %
 We select the replacement policy with the highest hit ratio as the optimal policy and compute the relative hit ratio of each policy to the optimal policy.
 %
-In figure ~\autoref{fig:cache-size}, when the cache size enlarges from 5GB to 6GB(\TODO{true cache size}), LIRS is the best policy, and others performance degrades about 5\%.
+In figure ~\autoref{fig:mrcdemo}, when the cache size enlarges from 5GB to 6GB(\TODO{true cache size}), LIRS is the best policy, and others performance degrades about 5\%.
 %
 When the cache size is larger than 7 GB to 20BG, QDLP is the best policy.
 %
 When we consider \sys, it is the best policy and outperforms other policies by about 2\%.
-
-
-%
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/demo-cachesize.pdf}
-    \caption{Cache replacement policies' performance in Cloudphysics.}
-    \label{fig:cache-size}
-\end{figure}
 
 
 \subsection{Access patterns}

@@ -18,7 +18,7 @@ def getrelative(df):
     dfrelative.fillna(1, inplace=True)
     return dfrelative  
 
-targetpolicy=["accp4","S3FIFO","LIRS","ARC"]
+targetpolicy=["accp4","S3FIFO","LIRS","ARC","WTinyLFU"]
 
 df = pd.read_csv(file,header=0,index_col=0)  # 或者你已有的 DataFrame
 for col in dropcolumn:
@@ -30,4 +30,10 @@ dfret = getrelative(df)
 dfret = dfret[targetpolicy]
 dfret.reset_index(inplace=True)
 dfret.to_csv(currentdir+"/../data/violin.dat", sep=' ', index=False, float_format='%.3f')
+
+#对每列从小到大排序
+
+dfsort = dfret.apply(np.sort)
+dfsort.to_csv(currentdir+"/../data/violincdf.dat", sep=' ', index=False, float_format='%.3f')
+
 
