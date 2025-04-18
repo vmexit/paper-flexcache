@@ -1,6 +1,6 @@
 \section{Background and Motivation}
 \label{s:background}
-This section presents a background on software cache systems~(\autoref{ss:background-software-cache}), and a phonomenon that most current replacement policies operate in a metastable state~(\autoref{ss:performance-policy-change}).
+This section presents a background on software cache systems~(\autoref{ss:background-software-cache}) and a phenomenon that most current replacement policies operate in a metastable state~(\autoref{ss:performance-policy-change}).
 %
 We analyze the root causes of this issue from two perspectives: basic access pattern classification~(\autoref{ss:access-patterns}) and replacement policy design~(\autoref{ss:adaption-criteria}).
 
@@ -17,7 +17,7 @@ In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web 
 
 Generally, cache systems have three main research directions: \cc{access pattern analysis}, \cc{cache replacement policies}, and \cc{cache prefetching}. 
 %
-Access pattern analysis helps in designing replacement policies or adjusting parameters in real-time to adapt to different situations.
+Access pattern analysis helps design replacement policies or adjust parameters in real-time to adapt to different situations.
 %
 Cache replacement policies determine which object to retain or evict; a higher hit ratio indicates better performance. 
 %
@@ -25,12 +25,11 @@ When data access patterns are predictable, prefetching can anticipate future acc
 %
 For ease of deployment, cache systems typically use a specific replacement policy to handle the current workload, decoupling prefetching from the replacement strategy.
 
-
 \subsection{The metastable policies}
 \label{ss:performance-policy-change}
 Current replacement policies are in a metastable state, which means that if data access patterns or cache size change, the overall performance will degrade accordingly.
 %
-In production environments, the policy perform particularly poorly under certain characteristics, and increasing the cache size can sometimes lead to negative returns.
+In production environments, the policy performs poorly under specific characteristics, and increasing the cache size can sometimes lead to negative returns.
 %
 We evaluate 16 policies in \XXX{5000+} workloads with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
 %
@@ -47,7 +46,7 @@ As shown in figure ~\autoref{fig:cloudphysics}(a), we evaluate the performance o
 %
 CloudPhysics provides \XXX{106} traces. 
 %
-We evaluate the hit ratio of replacement policies under a given cache size, which is a relative size to working set size(WSS). 
+We evaluate the hit ratio of replacement policies under a given cache size, which is relative to the working set size(WSS). 
 %
 For each workload, we select the replacement policy with the highest hit ratio as the optimal policy. 
 %
@@ -57,9 +56,9 @@ We observe that S3FIFO~\cite{} performs better when the cache size is small, whi
 %
 Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
 %
-As shown in figure ~\autoref{fig:cloudphysics}(b), the worst-performing 10\% of workloads for both S3FIFO and ARC only achieve 80\% performance, when the cache size is 3\% WSS.
+As shown in figure ~\autoref{fig:cloudphysics}(b), the worst-performing 10\% of workloads for both S3FIFO and ARC only achieve 80\% performance when the cache size is 3\% WSS.
 %
-While \sys is the best policy in all cache sizes, it is the \textbf{best} policy in \textbf{50\%} percent of traces, and achieves \textbf{95\%} performance in \textbf{95\%} of traces.
+While \sys is the best policy in all cache sizes, it is the \textbf{best} policy in \textbf{50\%} percent of workloads, and achieves \textbf{95\%} performance in \textbf{95\%} of traces.
 %
 
 For the same workload, the performance of different policies varies significantly with different \textbf{cache sizes}.
@@ -70,7 +69,7 @@ We select the replacement policy with the highest hit ratio as the optimal polic
 %
 In figure~\autoref{fig:mrcdemo}(b), when the cache size enlarges from 80GB to 140GB, ARC closely follows the optimal policy, but when we enlarge the cache size to 1600GB, the performance of ARC degrades by about 20\%.
 %
-What's more, the performance of WTinyLFU~\cite{} is metastable at all cache sizes.
+What is more, the performance of WTinyLFU~\cite{} is metastable at all cache sizes.
 %
 When the cache size is 50GB, it achieves 99.3\% hit ratio of the best policy, but when the cache size is 40BG or 60GB, it degrades to 88.7\% and 90.0\% respectively.
 %
@@ -123,7 +122,7 @@ If the access patterns are a major pattern and an interference pattern, the main
 If there are two major patterns, they split the main cache into two parts, one for each major pattern. 
 %
 Many policies use the ghost cache to store the metadata of the evicted objects~\cite{}, which can be used to adjust the size of other parts.
-%The miss records in the ghost cache can help adjust the size of the main cache and filter cache.
+%The missing records in the ghost cache can help adjust the size of the main cache and filter cache.
 The access patterns in~(\S\ref{ss:access-patterns}) and incomplete criteria for adjustment mechanisms limit the capability of the replacement policy.
 
 %They change the part size according to the hit information and tag the object type with static criteria.
@@ -154,9 +153,9 @@ These policies based on basic access patterns are insufficient and suffer from s
 %
 First, basic access patterns are unaware of the cache size, causing the replacement policy's performance to fluctuate significantly as the cache size changes. 
 %
-As shown is figure~\ref{fig:mrcdemo}(b) and figure~\ref{fig:alibb}(a), the performance of ARC, WTinyLFU, and LeCaR degrade when the cache size is larger.
+As shown in figure~\ref{fig:mrcdemo}(b) and figure~\ref{fig:alibb}(a), the performance of ARC, WTinyLFU, and LeCaR degrade when the cache size is larger.
 %
-Second, they are too positive to the objects in the filter cache and ghost cache, leading to misjudgment about the overall access behavior. 
+Second, they are too positive about the objects in the filter cache and ghost cache, leading to misjudgment about the overall access behavior. 
 %relying solely on the objects in the ghost cache may lead to misjudgments about the overall access behavior.
 %
 If a request hits the ghost cache, these policies increase the cache size of the corresponding pattern or the usage probability of the competing pattern as compensation.

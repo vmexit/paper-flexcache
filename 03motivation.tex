@@ -4,13 +4,13 @@ This section presents a new perspective on phase aware and cache size aware clas
 
 \subsection{Phase- and cache size-aware patterns}
 \label{ss:split-trace}
-To design a cache size-aware replacement policy, we need to condiser the cache size when we analyze the access pattern.
+When analyzing the access pattern, we need to consider the cache size to design a cache size-aware replacement policy.
 %
 Prior work~\cite{} analyzes the trace based on a period or a fixed number of accesses, and when the miss ratio changes, they think there is a phase change.
 %
 This method reveals that requests for objects change with time, but it is not accurate in adjusting the cache replacement policy.
 %
-\textbf{Our insights is that: if the phases of data access are related to the cache size, then analyzing phase information includes information about the cache size.}
+\textbf{Our insights is that if the phases of data access are related to the cache size, then analyzing phase information includes information about the cache size.}
 %
 We propose that if a set of requests' footprint is less than the cache size, they are in the same phase.
 %
@@ -31,15 +31,15 @@ We use this cache size-aware method to analyze the trace in Alibaba~\cite{} and 
 %
 As shown in figure~\ref{fig:wss}, we set the cache size as 10\% and 15\% WSS, split the trace into phases, with each phase's footprint equal to the cache size, and count the frequency of each object in the phase.
 %
-For the same workload slice, there are 12 pahses with 10\% WSS and 8 phases with 15\% WSS.
+For the same workload slice, there are 12 phases with 10\% WSS and 8 phases with 15\% WSS.
 %
-In figure~\ref{fig:wss}(a), half of objects accessed in the phase 0 are active in the rest phase, and the other half are inactive.
+In figure~\ref{fig:wss}(a), half of the objects accessed in phase 0 are active in the rest phase, and the other half are inactive.
 %
-Frequently accessed objects in the phase 3 are active in phases 7 and 11.
+Frequently accessed objects in phase 3 are active in phases 7 and 11.
 %
 When the cache size is larger, it contains more objects, and frequently accessed objects are concentrated.
 %
-In figure~\ref{fig:wss}(b), frequently accessed objects in the phase 0 are active in the rest phase with more accesses(darker color), and the objects in the phase 3 are active in the phase 5 and 7, which helps to discover the access pattern with cache size.
+In figure~\ref{fig:wss}(b), frequently accessed objects in phase 0 are active in the rest phase with more accesses(darker color), and the objects in phase 3 are active in phases 5 and 7, which helps to discover the access pattern with cache size.
 
 
 
@@ -62,7 +62,7 @@ While if we use footprint six to split the trace, \cc{A}, \cc{B}, and \cc{C} are
 %
 With this method, the access pahses change with the cache size, and the object types change with the access phases and cache size.
 %
-To optimize the basic version, we use a sliding window and an appropriate aging function to dynamically discover what objects are in the same phase.
+To optimize the basic version, we use a sliding window and an appropriate aging function to discover what objects are in the same phase dynamically.
 %
 In figure~\ref{fig:exapmle}(2), when the footprint is four, there is a request for \cc{E}, we age \cc{A}, \cc{B}, and \cc{C}, and finally we decide to evict \cc{C} in the sliding window.
 %
@@ -81,40 +81,13 @@ While if the footprint is six and there is a request for \cc{G}, we keep \cc{A},
 \label{ss:dynamic-adjust}
 After applying the classification method~(\autoref{ss:split-trace}), we describe the relationship between access patterns and cache size from the perspective of access phases.
 %
-The more hits within a phase, the more suitable the access pattern is for caching, and it also indicates that the cache is relatively large with a higher hit ratio.
+The more hits within a phase, the more suitable the access pattern is for caching. This also indicates that the cache is relatively large, with a higher hit ratio.
 %
-When we analyze the whole trace, it means the cache size is equal to the working set size with only a phase.
+In addition to considering an object's access recency and frequency, we need to consider the phases' access distribution.
 %
-When we reduce the cache size, the number of phases in which frequently accessed object(\cc{FA-MP}) appears increases, and the access become either more concentrated(\cc{FA-FP}) or more evenly distributed across different phases(\cc{IF-MP}).
+Here come questions: Should we cache the objects in the phase with some accesses or discard the objects in the phase with few accesses?
 %
 We dynamically adjust the criteria for caching objects based on the overall access information of the cache, in order to adapt to changes in phase characteristics.
-
-Prior work cannot dynamically mark the object types because it is too optimistic about the objects in the filter cache and ghost cache.
-%
-They design replacement policies~\cite{} to retain FA-MP objects while quickly evicting IA-FP objects.
-%
-For instance, LFU is good at retaining FA objects, while LRU prefers MP objects.
-%
-However, they do not analyze the object from the whole trace; they only analyze it from the ghost and filter cache, which is insufficient to determine the object type.
-%
-In figure~\ref{fig:fiu}(a), many policies do not discover the overall access behavior, which hurts the performance even if it enlarges the cache size.
-%
-LeCaR adjust the policy based on the access in the ghost cache, and their miss ratio waves considerably when the cache size changes .
-%
-ARC thinks a request hitting the filter or ghost cache is important, so it moves the object to the main cache.
-%
-As shown in figure~\ref{fig:fiu}(b), when we analyze the workload with a cache size of 2MB, there are two kinds of phases: one is the phase 0 with a frequently accessed object, and the other is the phase 4 with a few accessed objects.
-%
-If the cache size is small, the phase 0 is important patterns, and the phase 4 is interference patterns.
-%
-As we mentioned in~(\autoref{ss:adaption-criteria}), policies store the filtered objects in the ghost cache, so when the cache size is close to 1MB, they can record the objects in pahse 4 to the ghost cache.
-%
-Then, phase 10 repeats the phase 4, and the policies evict the objects in phase 0 to keep the phase 4, leading to a performance drop.
-%
-\sys integrates the phase information and the access frequency distribution to dynamically adjust the criteria~(\S\ref{ss:integrate}), which filters the objects in the phase 4 and keeps the objects in the phase 0.
-%
-With prefetching, \sys outperforms the other policies about 20\%.
-%However, they use static criteria to categorize objects and fail to analyze the type distribution to fit the cache size, leading to huge performance variations with different cache sizes.(\TODO{ figure maybe figure cacheus in fiu, mrc waves})
 
 \begin{figure}[t]
     \centering
@@ -126,7 +99,7 @@ With prefetching, \sys outperforms the other policies about 20\%.
 
 %We analyze \XXX{5000+} workloads and decide to cache part of the objects.
 %
-We count the frequency at which an object is accessed and calculating the average resue time, discovering a linear-logarithmic relationship between them. 
+We count the frequency at which an object is accessed and calculate the average resue time, discovering a linear-logarithmic relationship between them. 
 %
 %With the metadata in the ghost cache, \sys discover the access frequency distribution of the objects more than a phase and cache FA or MP objects dynamically~(\autoref{ss:integrate}). 
 %
@@ -136,14 +109,54 @@ The object accessed frequently has a very short average reuse time, meaning that
 %
 They are \cc{FA-MP} objects, and LRU-friendly and LFU-friendly works well for them.
 %
-In figure~\ref{fig:alibb}(a), we analyze the access and average reuse time distribution in Alibaba benchmark.
+In figure~\ref{fig:alibb}(a), we analyze the access and average reuse time distribution in the Alibaba benchmark.
 %
 About \textbf{1 million} objects are accessed less than \textbf{10} times, while \textbf{hundreds} of objects are accessed more than \textbf{10 thousand} times.
 %
 The average reuse time of the objects accessed less than \textbf{10} times is about \textbf{100 million}, while the average reuse time of the objects accessed more than \textbf{10 thousand} times is about \textbf{1000}.
 %
-The distribution is the same as the one in figure~\ref{fig:alibb}(b), which is analyzed in Twitter benchmark.
+The distribution is the same as the one in figure~\ref{fig:alibb}(b), which is analyzed in the Twitter benchmark.
 
+The linear-logarithmic relationship exhibits the transformation from FA-MP objects to IA-MP and FA-FP objects when the cache size is reduced.
+%
+When we analyze the whole workload, the cache size equals the working set size, and there is only one phase.
+%
+When we reduce the cache size, the number of phases increases, and the frequently accessed (FA) objects are distributed among them.
+%
+If they are evenly distributed across many phases, they are \cc{FA-MP} objects with many accesses or \cc{IF-MP} objects with few accesses.
+%
+If they are concentrated in a few phases, they are \cc{FA-FP} objects.
+%
+In figure~\ref{fig:wss}(a), active objects in phase 0 are IA-MP objects, and the objects in phase 3 are FA-FP objects.
+%
+%The replacement policy should dynamically adjust the criteria from the phases information to cover the 
+
+Prior work cannot dynamically mark the object types because it is too optimistic about the filter and ghost cache objects.
+%
+They design replacement policies~\cite{} to retain FA-MP objects while quickly evicting IA-FP objects.
+%
+For instance, LFU is good at retaining FA objects, while LRU prefers MP objects.
+%
+However, they do not analyze the object from the whole trace; they only analyze it from the ghost and filter cache, which is insufficient to determine the object type.
+%
+In figure~\ref{fig:fiu}(a), many policies do not discover the overall access behavior, which hurts the performance even if it enlarges the cache size.
+%
+LeCaR adjusts the policy based on access to the ghost cache and the fact that their miss ratio waves considerably when the cache size changes.
+%
+ARC thinks a request hitting the filter or ghost cache is important, so it moves the object to the main cache.
+%
+As shown in figure~\ref{fig:fiu}(b), when we analyze the workload with a cache size of 2MB, there are two kinds of phases: one is the phase 0 with a frequently accessed object, and the other is the phase 4 with a few accessed objects.
+%
+If the cache size is small, phase 0 contains important patterns, and phase 4 contains interference patterns.
+%
+As we mentioned in~(\autoref{ss:adaption-criteria}), policies store the filtered objects in the ghost cache, so when the cache size is close to 1MB, they can record the objects in phase 4 to the ghost cache.
+%
+Then, phase 10 repeats the phase 4, and the policies evict the objects in phase 0 to keep the phase 4, leading to a performance drop.
+%
+\sys integrates the phase information and the access frequency distribution to dynamically adjust the criteria~(\S\ref{ss:integrate}), which filters the objects in phase 4 and keeps the objects in phase 0.
+%
+With prefetching, \sys outperforms the other policies by about 20\%.
+%However, they use static criteria to categorize objects and fail to analyze the type distribution to fit the cache size, leading to huge performance variations with different cache sizes.(\TODO{ figure maybe figure cacheus in fiu, mrc waves})
 %
 %\sys leverage phase and aging function to hold \cc{FA-FP} objects for a period of time (\S\ref{ss:ghost}) and speculatively retain \cc{IA-MP} objects (\S\ref{ss:dueling}).
 %
@@ -157,7 +170,7 @@ The distribution is the same as the one in figure~\ref{fig:alibb}(b), which is a
 
 If the cache size is relatively large, there are too many objects accessed more than once, so we improve the criteria to discover the important objects. 
 %
-As shown in figure ~\TODO{fiu access}, most of the objects are accessed only once, and then here comes repeated access for about \TODO{40\%} cache size.
+As shown in figure~\ref{fig:fiu}(b), most of the objects are accessed many times, and then here comes repeated access for about 40\% cache size.
 %
 Many cache replacement policies with a ghost cache can discover it, but they will move all repeatedly accessed objects to the main cache without considering the whole cache.
 %
@@ -165,19 +178,19 @@ These objects pollute the cache and hurt the performance.
 %
 It repeats six times in the trace; only a large cache size can discover it and suffer from it.
 %
-\sys dynamically increases the number of accesses required for an object to be promoted into the main cache~(\S\ref{ss:integrate}).
+With the access frequency distribution, \sys dynamically increases the number of accesses required for an object to be promoted into the main cache~(\S\ref{ss:integrate}).
 %
 What's more, \sys leverages the space of the ghost cache to prefetch the objects that are accessed in sequence~(\S\ref{ss:ghost}).
 
 If the cache size is relatively small, some data may not be accessed until several phases later. 
 %
-As discussed in S3-FIFO~\cite{}, there are many objects accessed only once in the trace (one-hit-wonder), and S3-FIFO evicts them quickly and retrieves reaccessed objects from the ghost cache.
+As discussed in S3-FIFO~\cite{}, many objects are accessed only once in the trace (one-hit-wonder), and S3-FIFO evicts them quickly, retrieving reaccessed objects from the ghost cache.
 %
 In many policies, the number of objects in the ghost cache is equal to or less than the cache size, so it is hard to discover the reuse beyond this scope.
 %
 If this happens commonly, the miss ratio is larger than 50\%, and we need to guess which objects are important, because the cache size is too small or the trace is not suitable for the cache.
 %
-Therefore, \sys speculatively retains these objects to get close to the optimal policy~(\autoref{ss:dueling}).
+Therefore, \sys speculatively retains these objects to reach the optimal policy~(\autoref{ss:dueling}).
 %
-As in figure ~\TODO{cloudphisis}, the cache size is 0.3\% of the working set size, and \sys achieves 95\% performance of the optimal policy.
+As in figure~\ref{fig:cloudphysics}, the cache size is 0.3\% of the working set size, and \sys achieves 95\% performance of the optimal policy.
 %
