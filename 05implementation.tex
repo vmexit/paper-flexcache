@@ -1,5 +1,75 @@
 \section{Implementation}
 \label{s:impl}
-\TODO{CBF,aging function,suspected space}
-\TODO{computation overhead}
-\TODO{space overhead}
+\textbf{Discussion for aging function and suspected space size.} The aging function and suspected space size influence little of the average performance.
+%
+The aging function will influence the performance for FA-FP object, for FA-MP and IA-MP objects appear almost every phases. 
+%
+We have three typical aging functions for the access frequency: \textbf{clear}, \textbf{divided by 2}, and \textbf{decrease 1}.
+%
+The clear function clears the access frequency of the object when it is reinserted into the cache.
+%
+It is not suitable for the FA-FP objects, because it discards the access frequency of the object for the last phase, after clearing the records.
+%
+The divided by 2 function divides the access frequency by 2 when the object is reinserted into the cache.
+%
+It considers assess frequency for multiple phases, and the near phase is more important than the far phase.
+%
+However, it is not fair for odd number and even number of frequency, because this function will lose information for the odd number of frequency.
+%
+When cache size is relatively small, many objects accessed infrequently will zoom this phenomenon.
+%
+The decrease 1 function decreases the access frequency by 1 when the object is reinserted into the cache.
+%
+It will keep FA-FP objects for multiple phases, but makes sense.
+%
+If other objects are accessed frequently, FA-FP objects' record will decrease quickly after the reinserted.
+%
+If other objects are not accessed frequently, spreading the accesses of frequently accessed FA-FP objects across multiple phases does not increase the cost of retaining.
+
+The suspected space consists of the \textbf{filter} and the \textbf{suspected} cache, which influence the performance of new objects and the suspected objects.
+%
+If we enlarge the filter cache, the new objects will stay longer in the filter cache.
+%
+This will increase the performance of a little workloads, in which the new objects are accessed after a period of time.
+%
+If the filter cache is larger than the time to live of the new objects, the performance will be improved, but we can analyze the workloads and set the filter cache size.
+%
+The size of the suspected cache depends on the confidence level of the suspected objects—if the objects are highly reliable, a larger suspected cache is more appropriate. 
+%
+However, in our experiments, we found that the size of this portion of the cache has little impact on overall performance. 
+%
+When the cache is relatively small, the hit rate is very low, and many strategies can only guess which data is accessed more frequently. 
+%
+This explains why WTinyLFU exhibits significant performance fluctuations.
+
+\textbf{computation overhead.} The most time-consuming part of \sys is the hash function in the CBF.
+%
+\sys leverages the xxHash with 31.5 GB/s~\cite{}.
+%
+On average, the CBF requires 2 hash functions for each object, and \sys tests \XXX{}.
+
+\textbf{Space overhead.} The ghost cache stores the same number of objects (without data) as the main cache. Assuming the average object size is 4KB, and the object id is 4 bytes, the ghost cache uses 0.1\% of the total memory space.
+%
+For the CBF, with a flase positive error rate of 2\%, the CBF requires 1 byte for every objects with 0.025\% of the total memory space~\cite{}.
+%
+As shown in figure~\ref{fig:extrabits}, \sys requires extra bits to store the access frequency and suspected information.
+%
+\sys uses 3 bits to store the access frequency, which is sufficient for most workloads.
+%
+It requires 1 bit to store the suspected information, which is used to indicate whether the object is suspected in the filter or suspected cache.
+%
+We analyze the workloads, and find access frequency criteria is less than 4 for \sys.
+%
+We can optimaze the space overhead by using 1 bits for access frequency to store the suspected information in the filter, suspected and ghost cache.
+%
+\sys promotes the object when its access frequency is 4.
+%
+Moreover, the 3 bits can often be piggybacked on the unused flags in the metadata of the object.
+%
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/extrabits.drawio.pdf}
+    \caption{\sys requests extra bits to store the access frequency and suspected information.}
+    \label{fig:extrabits}
+\end{figure}
