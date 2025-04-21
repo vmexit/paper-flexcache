@@ -32,8 +32,13 @@ dfret.reset_index(inplace=True)
 dfret.to_csv(currentdir+"/../data/violin.dat", sep=' ', index=False, float_format='%.3f')
 
 #对每列从小到大排序
-
 dfsort = dfret.apply(np.sort)
-dfsort.to_csv(currentdir+"/../data/violincdf.dat", sep=' ', index=False, float_format='%.3f')
+dfsort['index'] = range(1, len(dfsort['index'])+1)
+#间隔5%选取dfsort中数据
+dfs = pd.DataFrame()
+for column in dfret.columns:
+    dfs[column] = dfsort[column][::int(len(dfsort[column])/20)]
+    
+dfs.to_csv(currentdir+"/../data/violincdf.dat", sep=' ', index=False, float_format='%.3f')
 
 

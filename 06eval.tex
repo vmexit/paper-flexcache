@@ -2,6 +2,13 @@
 \label{s:eval}
 In this section, we evaluate \sys with the benchmarks in table~\ref{tab:traces}. We will discuss the hit ratio improvement (miss ratio reduction) of \sys compared with the state-of-the-arts, the relative hit ratio and the tail performance, and the breakdown performance of \sys.
 
+\begin{figure*}[t]
+    \centering
+    \input{data/averagerhr}
+    \caption{Replacement policies' average relative hit ratio in benchmarks with different cache size.}
+    \label{fig:averagerhr}
+\end{figure*}
+
 \input{06evaltable}
 \subsection{Evaluation setup}
 \textbf{Traces.} We evaluate \sys with 4853 production traces from 10 datasets. 
@@ -53,3 +60,10 @@ We evaluate the impact of different modules on the \sys.
 In the experiments, we individually disable the prefetching and CBF modules to analyze their respective contributions to performance. 
 %
 Additionally, we adjust the size of the suspected space to observe how different cache sizes of filter and suspected cache affect overall performance.
+
+\begin{figure*}[t]
+    \centering
+    \input{data/tailhrh}
+    \caption{Tail and average relative hit ratio of \sys and SOTA policies in benchmarks with more than 100 traces (the larger the better). Different colors and shapes represent the tail-end performance at various percentages. The larger the icon, the larger the cache size, with three sizes corresponding to 0.4, 0.1, and 0.03 of the WSS. }
+    \label{fig:tailhrh}
+\end{figure*}

@@ -44,11 +44,11 @@ set xlabel 'CDF for 3\% WSS'
 set title '(b)Performance CDF' offset 0,-1
 #set key at 0.8,0.5
 
-plot "data/violincdf.dat" using ($0/106):2 with linespoints ls 1 lw 4 pt 9 ps 0.8 title '\sys', \
-    "data/violincdf.dat" using ($0/106):3 with linespoints ls 2 lw 4 ps 0.8 title 'S3FIFO', \
-    "data/violincdf.dat" using ($0/106):4 with linespoints ls 3 lw 4 ps 0.8 title 'LIRS', \
-    "data/violincdf.dat" using ($0/106):5 with linespoints ls 4 lw 4 ps 0.5 title 'ARC', \
-    "data/violincdf.dat" using ($0/106):6 with linespoints ls 5 lw 4 ps 0.5 title 'WTinyLFU', \
+plot "data/violincdf.dat" using ($1/106):2 with linespoints ls 1 lw 4 pt 9 ps 1 title '\sys', \
+    "data/violincdf.dat" using ($1/106):3 with linespoints ls 2 lw 4 ps 1 title 'S3FIFO', \
+    "data/violincdf.dat" using ($1/106):4 with linespoints ls 3 lw 4 ps 1 title 'LIRS', \
+    "data/violincdf.dat" using ($1/106):5 with linespoints ls 4 lw 4 ps 1 title 'ARC', \
+    "data/violincdf.dat" using ($1/106):6 with linespoints ls 5 lw 4 ps 1 title 'WTinyLFU', \
 #    "data/violin.dat" using (1):3 with boxplot ls 2 title '', \
 #    "data/violin.dat" using (2):3 with boxplot ls 3 title '', \
 #    "data/violin.dat" using (3):4 with boxplot ls 4 title '', \
