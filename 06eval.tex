@@ -1,2 +1,55 @@
 \section{Evaluation}
 \label{s:eval}
+In this section, we evaluate \sys with the benchmarks in table~\ref{tab:traces}. We will discuss the hit ratio improvement (miss ratio reduction) of \sys compared with the state-of-the-arts, the relative hit ratio and the tail performance, and the breakdown performance of \sys.
+
+\input{06evaltable}
+\subsection{Evaluation setup}
+\textbf{Traces.} We evaluate \sys with 4853 production traces from 10 datasets. 
+%
+These traces cover key-value, CDN object, and block caches.
+%
+\TODO{In total, the datasets contain 856 billion requests to 61 billion objects, 21,088 TB traffic for total 3,753 TB of data.}
+%
+We analyze and fit the relationship between reuse time distribution and data access frequency in these traces. The approximate slope ranges from -0.85 to -1.02—the closer it is to -1, the more the region exhibits a log-linear distribution, shown in table~\ref{tab:traces}.
+
+\textbf{Simulator.} We implement \sys in libCacheSim~\cite{} as prior work.
+%
+For the state-of-the-art algorithms, we use the original implementations of the algorithms with the same parameters.
+%
+We integrate the cache-size-based phase partitioning method and data reuse time distribution analysis into the analysis module of the simulator.
+%
+
+Unless mentioned, we ignore the object size in the simulator and the metadata size of the cache.
+%
+The production systems use the slab to store the objects with varies size, and evictions are performed in the same slab class.
+%
+We remark that adjusting the usage size of different slabs can bring performance gains~\cite{}, but this is beyond the scope of the current algorithm.
+%
+Metadata occupies less than 0.5\% of the cache size, and in production environments, metadata typically contains even more detailed information. 
+%
+Therefore, we ignore the metadata space required by all replacement policies.
+%
+We evaluate the hit rates of different replacement policies across various cache sizes, ranging from 0.3\% to 40\% of the working set size (WSS), defined as the total number of objects in the trace. 
+%
+In some cases, the 0.3\% WSS is too small to be practical, whose cache size is less than 1000 objects, so we ignore it.
+%
+For the byte miss ratio, we follow previous studies by taking object sizes into account and use the total byte size as a replacement for object count.
+
+Because the hit ratio of the traces used in the evaluation varies greatly, we use the relative hit ratio to show the performance.
+%
+For each trace and each cache size, we evaluatie 16 SOTA policies, choose the highest hit ratio as the optimal hit ratio, and then calculate relative hit ratio compared to the optimal policy to show the performance distribution of different replacement policies, $P_i = \frac{HR_i}{\max{HR_{alg}}}$.
+%
+Additionally, following the methodology from previous studies, we calculate the performance improvement relative to FIFO~\cite{}.
+%
+Benchmarks contain varying numbers of traces. 
+%
+For benchmarks with more than 100 traces, we report both the distribution of relative hit rates and the tail-end performance. 
+%
+For those with fewer than 100 traces, we only calculate the average performance.
+%
+
+We evaluate the impact of different modules on the \sys. 
+%
+In the experiments, we individually disable the prefetching and CBF modules to analyze their respective contributions to performance. 
+%
+Additionally, we adjust the size of the suspected space to observe how different cache sizes of filter and suspected cache affect overall performance.

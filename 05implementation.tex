@@ -47,6 +47,9 @@ This explains why WTinyLFU exhibits significant performance fluctuations.
 \sys leverages the xxHash with 31.5 GB/s~\cite{}.
 %
 On average, the CBF requires 2 hash functions for each object, and \sys tests \XXX{}.
+%
+It is not a bottleneck for the performance.
+%
 
 \textbf{Space overhead.} The ghost cache stores the same number of objects (without data) as the main cache. Assuming the average object size is 4KB, and the object id is 4 bytes, the ghost cache uses 0.1\% of the total memory space.
 %
