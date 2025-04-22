@@ -1,7 +1,5 @@
 \section{Evaluation}
 \label{s:eval}
-In this section, we evaluate \sys with the benchmarks in table~\ref{tab:traces}. We will discuss the hit ratio improvement (miss ratio reduction) of \sys compared with the state-of-the-arts, the relative hit ratio and the tail performance, and the breakdown performance of \sys.
-
 \begin{figure*}[t]
     \centering
     \input{data/averagerhr}
@@ -9,6 +7,14 @@ In this section, we evaluate \sys with the benchmarks in table~\ref{tab:traces}.
     \label{fig:averagerhr}
 \end{figure*}
 
+In this section, we evaluate \sys with the benchmarks in table~\ref{tab:traces}. We will discuss the hit ratio improvement (miss ratio reduction) of \sys compared with the state-of-the-arts, the relative hit ratio and the tail performance, and the breakdown performance of \sys.
+
+\begin{figure*}[t]
+    \centering
+    \input{data/tailhrh}
+    \caption{Tail and average relative hit ratio of \sys and SOTA policies in benchmarks with more than 100 traces (the larger the better). Different colors and shapes represent the tail-end performance at various percentages. The larger the icon, the larger the cache size, with three sizes corresponding to 0.4, 0.1, and 0.03 of the WSS. }
+    \label{fig:tailhrh}
+\end{figure*}
 \input{06evaltable}
 \subsection{Evaluation setup}
 \textbf{Traces.} We evaluate \sys with 4853 production traces from 10 datasets. 
@@ -25,6 +31,7 @@ For the state-of-the-art algorithms, we use the original implementations of the 
 %
 We integrate the cache-size-based phase partitioning method and data reuse time distribution analysis into the analysis module of the simulator.
 %
+
 
 Unless mentioned, we ignore the object size in the simulator and the metadata size of the cache.
 %
@@ -63,7 +70,130 @@ Additionally, we adjust the size of the suspected space to observe how different
 
 \begin{figure*}[t]
     \centering
-    \input{data/tailhrh}
-    \caption{Tail and average relative hit ratio of \sys and SOTA policies in benchmarks with more than 100 traces (the larger the better). Different colors and shapes represent the tail-end performance at various percentages. The larger the icon, the larger the cache size, with three sizes corresponding to 0.4, 0.1, and 0.03 of the WSS. }
-    \label{fig:tailhrh}
+    \input{data/hitimp}
+    \caption{Relative hit raitio improvements based on FIFO. We disable the CBF with \sys-C and disable the prefetch with \sys-P.}
+    \label{fig:hitimp}
 \end{figure*}
+\subsection{Performance for different cache sizes}
+\textbf{Average relative hit ratio.} We evaluate \sys and SOTA policies with benchmarks in table~\ref{tab:traces} in different cache size. 
+%
+The SOTA policies are widely used in production systems or compared in prior work.
+%
+To demonstrate the adaptability of different replacement policies:  
+%
+(1) We select a diverse set of traces, including block, object, and key-value traces;
+%
+(2) We conduct experiments using six different cache sizes relative to the WSS: 0.3\%, 1\%, 3\%, 10\%, 20\%, and 40\%;  
+%
+(3) We identify the highest hit ratio among SOTA strategies as the potential hit ratio and compare each policies' relative hit ratio to it.
+%
+Figure~\ref{fig:averagerhr} shows the average relative hit ratio of \sys and SOTA policies in benchmarks with less than 100 traces.
+%
+%Figure~\ref{fig:tailhrh} shows the average and tail performance of \sys and SOTA policies in benchmarks with more than 100 traces.
+%
+\sys outperforms the SOTA policies in most benchmarks, achieving either the best performance or at least 99\% of the optimal potential hit ratio across most tests and cache size configurations.
+%
+While others exhibit about 10\% to 40\% performance degradation.
+
+\textbf{Tail performance.}The P1 tail performance represents the upper bound of the lowest 1\% relative hit ratio of the traces in the benchmarks.
+%
+For benchmarks with more than 100 workloads, we evaluate the distribution of relative hit rates across different cache sizes.  
+%
+As shown in figure~\ref{fig:tailhrh}, we present the data distribution for three benchmarks under three different cache sizes—the larger the shape, the larger the cache size. 
+%
+Tail performance above the P10 is relatively close, so we present their average values.
+%
+When the cache size is larger, the tail performance is better for amlost all policies.
+%
+\sys achieves P1 tail performance of 80\% traces and P5 tail performance of 95\% traces, while the SOTA policies' P1 tail performance ranges from 10\% to 60\% and P5 tail performance ranges from 30\% to 80\%.
+
+\textbf{Imporvements over FIFO.} FIFO is a basic policy, so prior studies often compare performance gains over FIFO. 
+%
+We also tested the performance improvements of different replacement policies, as well as our current scheme with some modules disabled, relative to FIFO.
+%
+As shown in figure~\ref{fig:hitimp}, \sys disable the CBF with \sys-C and disable the prefetch with \sys-P.
+%
+Benchmarks of type \cc{object} and \cc{kv} show relatively small performance improvements, mainly due to their more random access patterns—most policies differ by less than 0.5\%.
+%
+In contrast, benchmarks based on \cc{block}-level access exhibit significantly larger improvements, with some strategies achieving up to a 57\% performance gain compared to FIFO.
+
+\textbf{WTinyLFU}~\cite{} uses a small LRU and a part of SLRU to filter IA-FP objects, a part of SLRU for FA-MP objects, and a CBF to find suspected IA-MP objects.
+%
+As discussed by prior work~\cite{}, its LRU filter is too small to hold FA-FP objects.
+%
+To filter the interference of recency-based objects to the frequency-based objects, it does not consider the access frequency of objects in the LRU cache, so it is conservative to hold FA objects, which discards FA-MP objects for many times.
+%
+What's more, the CBF for IA-MP objects is not accurate as the ghost cache, so it suffers from a large performance degradation even with a large cache size in figure~\ref{fig:averagerhr}(b) and (f).
+
+\textbf{TwoQ}~\cite{} has a FIFO queue for the filter cache. a LRU queue for the main cache, and a ghost cache.
+%
+TwoQ uses the ghost cache to discover the objects accessed with the second chance, but it evicts all the objects from the FIFO queue to the ghost cache, and then promotes the objects from the ghost cache to the main cache.
+%
+All the objects in the main cache will encounter a miss in the ghost cache, this will cause the performance degradation.
+%
+The design is for the specific workloads, and it is not suitable for the workloads with many FA-FP objects as pollution and 
+
+\textbf{ARC}~\cite{} uses two parts of caches for recency-based and frequency-based objects and two ghost caches for each part.
+%
+Hits in the recency-based cache promote the objects to the frequency-based cache.
+%
+It evicts the objects from the two main caches to the corresponding ghost caches, and each hit in the ghost caches is a duel for the main cache space.
+%
+This adaption is effective in some cases, like figure~\ref{fig:averagerhr}(d) with a really small cache size (0.3\% WSS).
+%
+In other cases, it fails to work with phase-aware as discussed in ~(\autoref{ss:dynamic-adjust}).
+
+\textbf{LeCaR and Cacheus}~\cite{} leverages two basic policies for dueling and two ghost cache for evicted objects.
+%
+They implement the two policies with probability and evict the objects to the corresponding ghost cache.
+%
+Once hit in a ghost cache, they increase the probability of the corresponding policy.
+%
+The performance is highly sensitive to the basic policies and the probability transection function.
+%
+What's more, they only consider the influence of hits in ghost caches, but ignore the hits in the main caches.
+
+\textbf{LIRS}~\cite{} has filter, main and ghost caches, but it limits the space of the ghost cache by IRR.
+%
+It evicts objects with access timestamp in the ghost cache lower than the lower bound of the access timestamp in the main cache.
+%
+It is a conservative way to hold suspected objects in some cases, extremely useful in FIU as shown in figure~\ref{fig:averagerhr}(a).
+%
+We find that there are many repeated access in FIU, so LIRS avoids the pollution of long repeated access objects.
+%
+However, it is too conservative in other cases, like figure~\ref{fig:averagerhr}(b) MetaCDN and (f) TencentPhoto, which leads to a performance degradation.
+%
+\sys integrates prefetching for the repeated access objects, otherwise, we need more effort to tag these objects.
+%
+If we disable the prefetching, \sys-P is better than LIRS in MSR but worse in FIU.
+
+\textbf{S3FIFO}~\cite{}
+
+\textbf{Weighted policies} includes LHD~\cite{}, Hyperbolic~\cite{}, and GDSF~\cite{}.
+%
+They leverage a metric to calculate the weight of the objects, and evict the objects with the lowest weight.
+%
+The performance of these policies is sensitive to the access distribution of the workloads and its weight function.
+%
+As shown in figure~\ref{fig:tailhrh}, Hyperbolic and GDSF both suffer from a performance degradation in the tail performance, while LHD is better than GDSF and Hyperbolic.
+%
+ 
+
+\textbf{Adversarial workloads for \sys}
+
+
+
+\subsection{Breakdown performance}
+\TODO{Prefetch hit ratio}
+\TODO{CBF query times}
+
+\subsection{Throughput}
+
+
+\begin{figure}[t]
+    \centering
+    \input{data/break}
+    \caption{Relative hit raitio improvements based on \sys. We disable the CBF with \sys-C and disable the prefetch with \sys-P.}
+    \label{fig:break}
+\end{figure}
+

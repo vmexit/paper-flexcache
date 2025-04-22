@@ -1,5 +1,12 @@
 \section{Implementation}
 \label{s:impl}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/extrabits.drawio.pdf}
+    \caption{\sys requests extra bits to store the access frequency and suspected information.}
+    \label{fig:extrabits}
+\end{figure}
 \textbf{Discussion for aging function and suspected space size.} The aging function and suspected space size influence little of the average performance.
 %
 The aging function will influence the performance for FA-FP object, for FA-MP and IA-MP objects appear almost every phases. 
@@ -69,10 +76,3 @@ We can optimaze the space overhead by using 1 bits for access frequency to store
 %
 Moreover, the 3 bits can often be piggybacked on the unused flags in the metadata of the object.
 %
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/extrabits.drawio.pdf}
-    \caption{\sys requests extra bits to store the access frequency and suspected information.}
-    \label{fig:extrabits}
-\end{figure}

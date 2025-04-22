@@ -1,19 +1,23 @@
 \begin{table}[t]
     \centering
     \begin{tabular}{|l|l|l|l|}
-        \hline
-            Trace & Type & \# Traces & Log-scale fit for reuse distribution \\ \hline
-            AlibabaBlock & Block & 609 & -1.0466 \\ \hline
-            Cloudphysics & Block & 106 & -1.3739 \\ \hline
-            FIU & Block & 10 & ~ \\ \hline
-            Systor & Block & 6 & -1.1240 \\ \hline
-            TencentBlock & Block & 4048 & ~ \\ \hline
-            MSR & Block & 14 & ~ \\ \hline
-            Meta CDN & Object & 3 & ~ \\ \hline
-            TencentPhoto & Object & 2 & ~ \\ \hline
-            Meta KV & KV & 5 & -0.9738 \\ \hline
-            Twitter & KV & 50 & -1.5622 \\ \hline
-        \end{tabular}
-    \caption{Datasets used in our evaluation. We exclude traces with less than 1 million objects.}
+    \hline
+        Trace & Type & \# Traces & Log-scale fit for \\ 
+            &       &           &access distribution \\ \hline
+            AlibabaBlock & Block & 609 & -0.8953 \\ \hline
+            Cloudphysics & Block & 106 & -0.9454 \\ \hline
+            FIU & Block & 10 & -0.9239 \\ \hline
+            Systor & Block & 6 & -0.9752 \\ \hline
+            TencentBlock & Block & 4048 & -0.8148 \\ \hline
+            MSR & Block & 14 & -0.9377 \\ \hline
+            Meta CDN & Object & 3 & -1.2771 \\ \hline
+            TencentPhoto & Object & 2 & -1.0206 \\ \hline
+            Wikimedia & Object & 3 & -0.9957 \\ \hline
+            Meta KV & KV & 5 & -0.9805 \\ \hline
+            Twitter & KV & 50 & -0.8524 \\ \hline
+    \end{tabular}
+    \caption{Datasets used in our evaluation. We exclude traces with less than 1 million objects.
+    We perform logarithmic fitting between access frequency and the corresponding average reuse time. 
+    The closer the slope is to -1, the more the distribution resembles a logarithmic distribution.}
     \label{tab:traces}
 \end{table}
