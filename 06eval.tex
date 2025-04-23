@@ -66,7 +66,7 @@ We evaluate the impact of different modules on the \sys.
 %
 In the experiments, we individually disable the prefetching and CBF modules to analyze their respective contributions to performance. 
 %
-Additionally, we adjust the size of the suspected space to observe how different cache sizes of filter and suspected cache affect overall performance.
+Additionally, we adjust the size of the suspicious space to observe how different cache sizes of filter and suspicious cache affect overall performance.
 
 \begin{figure*}[t]
     \centering
@@ -117,7 +117,7 @@ Benchmarks of type \cc{object} and \cc{kv} show relatively small performance imp
 %
 In contrast, benchmarks based on \cc{block}-level access exhibit significantly larger improvements, with some strategies achieving up to a 57\% performance gain compared to FIFO.
 
-\textbf{WTinyLFU}~\cite{} uses a small LRU and a part of SLRU to filter IA-FP objects, a part of SLRU for FA-MP objects, and a CBF to find suspected IA-MP objects.
+\textbf{WTinyLFU}~\cite{} uses a small LRU and a part of SLRU to filter IA-FP objects, a part of SLRU for FA-MP objects, and a CBF to find suspicious IA-MP objects.
 %
 As discussed by prior work~\cite{}, its LRU filter is too small to hold FA-FP objects.
 %
@@ -157,7 +157,7 @@ What's more, they only consider the influence of hits in ghost caches, but ignor
 %
 It evicts objects with access timestamp in the ghost cache lower than the lower bound of the access timestamp in the main cache.
 %
-It is a conservative way to hold suspected objects in some cases, extremely useful in FIU as shown in figure~\ref{fig:averagerhr}(a).
+It is a conservative way to hold suspicious objects in some cases, extremely useful in FIU as shown in figure~\ref{fig:averagerhr}(a).
 %
 We find that there are many repeated access in FIU, so LIRS avoids the pollution of long repeated access objects.
 %

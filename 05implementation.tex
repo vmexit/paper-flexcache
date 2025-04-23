@@ -4,10 +4,10 @@
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/extrabits.drawio.pdf}
-    \caption{\sys requests extra bits to store the access frequency and suspected information.}
+    \caption{\sys requests extra bits to store the access frequency and suspicious information.}
     \label{fig:extrabits}
 \end{figure}
-\textbf{Discussion for aging function and suspected space size.} The aging function and suspected space size influence little of the average performance.
+\textbf{Discussion for aging function and suspicious space size.} The aging function and suspicious space size influence little of the average performance.
 %
 The aging function will influence the performance for FA-FP object, for FA-MP and IA-MP objects appear almost every phases. 
 %
@@ -33,7 +33,7 @@ If other objects are accessed frequently, FA-FP objects' record will decrease qu
 %
 If other objects are not accessed frequently, spreading the accesses of frequently accessed FA-FP objects across multiple phases does not increase the cost of retaining.
 
-The suspected space consists of the \textbf{filter} and the \textbf{suspected} cache, which influence the performance of new objects and the suspected objects.
+The suspicious space consists of the \textbf{filter} and the \textbf{suspicious} cache, which influence the performance of new objects and the suspicious objects.
 %
 If we enlarge the filter cache, the new objects will stay longer in the filter cache.
 %
@@ -41,7 +41,7 @@ This will increase the performance of a little workloads, in which the new objec
 %
 If the filter cache is larger than the time to live of the new objects, the performance will be improved, but we can analyze the workloads and set the filter cache size.
 %
-The size of the suspected cache depends on the confidence level of the suspected objects—if the objects are highly reliable, a larger suspected cache is more appropriate. 
+The size of the suspicious cache depends on the confidence level of the suspicious objects—if the objects are highly reliable, a larger suspicious cache is more appropriate. 
 %
 However, in our experiments, we found that the size of this portion of the cache has little impact on overall performance. 
 %
@@ -62,15 +62,15 @@ It is not a bottleneck for the performance.
 %
 For the CBF, with a flase positive error rate of 2\%, the CBF requires 1 byte for every objects with 0.025\% of the total memory space~\cite{}.
 %
-As shown in figure~\ref{fig:extrabits}, \sys requires extra bits to store the access frequency and suspected information.
+As shown in figure~\ref{fig:extrabits}, \sys requires extra bits to store the access frequency and suspicious information.
 %
 \sys uses 3 bits to store the access frequency, which is sufficient for most workloads.
 %
-It requires 1 bit to store the suspected information, which is used to indicate whether the object is suspected in the filter or suspected cache.
+It requires 1 bit to store the suspicious information, which is used to indicate whether the object is suspicious in the filter or suspicious cache.
 %
 We analyze the workloads, and find access frequency criteria is less than 4 for \sys.
 %
-We can optimaze the space overhead by using 1 bits for access frequency to store the suspected information in the filter, suspected and ghost cache.
+We can optimaze the space overhead by using 1 bits for access frequency to store the suspicious information in the filter, suspicious and ghost cache.
 %
 \sys promotes the object when its access frequency is 4.
 %

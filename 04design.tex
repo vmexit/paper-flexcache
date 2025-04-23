@@ -6,21 +6,21 @@ We will discuss the overview of \sys in ~(\autoref{ss:overview}), and how it han
 %
 With limited space, we leverage the ghost cache to store the metadata of the evicted objects to find FA-FP objects and prefetch sequence accessed objects in ~(\autoref{ss:ghost}).
 %
-We also introduce an extra suspected area to record IA-MP objects in ~(\autoref{ss:dueling}).
+We also introduce an extra suspicious area to record IA-MP objects in ~(\autoref{ss:dueling}).
 %
 Finally, we discuss how to integrate \sys with phase-aware, dynamically adjust the criteria, and prefetch objects in ~(\autoref{ss:integrate}).
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/overview.drawio.pdf}
-    \caption{Overview for \sys. Cache space consists of five parts: filter cache, main cache, suspected cache, ghost cache, and CBF. The workflow has three major parts, (1)cache promotion and eviction in four sub-cache. (2)IA-MP objects in the filter cache duels with the tail object in the suspected cache with CBF. (3)Leverage the metadata in the ghost cache to find FA-FP objects and prefetch sequence accessed objects.}
+    \caption{Overview for \sys. Cache space consists of five parts: filter cache, main cache, suspicious cache, ghost cache, and CBF. The workflow has three major parts, (1)cache promotion and eviction in four sub-cache. (2)IA-MP objects in the filter cache duels with the tail object in the suspicious cache with CBF. (3)Leverage the metadata in the ghost cache to find FA-FP objects and prefetch sequence accessed objects.}
     \label{fig:overview}
 \end{figure}
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/phaseflow.drawio.pdf}
-    \caption{\sys consists of two phaseflows.(1)Frequently accessed objects' movement from the main cache to the suspected cache and reinsertion to the main cache. (2)Infrequently accessed objects' movement from the filter cache to the ghost cache. Objects' type changes with suspection in the filter and ghost cache.}
+    \caption{\sys consists of two phaseflows.(1)Frequently accessed objects' movement from the main cache to the suspicious cache and reinsertion to the main cache. (2)Infrequently accessed objects' movement from the filter cache to the ghost cache. Objects' type changes with suspection in the filter and ghost cache.}
     \label{fig:phaseflow}
 \end{figure}
 
@@ -33,7 +33,7 @@ Finally, we discuss how to integrate \sys with phase-aware, dynamically adjust t
 
 \textbf{A main cache} to hold the most FA-MP objects and true FA-FP and IA-MP objects.
 
-\textbf{A suspected cache} to keep the suspected FA-FP and IA-MP objects for a while.
+\textbf{A suspicious cache} to keep the suspicious FA-FP and IA-MP objects for a while.
 
 \textbf{A ghost cache} to store the metadata of the evicted objects, help to find FA-FP objects, and prefetch for sequence accessed objects.
 
@@ -49,36 +49,36 @@ All the sub-caches in the \sys are FIFO-based to emulate the sliding window disc
 %
 \BC{2} Whenever a cache hit occurs, we record the \textbf{access frequency distribution} of all the objects in the cache and adjust the criteria for FA objects.
 %
-We only decrease the access frequency when the object is evicted from the ghost or ages in the suspected cache.
+We only decrease the access frequency when the object is evicted from the ghost or ages in the suspicious cache.
 %
 \BC{3} If the access frequency of an object in the filter or ghost cache exceeds the threshold, it will be promoted to the main cache
 %
-\BC{4} Objects that hit the ghost cache and objects in the filter suspected by the CBF will be placed into the suspected cache.
+\BC{4} Objects that hit the ghost cache and objects in the filter suspicious by the CBF will be placed into the suspicious cache.
 %
 \BC{5} When eviction occurs, objects in the filter are moved to the ghost cache, while objects in the ghost cache are discarded.
 %
-\BC{6} For simplicity, the suspected cache is a small part of the main cache, so we move the objects in the main cache to the suspected cache and use the aging function to judge whether objects in the suspected cache are evicted or promoted to the main cache when eviction occurs.
+\BC{6} For simplicity, the suspicious cache is a small part of the main cache, so we move the objects in the main cache to the suspicious cache and use the aging function to judge whether objects in the suspicious cache are evicted or promoted to the main cache when eviction occurs.
 %
-\BC{7} CBF records all objects' movement in the filter, ghost, and suspected cache.
+\BC{7} CBF records all objects' movement in the filter, ghost, and suspicious cache.
 %
 
 \subsection{Fliter and hold for important (FA-MP) objects}
 \label{ss:filter-hold}
-\textbf{Group 1: the filter, main and suspected cache.}
+\textbf{Group 1: the filter, main and suspicious cache.}
 %
-\sys uses the filter, main, and suspected cache to hold FA-MP and filter out IA-FP objects. 
+\sys uses the filter, main, and suspicious cache to hold FA-MP and filter out IA-FP objects. 
 %
 \sys puts the new objects into the filter cache and records the access frequency of the objects in the filter cache.
 %
 If it is frequently accessed, move it to the main cache; otherwise, to the ghost cache with metadata and access frequency.
 %
-As time passes, more objects fill the main and suspected cache.
+As time passes, more objects fill the main and suspicious cache.
 %
-\sys ages them in the suspected cache, checks if they are still frequently accessed (as FA-MP), and then moves them into the main cache or discards them.
+\sys ages them in the suspicious cache, checks if they are still frequently accessed (as FA-MP), and then moves them into the main cache or discards them.
 
-\textbf{Phase in the main and suspected cache.}
+\textbf{Phase in the main and suspicious cache.}
 %
-As shown in figure~\ref{fig:phaseflow}, phase changing happens in the suspected cache with the aging function.
+As shown in figure~\ref{fig:phaseflow}, phase changing happens in the suspicious cache with the aging function.
 %
 As the basic design in~(\autoref{ss:adaption-criteria}), to filter out the IA-FP objects, the filter cache occupies a small part of the space, while the main cache occupies most of the space. 
 %
@@ -86,31 +86,31 @@ When an object moves from the head to the tail of the main cache, it has typical
 %
 At that point, aging the object helps determine whether it belongs to a multi-phase access.
 %
-FA-MP objects contributes the most to the hit ratio~(\autoref{ss:dynamic-adjust}), and suspected FA-FP and IA-MP objects are small part of the suspected cache.
+FA-MP objects contributes the most to the hit ratio~(\autoref{ss:dynamic-adjust}), and suspicious FA-FP and IA-MP objects are small part of the suspicious cache.
 %
-To make efficient use of space, \sys treats the main cache and the suspected cache together as the phase duration for frequently accessed data. 
+To make efficient use of space, \sys treats the main cache and the suspicious cache together as the phase duration for frequently accessed data. 
 %
-The object is not aged when moving from the main cache to the suspected cache; it is only aged when it reaches the tail of the suspected cache. 
+The object is not aged when moving from the main cache to the suspicious cache; it is only aged when it reaches the tail of the suspicious cache. 
 %
-\sys uses a dueling mechanism to reduce interference from suspected data on primary data while allowing the primary data to stay in the cache for a longer duration~(\autoref{ss:dueling}).
+\sys uses a dueling mechanism to reduce interference from suspicious data on primary data while allowing the primary data to stay in the cache for a longer duration~(\autoref{ss:dueling}).
 
 \subsection{Ghost for misjudged (FA-FP) objects and prefetch}
 \label{ss:ghost}
-\textbf{Group 2: the filter, suspected and ghost cache.}
+\textbf{Group 2: the filter, suspicious and ghost cache.}
 %
-The filter, suspected, and ghost cache is a group to find FA-FP objects.
+The filter, suspicious, and ghost cache is a group to find FA-FP objects.
 %
 \sys leverages the ghost cache to store the metadata of the evicted objects.
 %
 Some FA-FP objects will escape from the small filter cache to the ghost cache.
 %
-When a request hits the ghost cache, \sys moves the object to the suspected cache to observe whether it is misjudged. 
+When a request hits the ghost cache, \sys moves the object to the suspicious cache to observe whether it is misjudged. 
 %
-When it is accessed again in the suspected cache, \sys confirms that it is an FA-FP object and will be promoted to the main cache.
+When it is accessed again in the suspicious cache, \sys confirms that it is an FA-FP object and will be promoted to the main cache.
 %
 In another case, when its access frequency exceeds the threshold in the ghost cache, \sys will promote it to the main cache.
 %
-When sequenced object accesses occur, \sys prefetch the next object from the ghost cache to the filter cache, which separates suspected objects with hits from the suspected objects without access.
+When sequenced object accesses occur, \sys prefetch the next object from the ghost cache to the filter cache, which separates suspicious objects with hits from the suspicious objects without access.
 %
 %We duplicate the metadata to avoid prefetching failures from disrupting the relative order of phases~(\autoref{ss:duplicate-metadata}).
 
@@ -130,9 +130,9 @@ Maintaining this relative access order also facilitates effective prefetching du
 If they are FA-FP objects, management responsibility is transferred to the main cache, and only then does the ghost cache evict thes objects.
 
 
-\subsection{Dueling for suspected (IA-MP) objects}
+\subsection{Dueling for suspicious (IA-MP) objects}
 \label{ss:dueling}
-\textbf{Group 3: the filter, suspected cache and CBF.}
+\textbf{Group 3: the filter, suspicious cache and CBF.}
 %
 In addition to FA-MP and FA-FP objects, \sys uses a Counting Bloom Filter (CBF) to handle IA-MP objects.
 %
@@ -140,9 +140,9 @@ These object accesses have intervals close to or greater than one phase, and sto
 %
 To reduce space overhead, \sys uses a CBF to record access patterns over multiple phases. 
 %
-When an object is about to leave the filter cache, \sys compares its access record in the CBF with the access record of the tail object in the suspected cache.
+When an object is about to leave the filter cache, \sys compares its access record in the CBF with the access record of the tail object in the suspicious cache.
 %, which is the object that will be evicted from the main cache.
-If it wins the duel, \sys puts the object into the suspected cache and evict the tail object from the suspected cache.
+If it wins the duel, \sys puts the object into the suspicious cache and evict the tail object from the suspicious cache.
 
 The information recorded in the CBF is subject to some inaccuracies, so we apply three optimizations to limit its impact. 
 %
@@ -150,16 +150,16 @@ First, \sys periodically ages the data in the CBF to minimize the influence of o
 %
 Second, to avoid redundant recording of frequently accessed objects, \sys only records objects once for each phase in the CBF, as in figure~\ref{fig:phaseflow}.
 %
-To make it timely, \sys records the objects when they leave the filter cache or suspected cache.
+To make it timely, \sys records the objects when they leave the filter cache or suspicious cache.
 %
-Finally, \sys turns off this feature if the record is too large or the object in the suspected cache is to be promoted to the main cache.
+Finally, \sys turns off this feature if the record is too large or the object in the suspicious cache is to be promoted to the main cache.
 
 \subsection{Integrate \sys with phase aware}
 \label{ss:integrate}
 \sys adopts a FIFO-based eviction approach to achieve phase awareness because it preserves the relative order of first accesses.
-%\sys adopts a FIFO-based eviction approach to achieve phase awareness.% and duplicates metadata for suspected objects to preserve access order.
+%\sys adopts a FIFO-based eviction approach to achieve phase awareness.% and duplicates metadata for suspicious objects to preserve access order.
 %
-As mentioned in figure~\ref{fig:phaseflow}, \sys involves two types of phase-aware objects handling: (1)frequently accessed objects undergo phase aging in the main cache and suspected cache~(\autoref{ss:filter-hold}). (2)the ghost cache handles infrequently accessed objects with phase awareness~(\autoref{ss:ghost}).
+As mentioned in figure~\ref{fig:phaseflow}, \sys involves two types of phase-aware objects handling: (1)frequently accessed objects undergo phase aging in the main cache and suspicious cache~(\autoref{ss:filter-hold}). (2)the ghost cache handles infrequently accessed objects with phase awareness~(\autoref{ss:ghost}).
 %
 Each metadata includes an access counter that increments on each access and decrements during aging, so the object will be evicted if it hasn't been accessed over multiple phases.
 %
@@ -169,7 +169,7 @@ The access frequency distribution of all objects in the cache represents the acc
 
 \sys distinguishes between frequently and infrequently accessed objects based on overall access behavior. 
 %
-We assume that high-frequency data resides in the main and suspected cache, and we use their frequency as a threshold. 
+We assume that high-frequency data resides in the main and suspicious cache, and we use their frequency as a threshold. 
 %
 Only objects in the filter cache with an access count exceeding this threshold will be promoted to the main cache.
 %
@@ -179,25 +179,25 @@ This approach avoids data calcification, where data in the main cache is never e
 %
 First, the filter cache still contains a portion of frequently accessed objects, which keeps the promotion threshold relatively lenient. 
 % 
-Second, when an object hits ghost cache data, it is placed in the suspected cache, which occupies part of the space with suspected objects. 
+Second, when an object hits ghost cache data, it is placed in the suspicious cache, which occupies part of the space with suspicious objects. 
 %
-Third, the CBF records the phase information, its dueling between the filter and suspected cache will disturb data calcification.
+Third, the CBF records the phase information, its dueling between the filter and suspicious cache will disturb data calcification.
 
-Suspected objects may disrupt the relative order, so \sys duplicates the metadata as a placeholder in figure~\ref{fig:phaseflow}.
+suspicious objects may disrupt the relative order, so \sys duplicates the metadata as a placeholder in figure~\ref{fig:phaseflow}.
 %
-There are three sources of suspected objects in the policy: objects generated by prefetching~(\autoref{ss:ghost}), requests hitting objects in the ghost cache~(\autoref{ss:ghost}), and potential IA-MP objects in the filter cache~(\autoref{ss:dueling}). 
+There are three sources of suspicious objects in the policy: objects generated by prefetching~(\autoref{ss:ghost}), requests hitting objects in the ghost cache~(\autoref{ss:ghost}), and potential IA-MP objects in the filter cache~(\autoref{ss:dueling}). 
 %
-If we wrongly promote the suspected objects, and then evict them back to the ghost cache, they persists for a longger phase.
+If we wrongly promote the suspicious objects, and then evict them back to the ghost cache, they persists for a longger phase.
 %
-Therefore, \sys duplicates the metadata for suspected objects to avoid disrupting the relative order of phases.
+Therefore, \sys duplicates the metadata for suspicious objects to avoid disrupting the relative order of phases.
 %
 If they are truely FA-MP objects, \sys discards the metadata in the ghost cache and promotes them to the main cache.
 
-\sys decouples the suspected objects \textbf{with hits} from the suspected objects \textbf{without access}.
+\sys decouples the suspicious objects \textbf{with hits} from the suspicious objects \textbf{without access}.
 %
-The suspected objects with hits are promoted to the suspected cache, and it will become a FA-MP object if it is accessed again.
+The suspicious objects with hits are promoted to the suspicious cache, and it will become a FA-MP object if it is accessed again.
 %
-While \sys prefetches the suspected objects if prior requests access in sequence.
+While \sys prefetches the suspicious objects if prior requests access in sequence.
 % 
 Therefore, the prefetch object is placed in the filter cache to avoiding pollution.
 %
