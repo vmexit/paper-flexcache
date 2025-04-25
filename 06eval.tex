@@ -117,6 +117,8 @@ Benchmarks of type \cc{object} and \cc{kv} show relatively small performance imp
 %
 In contrast, benchmarks based on \cc{block}-level access exhibit significantly larger improvements, with some strategies achieving up to a 57\% performance gain compared to FIFO.
 
+\textbf{Byte miss ratio.}\TODO{}
+
 \textbf{WTinyLFU}~\cite{} uses a small LRU and a part of SLRU to filter IA-FP objects, a part of SLRU for FA-MP objects, and a CBF to find suspicious IA-MP objects.
 %
 As discussed by prior work~\cite{}, its LRU filter is too small to hold FA-FP objects.
@@ -167,7 +169,14 @@ However, it is too conservative in other cases, like figure~\ref{fig:averagerhr}
 %
 If we disable the prefetching, \sys-P is better than LIRS in MSR but worse in FIU.
 
-\textbf{S3FIFO}~\cite{}
+\textbf{S3FIFO}~\cite{} has the most similiar design to \sys. It has three FIFO queues for the filter, main and ghost caches.
+%
+It uses a fixed criteria to promote the objects from the filter and ghost caches to the main cache (e.g., 3 for objects in filter cache and 1 for objects in ghost cache).
+%
+S3FIFO does not consider the access frequency distribution of the phase, so it ignores the affection of the suspicious objects, both IA-MP in filter cache and FA-MP in ghost cache.
+%
+S3FIFO achieves a good performance in CDN and KVs benchmarks, but it lacks the adaptability for some access patterns, so its tail performance is poor. 
+
 
 \textbf{Weighted policies} includes LHD~\cite{}, Hyperbolic~\cite{}, and GDSF~\cite{}.
 %
@@ -179,16 +188,27 @@ As shown in figure~\ref{fig:tailhrh}, Hyperbolic and GDSF both suffer from a per
 %
  
 
-\textbf{Adversarial workloads for \sys}
-
-
-
-\subsection{Breakdown performance}
-\TODO{Prefetch hit ratio}
-\TODO{CBF query times}
-
-\subsection{Throughput}
-
+\textbf{Adversarial workloads for \sys.} We can construct some adversarial access patterns on which \sys performs poorly, and only a customized policy performs better.
+%
+One is the challenge for the second access.
+%
+For workloads which access frequency follows the zipfan low, there are many objects accessed a few times.
+%
+Therefore, the second access of a object will fall in the ghost cache, and it is hard to decide whether to put it in the main cache, which causes the requests miss and cache pollution.
+%
+It is adversarial for all the policies which partitions the cache space, for example, LIRS, 2Q and S3FIFO.
+%
+Another is the challenge for access changes for multiple groups of objects.
+%
+If a group of objects with high access frequency resident in the main cache, and another group of objects appears in the filter cache with some access, it is hard to decide whether to evict the objects in the main cache.
+%
+We will not know which group of objects will appear in the future, so there are some misses during the access change.
+%
+It is adversarial for other policies, e.g., Cacheus, ARC.
+%
+\sys keep some suspicious objects like the second access objects and use the access frequency distribution to hold part of group objects in the main cache.
+%
+This is helpful for the tail performance, but it is not the best performance in some cases.
 
 \begin{figure}[t]
     \centering
@@ -196,4 +216,54 @@ As shown in figure~\ref{fig:tailhrh}, Hyperbolic and GDSF both suffer from a per
     \caption{Relative hit raitio improvements based on \sys. We disable the CBF with \sys-C and disable the prefetch with \sys-P.}
     \label{fig:break}
 \end{figure}
+
+\subsection{Breakdown performance}
+\textbf{CBF}
+%
+We disable the CBF and show the performance of \sys-C in figure~\ref{fig:break}.
+%
+When the cache size is small, the CBF contributes a lot for the tail performance, without which the 10\% of the traces will degrade serverly.
+%
+When the cache size is large, it affect about 8\% of the traces.
+%
+In the worst case, \sys-C achieves 42\% of the relative hit ratio, and \sys achieve 68\% of the relative hit ratio for small cache size.
+%
+When we disable the CBF, for \sys-C outperform the \sys in 3\% to 10\% of the traces for small cache size, and this phenomenon is not evident when the cache size is large.
+%
+Overall, CBF contributes about 3\% for tail performance.
+
+The CBF is a key for IA-MP objects in \sys. 
+%
+When the cache size is small, as discussed in \autoref{ss:dynamic-adjust}, many reaccesses of the objects are out of the scope of the ghost cache, so we need to record the access information in the CBF
+%
+Many objects in the main cache are accessed with low frequency, so we can put some of suspicious objects in the suspicious cache.
+%
+In this case, WTinyLFU is effective and the CBF selects the objects with high access frequency to put in the main cache.
+
+\textbf{Prefetching}
+%
+We disable the prefetching and show the performance of \sys-P in figure~\ref{fig:break}.
+%
+Prefetching has limited impact on CDN and KVs workloads, because there is a small part of objects accessed in sequence, \XXX{even if with high prefetching hit ratio}.
+%
+For block workloads, prefetching contributes about 5\% traces in Alibaba and 20\% traces in Cloudphysics with small cache size.
+%
+For larger caches, the impact of prefetching is broader and more pronounced than the CBF in improving performance, for about 40\% of traces in Cloudphysics.
+%
+Without prefetching, the performance of \sys-P is about 95\% of \sys for small cache size and 98\% for large cache size.
+%
+With large cache size, \sys has more space to hold the objects for perfetching, so prefetching contributes about 5\% for the tail performance with large cache size.
+
+
+\TODO{Prefetch hit ratio}
+\TODO{CBF query times}
+
+\textbf{Suspicious cache size.}
+
+\textbf{Ghost cache size.}
+
+\subsection{Throughput}
+\TODO{}
+
+
 

@@ -20,6 +20,19 @@ for bench in os.listdir(dir):
         name = os.path.splitext(file)[0]
         cachesize = float(name.split("-")[1])
         df = pd.read_csv(os.path.join(benchdir, file),header=0,index_col=0)
+        df.drop("Belady", axis=1, inplace=True)
+        mindf = df.min(axis=1)
+        for column in df.columns:
+            df[column] = (1 -df[column])/(1-mindf)
+        df.fillna(1, inplace=True)
+        df.sort_values(by="accp4", ascending=True, inplace=True)
+        if len(df.index) > 100:
+            dfsort = df.T
+            dfsort.columns = range(1, len(dfsort.columns)+1)
+            dfsort = dfsort.T
+            dfsort.to_csv(outputdir+"/RHR"+bench+str(cachesize)+".dat", sep=' ', float_format='%.3f')
+
+        continue
         df = df[targetpolicy]
         df["accp4c"] = (1-df["accp4c"]) / (1-df["accp4"])
         df["accp4p"] = (1-df["accp4p"]) / (1-df["accp4"])
