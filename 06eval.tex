@@ -239,7 +239,7 @@ When the cache size is small, as discussed in \autoref{ss:dynamic-adjust}, many 
 Many objects in the main cache are accessed with low frequency, so we can put some of suspicious objects in the suspicious cache.
 %
 In this case, WTinyLFU is effective and the CBF selects the objects with high access frequency to put in the main cache.
-
+\TODO{CBF query times}
 \textbf{Prefetching}
 %
 We disable the prefetching and show the performance of \sys-P in figure~\ref{fig:break}.
@@ -254,9 +254,7 @@ Without prefetching, the performance of \sys-P is about 95\% of \sys for small c
 %
 With large cache size, \sys has more space to hold the objects for perfetching, so prefetching contributes about 5\% for the tail performance with large cache size.
 
-
 \TODO{Prefetch hit ratio}
-\TODO{CBF query times}
 
 \textbf{Suspicious cache size.}
 

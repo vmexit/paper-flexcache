@@ -144,7 +144,7 @@ In figure~\ref{fig:fiu}(a), many policies do not discover the overall access beh
 LeCaR adjusts the policy based on access to the ghost cache and the fact that their miss ratio waves considerably when the cache size changes.
 %
 ARC thinks a request hitting the filter or ghost cache is important, so it moves the object to the main cache.
-%
+
 As shown in figure~\ref{fig:fiu}(b), when we analyze the workload with a cache size of 2MB, there are two kinds of phases: one is the phase 0 with a frequently accessed object, and the other is the phase 4 with a few accessed objects.
 %
 If the cache size is small, phase 0 contains important patterns, and phase 4 contains interference patterns.
