@@ -24,8 +24,10 @@ set ytics  0.2
 set xtics 0.4
 #set title '(a) MRC for Fiu' offset 0,-0.5
 
-plot "data/fiumrc.dat" using 1:4 with linespoints ls 2 ps 1 title "S3FIFO", \
-     "data/fiumrc.dat" using 1:5 with linespoints ls 5 ps 1 title "QDLP", \
-     "data/fiumrc.dat" using 1:6 with linespoints ls 6 ps 1 title "LIRS", \
+plot \
      "data/fiumrc.dat" using 1:2 with linespoints ls 1 pt 9 ps 1 title '\sys', \
+    "data/fiumrc.dat" using 1:15 with linespoints ls 2 ps 1 title "S3FIFO", \
+     "data/fiumrc.dat" using 1:10 with linespoints ls 3 ps 1 title "Cacheus", \
+     "data/fiumrc.dat" using 1:14 with linespoints ls 6 ps 1 title "LIRS", \
      "data/fiumrc.dat" using 1:3 with linespoints ls 4 ps 1 title "ARC", \
+     "data/fiumrc.dat" using 1:2 with linespoints ls 1 pt 9 ps 1 title "", \
