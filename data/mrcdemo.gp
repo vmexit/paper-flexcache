@@ -25,10 +25,10 @@ set xtics 40
 set title '(a) MRC for LUN1' offset 0,-0.5
 
 plot "data/systor-lun1-mrc.dat" using 1:14 with linespoints ls 2 ps 1 title "S3FIFO", \
-     "data/systor-lun1-mrc.dat" using 1:3 with linespoints ls 4 ps 1 title "ARC", \
-     "data/systor-lun1-mrc.dat" using 1:11 with linespoints ls 5 ps 1 title "WTinyLFU", \
      "data/systor-lun1-mrc.dat" using 1:7 with linespoints ls 6 ps 1 title "", \
      "data/systor-lun1-mrc.dat" using 1:10 with linespoints ls 3 ps 1 title "", \
+     "data/systor-lun1-mrc.dat" using 1:4 with linespoints ls 4 ps 1 title "ARC", \
+     "data/systor-lun1-mrc.dat" using 1:11 with linespoints ls 5 ps 1 title "WTinyLFU", \
      "data/systor-lun1-mrc.dat" using 1:2 with linespoints ls 1 pt 9 ps 2 title '', \
      
      #0.99 with lines dashtype 2 lc rgb "black" lw 1 title ""
@@ -50,10 +50,10 @@ set title '(B) Relative performance' offset 0,-0.5
 plot \
     "data/systor-lun1-retmrc.dat" using 1:2 with linespoints ls 1 pt 9 ps 2 title '\sys', \
     "data/systor-lun1-retmrc.dat" using 1:14 with linespoints ls 2 ps 1 title "", \
-     "data/systor-lun1-retmrc.dat" using 1:3 with linespoints ls 4 ps 1 title "", \
-     "data/systor-lun1-retmrc.dat" using 1:11 with linespoints ls 5 ps 1 title "", \
      "data/systor-lun1-retmrc.dat" using 1:7 with linespoints ls 6 ps 1 title "LeCaR", \
      "data/systor-lun1-retmrc.dat" using 1:10 with linespoints ls 3 ps 1 title "Cacheus", \
+     "data/systor-lun1-retmrc.dat" using 1:4 with linespoints ls 4 ps 1 title "", \
+     "data/systor-lun1-retmrc.dat" using 1:11 with linespoints ls 5 ps 1 title "", \
      "data/systor-lun1-retmrc.dat" using 1:2 with linespoints ls 1 pt 9 ps 2 title "", \
 
      #     "data/systor-lun1-retmrc.dat" using 0:5 with linespoints ls 3 title "QDLP", \
