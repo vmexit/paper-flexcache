@@ -4,13 +4,14 @@ access frequency distribution for cache size aware policy.
 
 Software caches, e.g., Memcached~\cite{}, Redis~\cite{}, and Linux page cache~\cite{}, are widely adapted in various fields to improve the service performance.
 %
-In production environments, software cache systems have a fixed memory space and a specific cache replacement policy for all data sets.
+\DZ{This is the background of the paper. I don't think they belong to intro.}
+\XXX{In production environments, software cache systems have a fixed memory space and a specific cache replacement policy for all data sets.
 %
-In the system, there are various workloads with different access patterns, and some of these patterns change over time. 
+In the system, there are various workloads with different access patterns, and some of these patterns change over time. }
 %
 Many works analyze the characteristics of the traces and design the best policy for the system to improve performance.
 
-Cache replacement policies are designed to handle different access patterns adaptively.
+Cache replacement policies are designed to \XXX{handle different access patterns adaptively} \DZ{I think this wording is imprecise. Cache replacement policies normally do not adapt to access patterns}.
 %
 Prior work~\cite{} classifies the access patterns into four basic types and designs the policy for the mixture of the basic patterns.
 %
@@ -22,7 +23,7 @@ However, existing cache replacement policies are not adaptive to the \textit{acc
 %
 We evaluate \XXX{13} policies with different cache sizes and workloads, choose the highest hit ratio as the optimal ratio, and compare the hit ratio of the policies with the optimal ratio.
 %
-As shown in figure~\ref{fig:cloudphysics}(a),  as the cache size increases, the performance of S3FIFO gradually decreases from 95.7\% to 89.6\%, while the performance of LIRS steadily increases from 89.6\% to 96\%.
+As shown in figure~\ref{fig:cloudphysics}(a),  as the cache size increases, the \XXX{performance} \DZ{Vague, be more specific on what do you mean by performance} of S3FIFO gradually decreases from 95.7\% to 89.6\%, while the performance of LIRS steadily increases from 89.6\% to 96\%.
 %
 However, as shown in figure~\ref{fig:cloudphysics}(b), the worst-performing 5\% of workloads for both S3FIFO and LIRS only achieve 69.5\% performance, when the cache size is 3\% of the working set size(WSS).
 %
@@ -47,7 +48,9 @@ This performance degradation is caused by the limitations of access pattern clas
 %
 The access pattern classification does not take cache size into account, causing the same access pattern to be classified into different categories under different cache sizes~(\autoref{ss:access-patterns}).
 %
-Cache replacement policies, when performing adaptive adjustments, also fail to consider global access information comprehensively~(\autoref{ss:adaption-criteria}). 
+Cache replacement policies, when performing adaptive adjustments, 
+\DZ{Vague term, unclear what it means.}
+\XXX{also fail to consider global access information comprehensively~(\autoref{ss:adaption-criteria}).}
 %
 This leads to design flaws in the adjustment mechanism, resulting in extremely poor performance in certain scenarios.
 %
@@ -55,7 +58,9 @@ In some policies, as the cache size increases, the hit ratio actually worsens\TO
 
 This paper explores the relationship between access patterns and cache size and proposes \sys, a phase-aware and cache-size-aware replacement policy that can adapt to different access patterns and cache sizes.
 %
-We design \sys based on three \textit{insights}:
+\DZ{We need one insight, not three. Less is more. Which prior paper we read proposes three insights?
+}
+We design \sys based on \XXX{three \textit{insights}}:
 %
 First, splitting the access trace into phases according to the cache size is a method for cache-size-aware.
 %

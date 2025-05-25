@@ -4,18 +4,24 @@ This section presents a background on software cache systems~(\autoref{ss:backgr
 %
 We analyze the root causes of this issue from two perspectives: basic access pattern classification~(\autoref{ss:access-patterns}) and replacement policy design~(\autoref{ss:adaption-criteria}).
 
+\XXX{Captalize the subsection title properly. Please check prior papers}
+\XXX{Certain sentences need a citations}
+
 \subsection{Background on software cache systems}
 \label{ss:background-software-cache}
-Software cache systems are widely implemented in various fields to improve service performance.
+\XXX{Do we need this subsection? Is there a risk that reviewers do not know what is a cache?}
+Software cache systems are widely \XXX{implemented} \DZ{Avoid the term implement as much as possible in a systems paper. Implement means trivial} in various fields to improve service performance.
 %
 In storage systems, faster devices are typically more expensive and have smaller capacities. 
 %
-To reduce costs and minimize data access latency, we place a subset of the data on high-speed devices to form a cache system.
+To reduce costs and minimize data access latency, \XXX{we} \DZ{Who? This sounds you implement cache.} place a subset of the data on high-speed devices to form a cache system.
 %
-In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web objects, and data blocks, respectively, and we use the term \textit{object} to represent the data unit stored in the cache.
+\XXX{In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web objects, and data blocks, respectively, and we use the term \textit{object} to represent the data unit stored in the cache} \DZ{Citation?}.
 %
 
-Generally, cache systems have three main research directions: \cc{access pattern analysis}, \cc{cache replacement policies}, and \cc{cache prefetching}. 
+Generally, \XXX{cache systems have three main research directions: \cc{access pattern analysis}, \cc{cache replacement policies}, and \cc{cache prefetching}.} 
+%
+\DZ{??} 
 %
 Access pattern analysis helps design replacement policies or adjust parameters in real-time to adapt to different situations.
 %
@@ -40,6 +46,7 @@ All policies achieve the best performance in a specific cache size and suffer fr
 %
 %What's more, even with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
 
+
 Prior work cannot fit various \textbf{access patterns} in a benchmark.
 %
 As shown in figure ~\autoref{fig:cloudphysics}(a), we evaluate the performance of 16 cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
@@ -61,6 +68,8 @@ As shown in figure ~\autoref{fig:cloudphysics}(b), the worst-performing 10\% of 
 While \sys is the best policy in all cache sizes, it is the \textbf{best} policy in \textbf{50\%} percent of workloads, and achieves \textbf{95\%} performance in \textbf{95\%} of traces.
 %
 
+
+\DZ{I am lost. How is what you measure in this paragraph different from the last paragrap. }
 For the same workload, the performance of different policies varies significantly with different \textbf{cache sizes}.
 %
 As shown in figure~\autoref{fig:mrcdemo}(a), ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
@@ -121,7 +130,9 @@ If the access patterns are a major pattern and an interference pattern, the main
 %
 If there are two major patterns, they split the main cache into two parts, one for each major pattern. 
 %
-Many policies use the ghost cache to store the metadata of the evicted objects~\cite{}, which can be used to adjust the size of other parts.
+Many policies use the ghost cache to store the metadata of the evicted objects~\cite{}, \XXX{which can be used to adjust the size of other parts.}
+%   
+\DZ{Lost, what do you mean here?}·
 %The missing records in the ghost cache can help adjust the size of the main cache and filter cache.
 The access patterns in~(\S\ref{ss:access-patterns}) and incomplete criteria for adjustment mechanisms limit the capability of the replacement policy.
 
@@ -142,7 +153,9 @@ S3-FIFO~\cite{} analyzes the access pattern and finds that most benchmarks consi
 %
 LeCaR~\cite{} and Cacheus~\cite{} leverage two major replacement policies (e.g., LRU and LFU) and adjust the probability of applying each policy based on the hit information collected from the ghost cache.
 %
-2Q~\cite{}, ARC~\cite{} and CAR~\cite{} consider that the first access to objects and subsequent accesses exhibit different patterns, and therefore we need to manage them separately. 
+2Q~\cite{}, ARC~\cite{} and CAR~\cite{} consider that the first access to objects and subsequent accesses exhibit different patterns, and therefore 
+\DZ{How is us relevant to 2Q, ARC, and CAR?}
+\XXX{we} need to manage them separately. 
 %
 They use ghost caches to adjust the proportion of different types of objects accordingly.
 %Dueling for LRU-friendly and LFU-friendly. ARC, CAR, 2Q,LeCaR,Cacheus,LRFU
