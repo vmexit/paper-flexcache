@@ -27,6 +27,17 @@ optimize
 latency aware: pRedis~\cite{pan2021penalty,pan2019predis} Delayed hits~\cite{atre2020caching}
 TTL-based CDN~\cite{basu2018adaptive}
 SSD write efficient WEC~\cite{chai2015wec}
+profiling applications and dynamically tailoring memory resources and eviction policies Dynacache~\cite{cidon2015dynacache}
+
+
+studied offline, optimal policies for integrated caching and prefetching~\cite{cao1995study}
+work adaptively balancing cache amongst three partitions: LRU cache, hinted cache, and prefetch cache~\cite{patterson1995informed}.
+SARC 
+separates access and prefetch data into two partitions, and adaptively adjusts the cache size of each partition based on margin function.
+We shall develop an adaptive, self-tuning, low overhead algorithm that dynamically partitions the amount
+of cache space amongst sequential and random data so as to minimize the overall miss rate.~\cite{gill2005sarc}
+
+prior work propose a global clean page first replacement (GCPF) to reduce the write operations to NVM with an index-aware multistream prefetcher (IAMSP) that considers the indexes of prefetch candidates individually so as to prefetch pages from NVM more accurately~\cite{lin2019global}(seems like two functional parts)
 
 MISC
 libcachesim~\cite{libcachesim}

@@ -1,7 +1,7 @@
 call "data/common.gnuplot" "7.5in, 2.9in"
 set output "`echo $OUT`"
 
-mp_startx=0.05
+mp_startx=0.01
 mp_starty=0.05
 mp_height=0.80
 mp_rowgap=0.1

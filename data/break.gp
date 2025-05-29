@@ -6,7 +6,7 @@ mp_starty=0.10
 mp_height=0.80
 mp_rowgap=0.10
 mp_colgap=0.10
-mp_width=1.0
+mp_width=0.9
 
 eval mpSetup(2, 2)
 

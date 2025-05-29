@@ -5,8 +5,8 @@ mp_startx=0.01
 mp_starty=0.10
 mp_height=0.70
 mp_rowgap=0.10
-mp_colgap=0.01
-mp_width=1.0
+mp_colgap=0.02
+mp_width=0.93
 
 eval mpSetup(3, 1)
 #set xtics ("0.3" 1, '1' 2 ,'3' 3, '10' 4, '20' 5, '40' 6)
@@ -62,7 +62,7 @@ unset ylabel
 unset ylabel
 unset key
 #set xlabel 'cache size(\%)'
-set xrange[0:17]
+set xrange[0.5:17]
 set ytics  0.1
 set title '(b) Cloudphysics' offset 0,-1
 
@@ -97,7 +97,7 @@ eval mpNext
 unset ylabel
 unset ylabel
 #set xlabel 'cache size(\%)'
-set xrange[0:17]
+set xrange[0.5:17]
 set ytics  0.1
 set yrange[0.4:]
 set key horizontal at 17,0.5 

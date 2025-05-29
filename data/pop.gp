@@ -6,7 +6,7 @@ mp_starty=0.10
 mp_height=0.70
 mp_rowgap=0.10
 mp_colgap=0.13
-mp_width=1.0
+mp_width=0.9
 
 eval mpSetup(2, 1)
 #set xtics ("0.3" 1, '1' 2 ,'3' 3, '10' 4, '20' 5, '40' 6)
