@@ -29,7 +29,6 @@ do for [i=1:5] {
         fc rgb "gray90" fs solid 1.0 behind
 }
 
-#column = ["accp4", "ARC", "Cacheus", "Clock", "FIFO", "FIFO-Merge", "GDSF", "Hyperbolic", "LHD", "LIRS", "LeCaR", "QDLP", "S3FIFO", "S4LRU", "WTinyLFU", "TwoQ"]
 
 plot "data/hitimp/0.01.dat" using 2:0 with points ls 1 pt 9 ps 2 title '\sys', \
     "data/hitimp/0.01.dat" using 3:0 with points ls 2 title '', \
@@ -100,7 +99,6 @@ do for [i=1:5] {
         fc rgb "gray90" fs solid 1.0 behind
 }
 
-#column = ["accp4", "ARC", "Cacheus", "Clock", "FIFO", "FIFO-Merge", "GDSF", "Hyperbolic", "LHD", "LIRS", "LeCaR", "QDLP", "S3FIFO", "S4LRU", "WTinyLFU", "TwoQ"]
 
 plot "data/hitimp/0.2.dat" using 2:0 with points ls 1 pt 9 ps 2 title '', \
     "data/hitimp/0.2.dat" using 3:0 with points ls 2 title '', \
