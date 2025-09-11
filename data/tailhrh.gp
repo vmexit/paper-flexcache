@@ -36,26 +36,29 @@ plot "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):6 with points pt 5 lc rgb "#b
     "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):6 with points pt 64 lc rgb "black" ps 1.5 title '', \
     "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):4 with points pt 15 lc rgb "#fd8d3c" ps 1.5 title 'P10', \
     "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):4 with points pt 69 lc rgb "black" ps 1.5 title '', \
-    "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 1.5 title 'P5', \
-    "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):3 with points pt 68 lc rgb "black" ps 1.5 title '', \
     "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):2 with points pt 11 lc rgb "#1f77b4" ps 1.5  title 'P1', \
     "data/RHR/alibabaBlock0.4.dat" using ($0-0.2):2 with points pt 67 lc rgb "black" ps 1.5 title '', \
     "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):6 with points pt 5 lc rgb "#bd0026" ps 1 title '', \
     "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):6 with points pt 64 lc rgb "black" ps 1 title '', \
     "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):4 with points pt 15 lc rgb "#fd8d3c" ps 1 title '', \
     "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):4 with points pt 69 lc rgb "black" ps 1 title '', \
-    "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):3 with points pt 13 lc rgb "#fdd0a2" ps 1 title '', \
-    "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):3 with points pt 68 lc rgb "black" ps 1 title '', \
     "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):2 with points pt 11 lc rgb "#1f77b4" ps 1  title '', \
     "data/RHR/alibabaBlock0.1.dat" using ($0-0.0):2 with points pt 67 lc rgb "black" ps 1 title '', \
     "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):6 with points pt 5 lc rgb "#bd0026" ps 0.7 title '', \
     "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):6 with points pt 64 lc rgb "black" ps 0.7 title '', \
     "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):4 with points pt 15 lc rgb "#fd8d3c" ps 0.7 title '', \
     "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):4 with points pt 69 lc rgb "black" ps 0.7 title '', \
-    "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 0.7 title '', \
-    "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):3 with points pt 68 lc rgb "black" ps 0.7 title '', \
     "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):2 with points pt 11 lc rgb "#1f77b4" ps 0.7  title '', \
     "data/RHR/alibabaBlock0.03.dat" using ($0+0.2):2 with points pt 67 lc rgb "black" ps 0.7 title '', \
+
+    #"data/RHR/alibabaBlock0.4.dat" using ($0-0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 1.5 title 'P5', \
+    #"data/RHR/alibabaBlock0.4.dat" using ($0-0.2):3 with points pt 68 lc rgb "black" ps 1.5 title '', \
+
+    #"data/RHR/alibabaBlock0.1.dat" using ($0-0.0):3 with points pt 13 lc rgb "#fdd0a2" ps 1 title '', \
+    #"data/RHR/alibabaBlock0.1.dat" using ($0-0.0):3 with points pt 68 lc rgb "black" ps 1 title '', \
+
+    #"data/RHR/alibabaBlock0.03.dat" using ($0+0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 0.7 title '', \
+    #"data/RHR/alibabaBlock0.03.dat" using ($0+0.2):3 with points pt 68 lc rgb "black" ps 0.7 title '', \
 
 eval mpNext
 unset ylabel
@@ -72,26 +75,29 @@ plot "data/RHR/cloudphysics0.4.dat" using ($0-0.2):6 with points pt 5 lc rgb "#b
     "data/RHR/cloudphysics0.4.dat" using ($0-0.2):6 with points pt 64 lc rgb "black" ps 1.5 title '', \
     "data/RHR/cloudphysics0.4.dat" using ($0-0.2):4 with points pt 15 lc rgb "#fd8d3c" ps 1.5 title 'P10', \
     "data/RHR/cloudphysics0.4.dat" using ($0-0.2):4 with points pt 69 lc rgb "black" ps 1.5 title '', \
-    "data/RHR/cloudphysics0.4.dat" using ($0-0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 1.5 title 'P5', \
-    "data/RHR/cloudphysics0.4.dat" using ($0-0.2):3 with points pt 68 lc rgb "black" ps 1.5 title '', \
     "data/RHR/cloudphysics0.4.dat" using ($0-0.2):2 with points pt 11 lc rgb "#1f77b4" ps 1.5  title 'P1', \
     "data/RHR/cloudphysics0.4.dat" using ($0-0.2):2 with points pt 67 lc rgb "black" ps 1.5 title '', \
     "data/RHR/cloudphysics0.1.dat" using ($0-0.0):6 with points pt 5 lc rgb "#bd0026" ps 1 title '', \
     "data/RHR/cloudphysics0.1.dat" using ($0-0.0):6 with points pt 64 lc rgb "black" ps 1 title '', \
     "data/RHR/cloudphysics0.1.dat" using ($0-0.0):4 with points pt 15 lc rgb "#fd8d3c" ps 1 title '', \
     "data/RHR/cloudphysics0.1.dat" using ($0-0.0):4 with points pt 69 lc rgb "black" ps 1 title '', \
-    "data/RHR/cloudphysics0.1.dat" using ($0-0.0):3 with points pt 13 lc rgb "#fdd0a2" ps 1 title '', \
-    "data/RHR/cloudphysics0.1.dat" using ($0-0.0):3 with points pt 68 lc rgb "black" ps 1 title '', \
     "data/RHR/cloudphysics0.1.dat" using ($0-0.0):2 with points pt 11 lc rgb "#1f77b4" ps 1  title '', \
     "data/RHR/cloudphysics0.1.dat" using ($0-0.0):2 with points pt 67 lc rgb "black" ps 1 title '', \
     "data/RHR/cloudphysics0.03.dat" using ($0+0.2):6 with points pt 5 lc rgb "#bd0026" ps 0.7 title '', \
     "data/RHR/cloudphysics0.03.dat" using ($0+0.2):6 with points pt 64 lc rgb "black" ps 0.7 title '', \
     "data/RHR/cloudphysics0.03.dat" using ($0+0.2):4 with points pt 15 lc rgb "#fd8d3c" ps 0.7 title '', \
     "data/RHR/cloudphysics0.03.dat" using ($0+0.2):4 with points pt 69 lc rgb "black" ps 0.7 title '', \
-    "data/RHR/cloudphysics0.03.dat" using ($0+0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 0.7 title '', \
-    "data/RHR/cloudphysics0.03.dat" using ($0+0.2):3 with points pt 68 lc rgb "black" ps 0.7 title '', \
     "data/RHR/cloudphysics0.03.dat" using ($0+0.2):2 with points pt 11 lc rgb "#1f77b4" ps 0.7  title '', \
     "data/RHR/cloudphysics0.03.dat" using ($0+0.2):2 with points pt 67 lc rgb "black" ps 0.7 title '', \
+
+    #"data/RHR/cloudphysics0.4.dat" using ($0-0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 1.5 title 'P5', \
+    #"data/RHR/cloudphysics0.4.dat" using ($0-0.2):3 with points pt 68 lc rgb "black" ps 1.5 title '', \
+
+    #"data/RHR/cloudphysics0.1.dat" using ($0-0.0):3 with points pt 13 lc rgb "#fdd0a2" ps 1 title '', \
+    #"data/RHR/cloudphysics0.1.dat" using ($0-0.0):3 with points pt 68 lc rgb "black" ps 1 title '', \
+
+    #"data/RHR/cloudphysics0.03.dat" using ($0+0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 0.7 title '', \
+    #"data/RHR/cloudphysics0.03.dat" using ($0+0.2):3 with points pt 68 lc rgb "black" ps 0.7 title '', \
 
 eval mpNext
 unset ylabel
@@ -109,23 +115,26 @@ plot "data/RHR/tencentBlock0.4.dat" using ($0-0.2):6 with points pt 5 lc rgb "#b
     "data/RHR/tencentBlock0.4.dat" using ($0-0.2):6 with points pt 64 lc rgb "black" ps 1.5 title '', \
     "data/RHR/tencentBlock0.4.dat" using ($0-0.2):4 with points pt 15 lc rgb "#fd8d3c" ps 1.5 title 'P10', \
     "data/RHR/tencentBlock0.4.dat" using ($0-0.2):4 with points pt 69 lc rgb "black" ps 1.5 title '', \
-    "data/RHR/tencentBlock0.4.dat" using ($0-0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 1.5 title 'P5', \
-    "data/RHR/tencentBlock0.4.dat" using ($0-0.2):3 with points pt 68 lc rgb "black" ps 1.5 title '', \
     "data/RHR/tencentBlock0.4.dat" using ($0-0.2):2 with points pt 11 lc rgb "#1f77b4" ps 1.5  title 'P1', \
     "data/RHR/tencentBlock0.4.dat" using ($0-0.2):2 with points pt 67 lc rgb "black" ps 1.5 title '', \
     "data/RHR/tencentBlock0.1.dat" using ($0-0.0):6 with points pt 5 lc rgb "#bd0026" ps 1 title '', \
     "data/RHR/tencentBlock0.1.dat" using ($0-0.0):6 with points pt 64 lc rgb "black" ps 1 title '', \
     "data/RHR/tencentBlock0.1.dat" using ($0-0.0):4 with points pt 15 lc rgb "#fd8d3c" ps 1 title '', \
     "data/RHR/tencentBlock0.1.dat" using ($0-0.0):4 with points pt 69 lc rgb "black" ps 1 title '', \
-    "data/RHR/tencentBlock0.1.dat" using ($0-0.0):3 with points pt 13 lc rgb "#fdd0a2" ps 1 title '', \
-    "data/RHR/tencentBlock0.1.dat" using ($0-0.0):3 with points pt 68 lc rgb "black" ps 1 title '', \
     "data/RHR/tencentBlock0.1.dat" using ($0-0.0):2 with points pt 11 lc rgb "#1f77b4" ps 1  title '', \
     "data/RHR/tencentBlock0.1.dat" using ($0-0.0):2 with points pt 67 lc rgb "black" ps 1 title '', \
     "data/RHR/tencentBlock0.03.dat" using ($0+0.2):6 with points pt 5 lc rgb "#bd0026" ps 0.7 title '', \
     "data/RHR/tencentBlock0.03.dat" using ($0+0.2):6 with points pt 64 lc rgb "black" ps 0.7 title '', \
     "data/RHR/tencentBlock0.03.dat" using ($0+0.2):4 with points pt 15 lc rgb "#fd8d3c" ps 0.7 title '', \
     "data/RHR/tencentBlock0.03.dat" using ($0+0.2):4 with points pt 69 lc rgb "black" ps 0.7 title '', \
-    "data/RHR/tencentBlock0.03.dat" using ($0+0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 0.7 title '', \
-    "data/RHR/tencentBlock0.03.dat" using ($0+0.2):3 with points pt 68 lc rgb "black" ps 0.7 title '', \
     "data/RHR/tencentBlock0.03.dat" using ($0+0.2):2 with points pt 11 lc rgb "#1f77b4" ps 0.7  title '', \
     "data/RHR/tencentBlock0.03.dat" using ($0+0.2):2 with points pt 67 lc rgb "black" ps 0.7 title '', \
+
+    #"data/RHR/tencentBlock0.4.dat" using ($0-0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 1.5 title 'P5', \
+    #"data/RHR/tencentBlock0.4.dat" using ($0-0.2):3 with points pt 68 lc rgb "black" ps 1.5 title '', \
+
+    #"data/RHR/tencentBlock0.1.dat" using ($0-0.0):3 with points pt 13 lc rgb "#fdd0a2" ps 1 title '', \
+    #"data/RHR/tencentBlock0.1.dat" using ($0-0.0):3 with points pt 68 lc rgb "black" ps 1 title '', \
+
+    #"data/RHR/tencentBlock0.03.dat" using ($0+0.2):3 with points pt 13 lc rgb "#fdd0a2" ps 0.7 title '', \
+    #"data/RHR/tencentBlock0.03.dat" using ($0+0.2):3 with points pt 68 lc rgb "black" ps 0.7 title '', \

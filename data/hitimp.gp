@@ -57,6 +57,7 @@ unset ytics
 set key outside top horizontal width 3 font "Times,8"
 set xrange[0:]
 set title '(b) 3\% WSS' offset 0,1
+set xlabel 'Performance improvement'
 
 do for [i=1:5] {
     ypos = 0.2*i - 0.1  # x=1, 3, 5
@@ -92,6 +93,7 @@ unset ytics
 set key outside top horizontal width 3 font "Times,8"
 set xrange[0:]
 set title '(c) 20\% WSS' offset 0,1
+unset xlabel
 
 do for [i=1:5] {
     ypos = 0.2*i - 0.1  # x=1, 3, 5
