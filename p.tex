@@ -1,28 +1,25 @@
-%\documentclass[11pt,letterpaper,twocolumn]{article}
-\documentclass[sigplan,10pt,anonymous=true]{acmart}
-\renewcommand\footnotetextcopyrightpermission[1]{}
-\pagestyle{plain}
-% conference specific style
-%\usepackage[11pt,nocopyright]{sty/sigmin}
-%\usepackage[square,comma,numbers,sort&compress]{natbib}
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+%\documentclass[sigplan,10pt]{acmart}
 
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{sty/usenix2020}
 % common packages
 \include{pkgs}
-\usepackage{pifont}
 
 \newcommand{\sys}{\mbox{\textsc{Flexcache}}\xspace}
 
 \input{cmds}
 \input{rev}
-\acmConference[SOSP '23]{ACM SIGOPS 29th Symposium on Operating Systems Principles}{October 23--26, 2023}{Koblenz, Germany}
 
 \begin{document}
 
 \input{hdr}
-\input{00abstract}
-\date{}
-\settopmatter{printfolios=true,printacmref=false}
 \maketitle
+\input{00abstract}
+
+
+%don't want date printed
+\date{}
 
 \sloppy
 
@@ -53,7 +50,6 @@
 
 \bibliographystyle{plain}
 \footnotesize
-\setlength{\bibsep}{3pt}
 \bibliography{p,conf}
 
 % for multicol
