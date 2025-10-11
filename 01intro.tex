@@ -1,38 +1,62 @@
 \section{Introduction}
 \label{s:intro}
-access frequency distribution for cache size aware policy.
-
 Software caches, e.g., Memcached~\cite{}, Redis~\cite{}, and Linux page cache~\cite{}, are widely adapted in various fields to improve the service performance.
 %
-\DZ{This is the background of the paper. I don't think they belong to intro.}
-\XXX{In production environments, software cache systems have a fixed memory space and a specific cache replacement policy for all data sets.
+For the cache to work in a variety of scenarios, it should be 
 %
-In the system, there are various workloads with different access patterns, and some of these patterns change over time. }
+(1) \textit{reliable}: whatever the workload and cache size are, the cache should keep a high hit ratio for short latencies; 
 %
-Many works analyze the characteristics of the traces and design the best policy for the system to improve performance.
+(2) \textit{efficient}: it should manage data in the cache space effectively for high throughput; and 
+%
+(3) \textit{scalable}: the ability to handle data requests can scale with the increase of the number of CPU cores and the cache size.
+%
+Cache eviction algorithm is the core component for a cache to achieve the reliability, efficiency, and scalability.
 
-Cache replacement policies are designed to \XXX{handle different access patterns adaptively} \DZ{I think this wording is imprecise. Cache replacement policies normally do not adapt to access patterns}.
+To design a reliable cache eviction algorithm, prior work analyses the access patterns of workloads~\cite{} and proposes non-adaptive~\cite{} and adaptive~\cite{} algorithms to handle them.
 %
-Prior work~\cite{} classifies the access patterns into four basic types and designs the policy for the mixture of the basic patterns.
+There are four typical primitive access patterns: \textit{LRU-friendly}, \textit{LFU-friendly}, \textit{Scan}, and \XXX{\textit{Churn}}~\cite{}.
 %
-To design an adaptive policy, they split the cache into different functional parts to filter the interference pattern from the major pattern and duel for two major patterns.
+A non-adaptive algorithm~\cite{} consistently leverages a fixed criterion and workflow to manage one or part of access patterns;
 %
-Furthermore, some workloads also exhibit regular access patterns, and many studies focus on prefetching such data with additional space.
+while an adaptive algorithm~\cite{} adjusts the operation or cache size for the data in different patterns.
 
-However, existing cache replacement policies are not adaptive to the \textit{access patterns} and \textit{cache size}, leading to a sub-optimal situation.
+Adaptive algorithms promise to improve caching performance, but existing adaptive algorithms are inefficient to a degree that underperforms non-adaptive algorithms.
 %
-We evaluate \XXX{13} policies with different cache sizes and workloads, choose the highest hit ratio as the optimal ratio, and compare the hit ratio of the policies with the optimal ratio.
+S3FIFO~\cite{} is a typical non-adaptive algorithm which focuses on the \textit{Scan} pattern, also known as one-hit wonders.
 %
-As shown in figure~\ref{fig:cloudphysics}(a),  as the cache size increases, the \XXX{performance} \DZ{Vague, be more specific on what do you mean by performance} of S3FIFO gradually decreases from 95.7\% to 89.6\%, while the performance of LIRS steadily increases from 89.6\% to 96\%.
+It does not change its behavior whatever the accesses are, and outperforms SOTA algorithms about 3\% in KV and CDN benchmarks~\cite{}.
 %
-However, as shown in figure~\ref{fig:cloudphysics}(b), the worst-performing 5\% of workloads for both S3FIFO and LIRS only achieve 69.5\% performance, when the cache size is 3\% of the working set size(WSS).
+What's more, S3FIFO has a high throughput close to Segcache~\cite{} and achieves a high scalability with 16 cores.
+
+Adaptive algorithms failed to cover the full spectrum of access patterns, for their designs are based on linear interpolation.
 %
-While S3FIFO and LIRS perform better overall, they fail to adapt to certain access patterns; in contrast, ARC shows lower overall performance but provides a more balanced effectiveness across different workloads.
+There are two types of adaptive algorithms: \textit{spatial adaptive} algorithm~\cite{} and \textit{temporal adaptive} algorithm~\cite{}.
+%
+Spatial adaptive algorithms separate data into two access patterns and manage them using an adjustable cache size to exploit spatial locality, which adjust for the mixture of two patterns.
+%
+Temporal adaptive algorithms leverage two basic policies for different primitive access patterns, and invoke them with different probabilities to catch the temporal locality.
+%
+They adjust between two basic policies, and what's more, if a basic policy targets more than one primitive access pattern, the two basic policies will interfere with each other.
+%
+
+To preserve a high cache hit rate in various complex access patterns, our {\textit{key insight}} is that \textbf{To be effective, a cache eviction algorithm should cover all contiguous space of access patterns, rather than linear interpolation between access patterns as done in prior work.} 
+%
+As shown in figure~\ref{fig:insight}, spatial adaptive algorithms target for the frequency and recency based data, which is a linear interpolation between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
+%
+Temporal adaptive algorithms invoke LRU-Scan-Resistant policy and LFU-Churn-Resistant policy with probabilities, which is two linear interpolations implemented in different time.
+%
+The phase and frequency-based classification can cover all four typical primitive access patterns and catch the mixed parts to cover the contiguous space.  
+
+\TODO{figure for insight\label{fig:insight}}
+
+We propose a hotness and phase-based type classification, which covers all four typical primitive access patterns. 
+\TODO{support the key insight}
+
 
 \begin{figure}[t]
 \centering
 \input{data/cachesize}
-\caption{Replacement policies' performance in Cloudphysics.}
+\caption{Replacement policies' performance in Cloudphysics.\TODO{update figure}}
 \label{fig:cloudphysics}
 \end{figure}
 
