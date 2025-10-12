@@ -27,6 +27,8 @@ S3FIFO~\cite{} is a typical non-adaptive algorithm which focuses on the \textit{
 It does not change its behavior whatever the accesses are, and outperforms SOTA algorithms about 3\% in KV and CDN benchmarks~\cite{}.
 %
 What's more, S3FIFO has a high throughput close to Segcache~\cite{} and achieves a high scalability with 16 cores.
+%
+As shown in figure~\ref{fig:cloudphysics}, non-adaptive algorithms, e.g., S3FIFO and WTinyLFU~\cite{}, outperform adaptive algorithms, e.g., ARC~\cite{} in small and large cache sizes separately.
 
 Adaptive algorithms failed to cover the full spectrum of access patterns, for their designs are based on linear interpolation.
 %
@@ -50,13 +52,21 @@ The phase and frequency-based classification can cover all four typical primitiv
 \TODO{figure for insight\label{fig:insight}}
 
 We propose a hotness and phase-based type classification, which covers all four typical primitive access patterns. 
+%
+Based on access frequency, data is either frequently or infrequently accessed.
+%
+According to the number of phases in which the data appears, it can be categorized as persistent or ephemeral.
+%
+The four basic types are therefore: \textit{frequent-persistent}, \textit{frequent-ephemeral}, \textit{infrequent-persistent}, and \textit{infrequent-ephemeral}.
+%
+With an appropriate phase size,
 \TODO{support the key insight}
 
 
 \begin{figure}[t]
 \centering
 \input{data/cachesize}
-\caption{Replacement policies' performance in Cloudphysics.\TODO{update figure}}
+\caption{Replacement policies' performance in Cloudphysics.\TODO{update figure with adaptive algorithms}}
 \label{fig:cloudphysics}
 \end{figure}
 
