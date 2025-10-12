@@ -14,7 +14,7 @@ Cache eviction algorithm is the core component for a cache to achieve the reliab
 
 To design a reliable cache eviction algorithm, prior work analyses the access patterns of workloads~\cite{} and proposes non-adaptive~\cite{} and adaptive~\cite{} algorithms to handle them.
 %
-There are four typical primitive access patterns: \textit{LRU-friendly}, \textit{LFU-friendly}, \textit{Scan}, and \XXX{\textit{Churn}}~\cite{}.
+There are four typical primitive access patterns: \textit{LFU-friendly}, \textit{LRU-friendly}, \XXX{\textit{Churn}}, and \textit{Scan}~\cite{}.
 %
 A non-adaptive algorithm~\cite{} consistently leverages a fixed criterion and workflow to manage one or part of access patterns;
 %
@@ -51,7 +51,7 @@ The phase and frequency-based classification can cover all four typical primitiv
 
 \TODO{figure for insight\label{fig:insight}}
 
-We propose a hotness and phase-based type classification, which covers all four typical primitive access patterns. 
+This paper proposes a hotness and phase-based type classification, which covers all four typical primitive access patterns. 
 %
 Based on access frequency, data is either frequently or infrequently accessed.
 %
@@ -59,9 +59,37 @@ According to the number of phases in which the data appears, it can be categoriz
 %
 The four basic types are therefore: \textit{frequent-persistent}, \textit{frequent-ephemeral}, \textit{infrequent-persistent}, and \textit{infrequent-ephemeral}.
 %
-With an appropriate phase size,
-\TODO{support the key insight}
+With an appropriate phase size, an \textit{LFU-friendly} pattern appears frequently as \textit{frequent-persistent} type, and an \textit{LRU-friendly} pattern has a small reuse distance as \textit{frequent-ephemeral} type.
+%
+A \textit{Churn} pattern repeats in many phases as \textit{infrequent-persistent} type, and a \textit{Scan} pattern appears only once as \textit{infrequent-ephemeral} type. 
+%
+As shown in figure~\ref{fig:insight}, new primitive types reveal the relationship between primitive access patterns, and thus cover the contiguous space of access patterns.
 
+Based on characterization of types, this paper proposes \sys, a reliable, efficient, and scalable cache eviction algorithm.
+%
+\sys uses a small queue to filter out \textit{infrequent-ephemeral} data, a ghost queue with only metadata to track \textit{frequent-ephemeral} data, and a sketch recording the number of phases \textit{infrequent-persistent} data appears with a forget function.
+%
+Since data types will change from one to another and \textit{frequent-persistent} requires a long time observation, \sys uses a suspicious queue to check and confirm the type of data and holds data to be cached in a main queue, which consumes most of the cache space.
+%
+\sys observes data at least a phase, so all the queues are FIFO queues, where data is evicted by the ghost queue or checked by the suspicious queue coming from the main queue for a phase.
+%
+\sys records the access frequency distribution of all the data in the cache to adjust the criterion of frequent and infrequent data.
+
+\sys is reliable in various situlations.
+%
+We compare \sys with \XXX{16} eviction algorithms on \XXX{11} real-world benchmarks, including KV, CDN, and block workloads.
+%
+A \textit{dominant algorithm} outperforms all the other algorithms on a traces with a specific cache size.
+%
+\sys is the dominant algorithm on \XXX{}\% of all the \XXX{} traces in workloads with different cache sizes.
+%
+\sys also achieves \XXX{}\% of the dominant algorithm in \XXX{}\% traces.
+%
+As a comparision, the next best algorithm is \XXX{}, which is the dominant algorithm on \XXX{}\% of all the traces and achieves \XXX{}\% of the dominant algorithm in \XXX{}\% traces.
+
+\sys is also efficient and scalable because FIFO queues and sketch enable lock-free implementations.
+%
+We implemented a prototype of \sys in Cachelib~\cite{} and show that \sys achieves \TODO{}.
 
 \begin{figure}[t]
 \centering
@@ -77,37 +105,10 @@ With an appropriate phase size,
     \label{fig:mrcdemo}
 \end{figure}
 
-
-This performance degradation is caused by the limitations of access pattern classification and cache design.
-%
-The access pattern classification does not take cache size into account, causing the same access pattern to be classified into different categories under different cache sizes~(\autoref{ss:access-patterns}).
-%
-Cache replacement policies, when performing adaptive adjustments, 
-\DZ{Vague term, unclear what it means.}
-\XXX{also fail to consider global access information comprehensively~(\autoref{ss:adaption-criteria}).}
-%
-This leads to design flaws in the adjustment mechanism, resulting in extremely poor performance in certain scenarios.
-%
-In some policies, as the cache size increases, the hit ratio actually worsens\TODO{figure}.
-
-This paper explores the relationship between access patterns and cache size and proposes \sys, a phase-aware and cache-size-aware replacement policy that can adapt to different access patterns and cache sizes.
-%
-\DZ{We need one insight, not three. Less is more. Which prior paper we read proposes three insights?
-}
-We design \sys based on \XXX{three \textit{insights}}:
-%
-First, splitting the access trace into phases according to the cache size is a method for cache-size-aware.
-%
-Second, to classify the object type dynamically, we consider the access frequency distribution in different phases.
-%
-Third, the policy should consider the overall cache access behavior to adapt to mixed access patterns.
-
-\TODO{\sys}
-
-\TODO{performance}
-
-In summary, we make the following contributions:
+In summary, this work makes the following contributions:
 \squishlist
-\item{\textbf{todo.}}
+\item{{We propose a new hotness and phase-based type classification, which comprehensively characterizes primitive access patterns and reveals the relationship between them.}}
+\item{{Based on the new classification, we design \sys, a reliable cache eviction algorithm, which dominates across diverse workloads.}}
+\item{{We implement a prototype of \sys in Cachelib and demonstrate its efficiency and scalability.}}
 \squishend
 %
