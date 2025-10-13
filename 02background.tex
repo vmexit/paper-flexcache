@@ -40,6 +40,35 @@ Some of them are a combination of two or more primitive access patterns, and som
 
 \subsection{Non-adaptive and adaptive algorithms}
 \label{ss:non-adaptive-and-adaptive-algorithms}
+Guided by access patterns, an algorithm either covers them statically or adapts to them. 
+%
+An adaptive algorithm will adjust the operation or cache size for data in different patterns, whereas a non-adaptive algorithm consistently uses a fixed criterion and workflow. 
+%
+However, adaptive algorithms are not the best choice for various patterns, and a non-adaptive algorithm, S3FIFO, outperforms them in many workloads.
+
+Non-adaptive algorithms filter a major access pattern from interference patterns.
+%
+Deviated from the LRU algorithm, SLRU~\cite{} changes the insertion point to filter out the \textit{Scan} pattern from the \textit{LRU-friendly} pattern.
+%
+As an algorithm that focuses more on access frequency, WTinyLFU~\cite{} uses a Count-Min Sketch~\cite{} to record long-term access counts for \textit{LFU-friendly} pattern.
+%
+2Q~\cite{} separates the first access and subsequent accesses to filter out the \textit{Scan} pattern, and S3FIFO~\cite{} leverage three FIFO queues to quickly demote \textit{Scan} pattern.
+%
+Hyperbolic~\cite{}, LHD~\cite{}, and GDSF~\cite{} consider both access frequency and recency with a new metric to cover both \textit{LFU-friendly} and \textit{LRU-friendly} patterns.
+%
+With the fixed criterion metric and workflow, these non-adaptive algorithms are reliable in specific access patterns.
+
+Adaptive algorithms adjust the subpart size for patterns or the criterion metric for spatial or temporal adaptive. 
+%
+Spatial adaptive algorithms, ARC~\cite{} and CAR~\cite{}, separate data into recency and frequency parts, which means \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
+%
+Then, they use two ghost caches with only metadata for the marginal hit ratios to guide the adjustment of the two parts.
+%
+Temporal adaptive algorithms, LeCaR~\cite{} and Cacheus~\cite{}, propose a framework, which leverages two basic policies and invokes them with different probabilities.
+%
+LeCaR uses LRU and LFU as two basic policies, and Cacheus uses LRU-Scan-Resistant and LFU-Churn-Resistant as two basic policies.
+%
+However, adaptive algorithms cannot separate primitive access patterns perfectly in either spatial or temporal dimensions, which incurs a great overhead in the framework.
 
 \subsection{The metastable phenomenon}
 \label{ss:the-metastable-phenomenon}
@@ -129,42 +158,6 @@ When the cache size is 50GB, it achieves 99.3\% hit ratio of the best policy, bu
 %
 When we consider \sys, it is the best policy and outperforms other policies by about 2\%.
 
-
-\subsection{Access patterns}
-\label{ss:access-patterns}
-Prior work classifies the access patterns into four basic types and a mixture of the basic types. 
-%
-This classification method is very intuitive, and we determine the trace type after the analysis (e.g., implementing the replacement policy).
-
-\textbf{LRU-friendly} is a set of access that the \cc{least recently used} (LRU) replacement policy is the best choice for the workload.
-
-\textbf{LFU-friendly} is a set of access that the \cc{least frequently used} (LFU) replacement policy is the best choice for the workload.
-
-\textbf{Scan} is a set of access that all objects are accessed only once, which means no replacement policy can deal with it.
-
-\textbf{Period repeated access} is a set of repeated accesses, and a more restrictive definition is that the objects are accessed with equal probability~\cite{}(cacheus), which means the hit ratio is related to the cache size. If the cache size is larger than the repeated objects, the hit ratio is 100\%, and if the cache size is smaller than the repeated objects, the hit ratio is a fixed number.
-
-%\textbf{Mixture of the basic types} \dots
-%This classification method is neither object-based nor access sequence-based, but only for the trace type.
-\textbf{This classification is not a cache size-aware method.}
-%
-It cannot tell us the object type, only the trace type.
-%
-When the cache size changes, the trace type will change.
-%so defining a mixture of the basic types is confusing. 
-%
-If an object is accessed many times in a short sequence, without access for a long sequence, and then reaccessed, we cannot determine whether it is LRU-friendly or LFU-friendly. 
-%
-If the footprint of the long access sequence is smaller than the cache size, is the object both LRU-friendly and LFU-friendly? 
-%
-This classification method is retrospective — the first access to each object is treated as part of a scan, and only after the second access can the object be classified as another type.
-%
-For trace $\text{AAAABBCCCDDCCA}$, if the cache size is 2, the base policy is LRU, so it is LRU-friendly, but if the cache size is 3, the base policy is LFU, so it is LFU-friendly.
-%
-
-\textbf{Summary: We need a method to classify the object type with cache size awareness.}
-
-
 \subsection{Adaption for mixed access patterns}
 \label{ss:adaption-criteria}
 Prior work splits the cache into different parts to handle access patterns or filter interference between them.
@@ -225,3 +218,6 @@ We will discuss it in (\S\ref{ss:dynamic-adjust}).
 \textbf{Summary:We need to take the overall cache access behavior into account to adapt to mixed access patterns.}
 
 
+%
+%For trace $\text{AAAABBCCCDDCCA}$, if the cache size is 2, the base policy is LRU, so it is LRU-friendly, but if the cache size is 3, the base policy is LFU, so it is LFU-friendly.
+%
