@@ -93,135 +93,31 @@ As the cache size changes, the dominant algorithm gradually shifts.
 Keeping the same eviction algorithm under such changes prevents full utilization of system performance, while using multiple eviction algorithms simultaneously increases management complexity.
 \TODO{details}
 
-\textbf{Non-adaptive algorithms} are limited by their design space. They makes a predefined assumption about access distribution
-
-\textbf{Spatial adaptive algorithms} are influenced by changed access patterns.
-
-\textbf{Temporal adaptive algorithms} suffer from a conflict of sub-policies.
-
-
+\textbf{Non-adaptive algorithms} are limited by their design space. 
 %
-Access pattern analysis helps design replacement policies or adjust parameters in real-time to adapt to different situations.
+They makes a predefined assumption about access distribution and work well in specific access patterns.
 %
-Cache replacement policies determine which object to retain or evict; a higher hit ratio indicates better performance. 
+However, the filtering mechanism will make wrong decisions in complex access patterns, failed to cover the full spectrum of access patterns.
 %
-When data access patterns are predictable, prefetching can anticipate future accesses and load data into the cache. 
+S3FIFO~\cite{} filters out \textit{Scan} pattern, also one-hit wonders, from other patterns, and outperforms others in a small cache size for KV and CDN benchmarks~\cite{}.
 %
-For ease of deployment, cache systems typically use a specific replacement policy to handle the current workload, decoupling prefetching from the replacement strategy.
-
-\subsection{The metastable policies}
-\label{ss:performance-policy-change}
-Current replacement policies are in a metastable state, which means that if data access patterns or cache size change, the overall performance will degrade accordingly.
-%
-In production environments, the policy performs poorly under specific characteristics, and increasing the cache size can sometimes lead to negative returns.
-%
-We evaluate 16 policies in \XXX{5000+} workloads with different cache sizes and calculate the relative hit ratio to the best policy in the policy set.
-%
-All policies achieve the best performance in a specific cache size and suffer from a tail performance about 20\% to 60\% relative hit ratio to the best policy.
+While a large cache size and block access benchmarks~\cite{} has less one-hit wonders, S3FIFO evicts \textit{infrequent-ephemeral} data, leading to a significant performance degradation.
 %
 
-%If we use a specific replacement policy for all traces in the benchmarks, there are \XXX{XX}\% of traces that will lose \XXX{XX}\% performance.
+\textbf{Spatial adaptive algorithms} are influenced by changed access patterns. 
 %
-%What's more, even with the same trace, if we slightly change the cache size without adjusting the replacement policy, more than 5\% of the performance potential may remain unexploited.
+ARC~\cite{} and CAR~\cite{} separate data into recency and frequency parts, and pattern transition happens only once from recency to frequency.
+%
+When the access pattern changes, it takes time to evict old data and adjust the part size.
+%
+To rebalance the marginal hit ratios, they always make a wrong decision, leading to a low hit ratio even with a large cache size.
+%
+The one-side transition framework explores only a part of linear interpolation between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
 
-
-Prior work cannot fit various \textbf{access patterns} in a benchmark.
+\textbf{Temporal adaptive algorithms} suffer from a conflict of sub-policies. 
 %
-As shown in figure ~\autoref{fig:cloudphysics}(a), we evaluate the performance of 16 cache replacement policies~\cite{} in Cloudphysics~\cite{}. 
+CACHEUS~\cite{} and LeCaR~\cite{} invoke two basic policies with different probabilities to cover the design scopes of each base policy.
 %
-CloudPhysics provides \XXX{106} traces. 
+However, in practice, probabilistic invocation can only account for one policy's design scope at a time, leading to a sub-optimal result. 
 %
-We evaluate the hit ratio of replacement policies under a given cache size, which is relative to the working set size(WSS). 
-%
-For each workload, we select the replacement policy with the highest hit ratio as the optimal policy. 
-%
-Then, we calculate each policy's performance relative to the optimal policy and compute the geometric mean across all traces.
-%
-We observe that S3FIFO~\cite{} performs better when the cache size is small, while LIRS performs better when the cache size is large. 
-%
-Most replacement policies achieve an average performance of under 95\%, which means that using the same replacement policy for all traces would result in sacrificing nearly 5\% of potential performance gains.
-%
-As shown in figure ~\autoref{fig:cloudphysics}(b), the worst-performing 10\% of workloads for both S3FIFO and ARC only achieve 80\% performance when the cache size is 3\% WSS.
-%
-While \sys is the best policy in all cache sizes, it is the \textbf{best} policy in \textbf{50\%} percent of workloads, and achieves \textbf{95\%} performance in \textbf{95\%} of traces.
-%
-
-
-\DZ{I am lost. How is what you measure in this paragraph different from the last paragrap. }
-For the same workload, the performance of different policies varies significantly with different \textbf{cache sizes}.
-%
-As shown in figure~\autoref{fig:mrcdemo}(a), ARC~\cite{} and LIRS~\cite{} achieve the best performance in different cache sizes in systor~\cite{}. 
-%
-We select the replacement policy with the highest hit ratio as the optimal policy and compute the relative hit ratio of each policy to the optimal policy.
-%
-In figure~\autoref{fig:mrcdemo}(b), when the cache size enlarges from 80GB to 140GB, ARC closely follows the optimal policy, but when we enlarge the cache size to 1600GB, the performance of ARC degrades by about 20\%.
-%
-What is more, the performance of WTinyLFU~\cite{} is metastable at all cache sizes.
-%
-When the cache size is 50GB, it achieves 99.3\% hit ratio of the best policy, but when the cache size is 40BG or 60GB, it degrades to 88.7\% and 90.0\% respectively.
-%
-When we consider \sys, it is the best policy and outperforms other policies by about 2\%.
-
-\subsection{Adaption for mixed access patterns}
-\label{ss:adaption-criteria}
-Prior work splits the cache into different parts to handle access patterns or filter interference between them.
-%
-They commonly split the cache into three functional parts: \cc{the main cache}, \cc{the filter cache}, and \cc{the ghost cache}.
-%
-If the access patterns are a major pattern and an interference pattern, the main cache stores the major pattern, and the filter cache filters the interference pattern.
-%
-If there are two major patterns, they split the main cache into two parts, one for each major pattern. 
-%
-Many policies use the ghost cache to store the metadata of the evicted objects~\cite{}, \XXX{which can be used to adjust the size of other parts.}
-%   
-\DZ{Lost, what do you mean here?}·
-%The missing records in the ghost cache can help adjust the size of the main cache and filter cache.
-The access patterns in~(\S\ref{ss:access-patterns}) and incomplete criteria for adjustment mechanisms limit the capability of the replacement policy.
-
-%They change the part size according to the hit information and tag the object type with static criteria.
-
-\textbf{The major pattern and interference pattern.} In order to filter scan in the LRU-friendly pattern, SLRU~\cite{} adds the new object to the filter cache and promotes it to the main cache if it is reaccessed.
-%
-LIRS~\cite{} uses the ghost cache to identify the recently accessed objects and promotes them to the main cache if they are reaccessed.
-%
-In order to filter period repeated access in the LFU-friendly pattern, MQ~\cite{} splits the cache into many parts to store the objects with different access frequencies and evicts the object with the lowest access frequency.
-%
-TinyLFU~\cite{} uses the filter part to record the access frequency, and only those with high access frequency are admitted into the main cache.
-%
-S3-FIFO~\cite{} analyzes the access pattern and finds that most benchmarks consist of many scan accesses (named One-hit-wonder), so it uses a small filter cache to decrease newly accessed objects and a ghost cache to pick up the wrongly evicted objects.
-% 
-
-\textbf{Dueling for two major patterns.} Others think that the replacement policy should adapt to the access pattern, so they design the policy to cover both LRU-friendly and LFU-friendly patterns.
-%
-LeCaR~\cite{} and Cacheus~\cite{} leverage two major replacement policies (e.g., LRU and LFU) and adjust the probability of applying each policy based on the hit information collected from the ghost cache.
-%
-2Q~\cite{}, ARC~\cite{} and CAR~\cite{} consider that the first access to objects and subsequent accesses exhibit different patterns, and therefore 
-\DZ{How is us relevant to 2Q, ARC, and CAR?}
-\XXX{we} need to manage them separately. 
-%
-They use ghost caches to adjust the proportion of different types of objects accordingly.
-%Dueling for LRU-friendly and LFU-friendly. ARC, CAR, 2Q,LeCaR,Cacheus,LRFU
-
-\textbf{The adaptation process in prior work is short-sighted.}
-%
-These policies based on basic access patterns are insufficient and suffer from severe performance degradation.% different access pattern. 
-%
-First, basic access patterns are unaware of the cache size, causing the replacement policy's performance to fluctuate significantly as the cache size changes. 
-%
-As shown in figure~\ref{fig:mrcdemo}(b) and figure~\ref{fig:alibb}(a), the performance of ARC, WTinyLFU, and LeCaR degrade when the cache size is larger.
-%
-Second, they are too positive about the objects in the filter cache and ghost cache, leading to misjudgment about the overall access behavior. 
-%relying solely on the objects in the ghost cache may lead to misjudgments about the overall access behavior.
-%
-If a request hits the ghost cache, these policies increase the cache size of the corresponding pattern or the usage probability of the competing pattern as compensation.
-%
-What's more, these policies do not account for hits in the main cache, in ARC and CAR, many objects that are accessed only twice consecutively can cause cache pollution by evicting important objects from the main cache.
-%
-We will discuss it in (\S\ref{ss:dynamic-adjust}). 
-
-\textbf{Summary:We need to take the overall cache access behavior into account to adapt to mixed access patterns.}
-
-
-%
-%For trace $\text{AAAABBCCCDDCCA}$, if the cache size is 2, the base policy is LRU, so it is LRU-friendly, but if the cache size is 3, the base policy is LFU, so it is LFU-friendly.
-%
+Moreover, under such a framework, policy A may evict the data that policy B focuses on, and the confliction breaks the originally intended linear interpolation space.
