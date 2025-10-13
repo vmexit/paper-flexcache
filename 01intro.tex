@@ -16,7 +16,7 @@ To design a reliable cache eviction algorithm, prior work analyzes workload acce
 %
 There are four typical primitive access patterns: \textit{LFU-friendly}, \textit{LRU-friendly}, \XXX{\textit{Churn}}, and \textit{Scan}~\cite{}.
 %
-A non-adaptive algorithm~\cite{} consistently leverages a fixed criterion and workflow to manage one or part of access patterns; 
+A non-adaptive algorithm~\cite{} makes a predefined assumption about access distribution and consistently leverages a fixed criterion and workflow to manage one or part of target access patterns; 
 %
 while an adaptive algorithm~\cite{} adjusts the operation or cache size for the data in different patterns.
 
@@ -89,7 +89,7 @@ As a comparison, the next-best algorithm is \XXX{}, which is the dominant algori
 
 \sys is also efficient and scalable because FIFO queues and the sketch enable lock-free implementations.
 %
-We implemented a prototype of \sys in Cachelib~\cite{} and show that \sys achieves \TODO{}.
+We implemented a prototype of \sys in Cachelib~\cite{} and show that \sys achieves \TODO{more details}.
 
 \begin{figure}[t]
 \centering
@@ -107,8 +107,8 @@ We implemented a prototype of \sys in Cachelib~\cite{} and show that \sys achiev
 
 In summary, this work makes the following contributions:
 \squishlist
-\item{{We propose a new hotness and phase-based type classification, which comprehensively characterizes primitive access patterns and reveals the relationship between them.}}
-\item{{Based on the new classification, we design \sys, a reliable cache eviction algorithm, which dominates across diverse workloads.}}
-\item{{We implement a prototype of \sys in Cachelib and demonstrate its efficiency and scalability.}}
+\item{{\textbf{hotness and phase-based type classification}, which comprehensively characterizes primitive access patterns and reveals the relationship between them.}}
+\item{{\textbf{\sys}. Based on the new classification, we design \sys, a reliable cache eviction algorithm, which dominates across diverse workloads.}}
+\item{{\textbf{efficiency and scalability}. We implement a prototype of \sys in Cachelib and demonstrate its efficiency and scalability.\TODO{more details}}}
 \squishend
 %

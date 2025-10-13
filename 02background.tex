@@ -46,7 +46,7 @@ An adaptive algorithm will adjust the operation or cache size for data in differ
 %
 However, adaptive algorithms are not the best choice for various patterns, and a non-adaptive algorithm, S3FIFO, outperforms them in many workloads.
 
-Non-adaptive algorithms filter a major access pattern from interference patterns.
+Non-adaptive algorithms make a predefined assumption about access distribution and mainly filter a major access pattern from interference patterns.
 %
 Deviated from the LRU algorithm, SLRU~\cite{} changes the insertion point to filter out the \textit{Scan} pattern from the \textit{LRU-friendly} pattern.
 %
@@ -72,30 +72,34 @@ However, adaptive algorithms cannot separate primitive access patterns perfectly
 
 \subsection{The metastable phenomenon}
 \label{ss:the-metastable-phenomenon}
+SOTA algorithms are metastable in many benchmarks, which means that they perform poorly in some workloads.
+%
+First, we evaluate algorithms in many workloads with different cache sizes and select the algorithm with the highest hit rate in each configuration as the \textbf{dominant algorithm}.
+%
+Then, we calculate the relative hit ratio to the dominant algorithm for each algorithm.
+%
+Finally, we group the results by cache size or workload and form CDFs to show the metastable phenomenon.
+%
+For a workload, the dominant algorithm changes with the cache size.
+%
+What is more, there are more than \XXX{10\%} of workloads that lose more than \XXX{20\%} performance with a specific algorithm for a given cache size.
+
+The metastable phenomenon of cache eviction algorithms poses a challenge for cache deployment.
+%
+As shown in figure~\ref{fig:cloudphysics}, when an administrator deploys a single algorithm, about 10\% of workloads tend to have more than 20\% performance loss than expected dominant algorithm.
+%
+As the cache size changes, the dominant algorithm gradually shifts.
+%
+Keeping the same eviction algorithm under such changes prevents full utilization of system performance, while using multiple eviction algorithms simultaneously increases management complexity.
+\TODO{details}
+
+\textbf{Non-adaptive algorithms} are limited by their design space. They makes a predefined assumption about access distribution
+
+\textbf{Spatial adaptive algorithms} are influenced by changed access patterns.
+
+\textbf{Temporal adaptive algorithms} suffer from a conflict of sub-policies.
 
 
-This section presents a background on software cache systems~(\autoref{ss:background-software-cache}) and a phenomenon that most current replacement policies operate in a metastable state~(\autoref{ss:performance-policy-change}).
-%
-We analyze the root causes of this issue from two perspectives: basic access pattern classification~(\autoref{ss:access-patterns}) and replacement policy design~(\autoref{ss:adaption-criteria}).
-
-\XXX{Captalize the subsection title properly. Please check prior papers}
-\XXX{Certain sentences need a citations}
-
-\subsection{Background on software cache systems}
-\label{ss:background-software-cache}
-\XXX{Do we need this subsection? Is there a risk that reviewers do not know what is a cache?}
-Software cache systems are widely \XXX{implemented} \DZ{Avoid the term implement as much as possible in a systems paper. Implement means trivial} in various fields to improve service performance.
-%
-In storage systems, faster devices are typically more expensive and have smaller capacities. 
-%
-To reduce costs and minimize data access latency, \XXX{we} \DZ{Who? This sounds you implement cache.} place a subset of the data on high-speed devices to form a cache system.
-%
-\XXX{In the KV-store, CDN, and memory devices, the cache stores Key-Value pairs, web objects, and data blocks, respectively, and we use the term \textit{object} to represent the data unit stored in the cache} \DZ{Citation?}.
-%
-
-Generally, \XXX{cache systems have three main research directions: \cc{access pattern analysis}, \cc{cache replacement policies}, and \cc{cache prefetching}.} 
-%
-\DZ{??} 
 %
 Access pattern analysis helps design replacement policies or adjust parameters in real-time to adapt to different situations.
 %
