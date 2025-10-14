@@ -29,7 +29,7 @@ def getdfRHR(filepath, bench, cachesize):
     df = pd.read_csv(filepath,header=0,index_col=0)
     #keeyp rows with any value < 0.9
     df = df[(df < 0.99).all(1)]
-    df = df[(df < 0.9).any(axis=1)]
+    df = df[(df < 0.95).any(axis=1)]
     #df = df[(df < 0.9).all(1)]
     for col in dropcolumn:
         if col in df.columns:
