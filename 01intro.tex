@@ -6,7 +6,7 @@ For the cache to work in a variety of scenarios, it should be
 %
 (1) \textit{reliable}: whatever the workload and cache size are, the cache should keep a high hit ratio for short latencies; 
 %
-(2) \textit{efficient}: it should manage data in the cache space effectively for high throughput; and 
+(2) \textit{efficient}: it should manage data in the cache space effectively for low bandwith consumption and high throughput; and 
 %
 (3) \textit{scalable}: the ability to handle data requests can scale with the increase in the number of CPU cores and the cache size.
 %
@@ -30,7 +30,7 @@ What is more, S3FIFO has a high throughput close to Segcache~\cite{} and achieve
 %
 As shown in figure~\ref{fig:cloudphysics}, non-adaptive algorithms, e.g., S3FIFO and WTinyLFU~\cite{}, outperform adaptive algorithms, e.g., ARC~\cite{}, in small and large cache sizes separately.
 
-Prior adaptive algorithms failed to cover the full spectrum of access patterns because they rely on two interpolated patterns.
+Prior adaptive algorithms failed to cover the full spectrum of access patterns because they rely on two interpolated discrete patterns.
 %
 There are two types of adaptive algorithms: \textit{spatial adaptive} algorithm~\cite{} and \textit{temporal adaptive} algorithm~\cite{}.
 %
@@ -38,16 +38,16 @@ Spatial adaptive algorithms separate data into two access patterns and manage th
 %
 Temporal adaptive algorithms leverage two basic policies for different primitive access patterns and invoke them with different probabilities to exploit temporal locality.
 %
-They alternate between two basic policies, and, what is more, if a basic policy targets more than one primitive access pattern, the two policies will interfere with each other.
+They alternate between two basic policies, and, what is more, if a basic policy targets more than one primitive access pattern, the two policies will duel and interfere with each other.
 %
 
-To preserve a high cache hit rate in various complex access patterns, our {\textit{key insight}} is that \textbf{To be effective, a cache eviction algorithm should cover all contiguous space of access patterns by phase and hotness adaption, rather than interpolation between access patterns as done in prior work.} 
+To preserve a high cache hit rate in various complex access patterns, our {\textit{key insight}} is that \textbf{To be effective, a cache eviction algorithm should cover all contiguous space of access patterns by phase and hotness adaption, rather than interpolation between discrete access patterns as done in prior work.} 
 %
 As shown in figure~\ref{fig:insight}, spatial adaptive algorithms target frequency- and recency-based data, which lies between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
 %
 Temporal adaptive algorithms invoke the LRU-Scan-Resistant and LFU-Churn-Resistant policies with probabilities, which are two interpolated policies implemented at different times.
 %
-The phase- and frequency-based classification can cover all four typical primitive access patterns and capture the mixed parts to fill the contiguous space.  
+The phase- and hotness-based classification can cover all four typical primitive access patterns and reveals how different types transform from one to another, thus capturing the mixed parts to fill the contiguous space. 
 
 \begin{figure}[t]
 \centering
@@ -56,11 +56,11 @@ The phase- and frequency-based classification can cover all four typical primiti
 \label{fig:insight}
 \end{figure}
 
-This paper proposes a hotness- and phase-based type classification that covers all four typical primitive access patterns. 
-%
-Based on access frequency, data is either frequently or infrequently accessed.
+This paper proposes a phase- and hotness-based type classification that covers all four typical primitive access patterns. 
 %
 According to the number of phases in which the data appears, it can be categorized as persistent or ephemeral.
+%
+Based on access hotness, data is either frequently or infrequently accessed.
 %
 The four basic types are therefore: \textit{frequent-persistent}, \textit{frequent-ephemeral}, \textit{infrequent-persistent}, and \textit{infrequent-ephemeral}.
 %
@@ -112,8 +112,8 @@ We implemented a prototype of \sys in Cachelib~\cite{} and show that \sys achiev
 
 In summary, this work makes the following contributions:
 \squishlist
-\item{{\textbf{hotness and phase-based type classification}, which comprehensively characterizes primitive access patterns and reveals the relationship between them.}}
+\item{{\textbf{Phase and hotness-based type classification}, which comprehensively characterizes primitive access patterns and reveals the relationship between them.}}
 \item{{\textbf{\sys}. Based on the new classification, we design \sys, a reliable cache eviction algorithm, which dominates across diverse workloads.}}
-\item{{\textbf{efficiency and scalability}. We implement a prototype of \sys in Cachelib and demonstrate its efficiency and scalability.\TODO{more details}}}
+\item{{\textbf{Efficiency and scalability}. We implement a prototype of \sys in Cachelib and demonstrate its efficiency and scalability.\TODO{more details}}}
 \squishend
 %

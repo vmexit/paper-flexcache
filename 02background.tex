@@ -1,10 +1,10 @@
 \section{Background and Motivation}
 \label{s:background}
-This section provides background on classical access patterns~\cite{}~(\autoref{ss:access-pattern-based-analysis}) and on how prior work designs algorithms to cover them, both non-adaptively~\cite{} and adaptively~\cite{}~(\autoref{ss:non-adaptive-and-adaptive-algorithms}). However, the real-world access is much complex than ideal access patterns. We observe that most eviction algorithms operate in a metastable state, leading to a significant decrease in hit ratio for some benchmarks and configurations~(\autoref{ss:the-metastable-phenomenon}).
+This section provides background on classical access patterns~\cite{}~(\autoref{ss:access-pattern-based-analysis}) and on how prior work designs algorithms to cover them, both non-adaptively~\cite{} and adaptively~\cite{}~(\autoref{ss:non-adaptive-and-adaptive-algorithms}). However, the real-world access is much complex than ideal access patterns. We observe that most eviction algorithms operate in an unreliable metastable state, leading to a significant decrease in hit ratio for some benchmarks and configurations~(\autoref{ss:the-metastable-phenomenon}).
 
 \subsection{Access pattern-based analysis}
 \label{ss:access-pattern-based-analysis}
-Many work analyzes access streams based on metrics to classify them into specific access patterns~\cite{}. 
+Many work analyzes access streams based on metrics to classify them into specific discrete access patterns~\cite{}. 
 %
 The locality of accesses is an intrinsic property of workloads, which reveals the potential for caching.
 %
@@ -68,11 +68,11 @@ Temporal adaptive algorithms, LeCaR~\cite{} and Cacheus~\cite{}, propose a frame
 %
 LeCaR uses LRU and LFU as two basic policies, and Cacheus uses LRU-Scan-Resistant and LFU-Churn-Resistant as two basic policies.
 %
-However, adaptive algorithms cannot separate primitive access patterns perfectly in either spatial or temporal dimensions, which incurs a great overhead in the framework.
+However, adaptive algorithms cannot separate primitive access patterns perfectly in either spatial or temporal dimensions, and thus subparts of adaptive algorithms duels with each other, rather than cooperating to improve the hit ratio, which incurs a great overhead in the framework.
 
 \subsection{The metastable phenomenon}
 \label{ss:the-metastable-phenomenon}
-SOTA algorithms are metastable in many benchmarks, which means that they perform poorly in some workloads.
+SOTA algorithms are metastable in many benchmarks, which means that they unreliably perform poorly in some workloads.
 %
 First, we evaluate algorithms in many workloads with different cache sizes and select the algorithm with the highest hit rate in each configuration as the \textbf{dominant algorithm}.
 %

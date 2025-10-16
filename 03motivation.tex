@@ -1,6 +1,72 @@
-\section{Phase-aware and cache size-aware}
-\label{s:phase-aware}
-This section presents a new perspective on phase aware and cache size aware classification of objects~(\S\ref{ss:split-trace}), and how to dynamically adapt to the changed access patterns~(\S\ref{ss:dynamic-adjust}).
+\section{Phase and hotness aware classification}
+\label{s:phase-hotness}
+It is a challenge to identify different access patterns in the workload.
+%
+Prior work classifies primitive access patterns based on access frequency and recency as we discussed in \S\ref{ss:access-pattern-based-analysis}.
+%
+Unfortunately, this type of classification leaves a huge portion of undefined accesses between the discrete access patterns, and the non-adaptive analysis has limited capability to guide the design of online algorithms.
+%
+To overcome this challenge, this paper proposes a new perspective to \textbf{adaptively} classify the workload into \textbf{cooperative} types based on \textit{phase and hotness} and converts it into an \textbf{online} version to guide the design of a reliable cache eviction algorithm in different cache sizes~(\TODO{cite design}).
+
+This section presents how phase size reveals the intrinsic locality property of workloads~(\autoref{ss:adaptive-phases}), how different hotness during phases reflects locality changes~(\autoref{ss:hotness-during-phases}), and the characteristics of the four primitive types based on phase and hotness~(\autoref{ss:phase-hotness-based-types}).
+
+\subsection{Locality in phases}
+\label{ss:adaptive-phases}
+Phase analysis is significant to understand the locality of workloads.
+%
+Prior work analyzes phases based on a fixed interval to capture the periodicity of accesses~\cite{}.
+%
+Predefined intervals are helpful to find the \textit{daily or long-term periodicity} of accesses, indicating user behaviors, and adjust the cache behavior periodicity.
+%
+However, this kind of metric does not a guidance for access patterns and design of cache eviction algorithms.
+%
+This paper analyzes the phase adaptively and reveals the intrinsic locality property of workloads.
+
+Rather than splitting the trace based on a \textit{fixed time interval} or a \textit{fixed number} of accesses, we split the trace based on a relative size of working set size (WSS).
+%
+More specifically, the number of accesses in a phase is changed adaptively, but the unique data in a phase is limited to a predefined footprint size.
+%
+We analyze the workload with different footprint sizes, a relative size of WSS, and the length of a phase indicates the locality of filling an empty cache.
+%
+With a fixed footprint size for a workload, the less number of phases and the longer the phase, the better locality it has.
+
+We classify the data into \textbf{persistent} and \textbf{ephemeral} types dynamically based on the number of phases in which the data appears, which reveals the intrinsic locality property of workloads.
+%
+Phase size also affects the data that appears in different phases.
+%
+With a large phase size equal to WSS, there is only one phase, and all data appears in this phase as persistent types, which means that if the cache size is large enough, all data can be cached with good locality.
+%
+With a small phase size as footprint one, almost all accesses are in different phases, and there is no locality for extremely small cache size to store ephemeral types.
+%
+In the other cases, the data is distributed in different phases, and persistent types appear more often than ephemeral types.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/cachesizeaware.drawio.pdf}
+    \caption{Phase-based classification.(1) Split the workload into phases based on the footprint size. 
+    (2) The sliding window and aging function dynamically mark the object types.
+    With a large phase size as footprint six, \cc{A}, \cc{B}, and \cc{C} are persistent types for all phases, and others are ephemeral types.
+    With a small phase size as footprint four, only \cc{A} appears in all phases as a persistent type, and \cc{B} and \cc{C} occur in some phases as persistent type compared to others as ephemeral types.
+    }
+    \label{fig:Phase-based}
+\end{figure}
+
+As shown in figure~\ref{fig:Phase-based}, we demonstrate how to split the trace into phases based on the footprint size and an online version with a sliding window for ~(\TODO{cite design}).
+%
+For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, there are three phases: \cc{ABCDAB}, \cc{EFABA}, and \cc{CGAH}.
+
+
+
+
+
+real-world phases
+
+
+\subsection{Hotness during phases}
+\label{ss:hotness-during-phases}
+
+\subsection{Phase and hotness based types}
+\label{ss:phase-hotness-based-types}
 
 \subsection{Phase- and cache size-aware patterns}
 \label{ss:split-trace}
@@ -70,12 +136,7 @@ While if the footprint is six and there is a request for \cc{G}, we keep \cc{A},
 %
 \sys integrates the sliding window and aging function to the replacement policy only with a few bits as S3-FIFO~(\S\ref{ss:integrate}).
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/cachesizeaware.drawio.pdf}
-    \caption{Phase for cache size-aware.(1) Split the workload into phases based on the cache size. (2) The sliding window and aging function dynamically mark the object types.}
-    \label{fig:exapmle}
-\end{figure}
+
 
 \subsection{Dynamicly fit the phase and cache size}
 \label{ss:dynamic-adjust}
