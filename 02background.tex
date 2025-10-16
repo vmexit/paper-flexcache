@@ -112,7 +112,7 @@ When the access pattern changes, it takes time to evict old data and adjust the 
 %
 To rebalance the marginal hit ratios, they always make a wrong decision, leading to a low hit ratio even with a large cache size.
 %
-The one-side transition framework explores only a part of linear interpolation between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
+The one-side transition framework explores only a part of interpolation between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
 
 \textbf{Temporal adaptive algorithms} suffer from a conflict of sub-policies. 
 %
@@ -120,4 +120,4 @@ CACHEUS~\cite{} and LeCaR~\cite{} invoke two basic policies with different proba
 %
 However, in practice, probabilistic invocation can only account for one policy's design scope at a time, leading to a sub-optimal result. 
 %
-Moreover, under such a framework, policy A may evict the data that policy B focuses on, and the confliction breaks the originally intended linear interpolation space.
+Moreover, under such a framework, policy A may evict the data that policy B focuses on, and the confliction breaks the originally intended interpolated space.

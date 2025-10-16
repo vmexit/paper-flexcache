@@ -30,7 +30,7 @@ What is more, S3FIFO has a high throughput close to Segcache~\cite{} and achieve
 %
 As shown in figure~\ref{fig:cloudphysics}, non-adaptive algorithms, e.g., S3FIFO and WTinyLFU~\cite{}, outperform adaptive algorithms, e.g., ARC~\cite{}, in small and large cache sizes separately.
 
-Adaptive algorithms failed to cover the full spectrum of access patterns because they rely on linear interpolation of patterns.
+Prior adaptive algorithms failed to cover the full spectrum of access patterns because they rely on two interpolated patterns.
 %
 There are two types of adaptive algorithms: \textit{spatial adaptive} algorithm~\cite{} and \textit{temporal adaptive} algorithm~\cite{}.
 %
@@ -41,11 +41,11 @@ Temporal adaptive algorithms leverage two basic policies for different primitive
 They alternate between two basic policies, and, what is more, if a basic policy targets more than one primitive access pattern, the two policies will interfere with each other.
 %
 
-To preserve a high cache hit rate in various complex access patterns, our {\textit{key insight}} is that \textbf{To be effective, a cache eviction algorithm should cover all contiguous space of access patterns, rather than linear interpolation between access patterns as done in prior work.} 
+To preserve a high cache hit rate in various complex access patterns, our {\textit{key insight}} is that \textbf{To be effective, a cache eviction algorithm should cover all contiguous space of access patterns by phase and hotness adaption, rather than interpolation between access patterns as done in prior work.} 
 %
 As shown in figure~\ref{fig:insight}, spatial adaptive algorithms target frequency- and recency-based data, which lies between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
 %
-Temporal adaptive algorithms invoke the LRU-Scan-Resistant and LFU-Churn-Resistant policies with probabilities, which are two linear interpolations implemented at different times.
+Temporal adaptive algorithms invoke the LRU-Scan-Resistant and LFU-Churn-Resistant policies with probabilities, which are two interpolated policies implemented at different times.
 %
 The phase- and frequency-based classification can cover all four typical primitive access patterns and capture the mixed parts to fill the contiguous space.  
 

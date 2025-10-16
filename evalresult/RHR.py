@@ -11,10 +11,10 @@ outputdir = currentdir+"/../data/RHR"
 if not os.path.exists(outputdir):
     os.makedirs(outputdir)
 
-dropcolumn=["Belady"]
+dropcolumn=["Belady", "QDLP"]
 #accp4 ARC Cacheus Clock FIFO FIFO-Merge GDSF Hyperbolic LHD LIRS LeCaR QDLP S3FIFO S4LRU TwoQ WTinyLFU
 column = ["flex-0.10-0.05-1.00", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
-column = ["FlexCache", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
+column = ["FlexCache", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
 
 
 def getrelative(df):
@@ -61,6 +61,18 @@ def storeRHR(df, outputdir, bench):
     tmpres = tmpres[column]
     tmpres.to_csv(outputdir+"/"+bench+".dat", sep=' ', float_format='%.3f')
     
+def performance(df):
+    dfsort = df.apply(np.sort)
+    dfsort = dfsort[column]
+    target = [1,0.99,0.95,0.90]
+    dfper = pd.DataFrame(columns=df.columns)
+    for col in dfsort.columns:
+        for t in target:
+            dfper.at[str(t*100)+"%", col] = (dfsort[col] >= t).sum()/len(dfsort[col])
+    dfper = dfper[column]
+    print(dfper)
+    
+    
 def calculate(inputdir, outputdir):
     result = {}
     resultB = {}
@@ -82,6 +94,8 @@ def calculate(inputdir, outputdir):
                     totalB[cachesize] = pd.concat([totalB[cachesize], dfret])
                 if len(dfret.index) > 100:
                     storeCDFTail(dfret, outputdir, bench+"B", cachesize, rhr)
+                    print(bench, cachesize)
+                    performance(dfret)
             else:
                 continue
                 result[bench][cachesize] = rhr
@@ -99,7 +113,9 @@ def calculate(inputdir, outputdir):
     for cachesize in totalB:
         rhr = (totalB[cachesize].prod(axis=0))**(1/len(totalB[cachesize]))
         storeCDFTail(totalB[cachesize], outputdir, "totalB", cachesize, rhr)
-        print(totalB[cachesize].shape)
+        print(cachesize)
+        performance(totalB[cachesize])
+        
         
 for subdir in os.listdir(inputdir):
     subinputdir = os.path.join(inputdir, subdir)
