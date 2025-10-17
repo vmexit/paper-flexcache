@@ -9,6 +9,7 @@ Unfortunately, this type of classification leaves a huge portion of undefined ac
 To overcome this challenge, this paper proposes a new perspective to \textbf{adaptively} classify the workload into \textbf{cooperative} types based on \textit{phase and hotness} and converts it into an \textbf{online} version to guide the design of a reliable cache eviction algorithm in different cache sizes~(\TODO{ref design}).
 
 This section presents how phase size reveals the intrinsic locality property of workloads~(\autoref{ss:adaptive-phases}), how different hotness during phases reflects locality changes~(\autoref{ss:hotness-during-phases}), and the characteristics of the four primitive types based on phase and hotness~(\autoref{ss:phase-hotness-based-types}).
+\XXX{llj: maybe, online phase version is designed for online property, hotness is designed for cooperative property, and \sys classifies the types adaptively based on both phase and hotness.}
 
 \subsection{Locality in phases}
 \label{ss:adaptive-phases}
@@ -24,7 +25,7 @@ This paper analyzes the phase adaptively and reveals the intrinsic locality prop
 
 Rather than splitting the trace based on a \textit{fixed time interval} or a \textit{fixed number} of accesses, we split the trace based on a relative size of working set size (WSS).
 %
-More specifically, the number of accesses in a phase is changed adaptively, but the unique data in a phase is limited to a predefined footprint size.
+More specifically, the number of accesses in a phase is changed adaptively, but the unique data in a phase is limited to a predefined size called footprint size.
 %
 We analyze the workload with different footprint sizes, a relative size of WSS, and the length of a phase indicates the locality of filling an empty cache.
 %
@@ -67,7 +68,7 @@ Splitting a workload into phases does not match the online algorithm's workflow,
 %
 A sliding window with a fixed footprint size provides the same effect to splitting the trace into phases in a fine-grained manner.
 %
-To reduce the space overhead of recording all accesses in the sliding window, a FIFO queue with a frequency counter has a similar effect to the sliding window.
+To reduce the space overhead of recording all accesses in the sliding window, a FIFO queue with a frequency counter has a similar effect to the sliding window, which also hold the relative access sequence.
 %
 An object enters the head of FIFO queue when its phase begins and is aged at the tail of the queue, indicating the end of the phase.
 %
@@ -77,35 +78,67 @@ In this case, \cc{A} and \cc{B} are persistent types, others are ephemeral types
 %
 While with footprint six, \cc{ABC} are persistent types, and others are ephemeral types.
 
-
-
-
 \subsection{Hotness during phases}
 \label{ss:hotness-during-phases}
+Phase analysis splits the workload adaptively, and hotness analysis reveals the locality changes during phases.
+%
+The hotness of data indicates how frequently it is accessed in a phase, and the more times it is accessed, the hotter it is with better locality for caching.
+%
+When we conpare the hotness of data in different phases, changed hotness indicates the transformation of locality.
+%
+The hotness analysis is a compensation for phase analysis.
+
+We classify the data into \textbf{frequent} and \textbf{infrequent} types dynamically based on access hotness in a phase.
+%
+To properly classify the data, we collect the access frequency distribution of data in the phase as hotness information.
+%
+Without lose of generality, only a part of data can be kept in the cache, so we can choose a portion of data to be cached based on access frequency.
+%
+Then, we sort data accesses by frequency in descending order, and progressively fill the portion.
+%
+The access frequency at which reaches the portion is treated as the threshold to separate frequent and infrequent types.
+%
+The threshold changes with the target portion adaptively in different phases.
+
+As shown in figure~\ref{fig:wss}, hotness changes with phase and phase size.
+%
+In the figure, a workload slice from Alibaba~\cite{} is split into phases with different phase sizes, and the access frequency distribution is shown in heatmap.
+%
+\XXX{For visualization, we cap the maximum frequency at 4; values above 4 are still represented as 4, and we cut off some data accessed only once in this slice.}
+%
+Frequent data (accessed more than four times in a phase) are more likely to be accessed in the following phases, indicating good locality for caching.
+%
+For example, in figure~\ref{fig:wss}(a), half of the objects accessed in phase 0 are active in the rest phase.
+%
+If not, phase access preference changes, and for example, frequent data in phase 3, 7 and 11 have a huge gap.
+%
+When the phase size is larger, frequent data are concentrated exhibiting better locality, as shown in figure~\ref{fig:wss}(b).
+
+Hotness analysis is also an offline version, and it can cope with the online phase analysis~(\ref{ss:adaptive-phases}) to form an online version for \sys~(\TODO{ref}).
+%
+The offline hotness analysis collects the access frequency distribution and classifies data based on the threshold at the end of each phase.
+%
+In the online version, access frequency distribution manages data in the FIFO queue for a phase.
+%
+When access or aging occurs, it uses the new distribution to update the threshold dynamically.
+%
+With the new threshold, the online analysis classifies data into frequent and infrequent types.
+%
+It can also classify data when threshold changes due to access or aging occurs to reduce the overhead.
+
 
 \subsection{Phase and hotness based types}
 \label{ss:phase-hotness-based-types}
+New types
 
-\subsection{Phase- and cache size-aware patterns}
-\label{ss:split-trace}
-When analyzing the access pattern, we need to consider the cache size to design a cache size-aware replacement policy.
-%
-Prior work~\cite{} analyzes the trace based on a period or a fixed number of accesses, and when the miss ratio changes, they think there is a phase change.
-%
-This method reveals that requests for objects change with time, but it is not accurate in adjusting the cache replacement policy.
-%
-\textbf{Our insights is that if the phases of data access are related to the cache size, then analyzing phase information includes information about the cache size.}
-%
-We propose that if a set of requests' footprint is less than the cache size, they are in the same phase.
-%
-When the cache size is the same as WSS, we analyze the workload as a whole.
-%
-%To design a cache size-aware replacement policy, we analyze the relationship between the cache size and the trace by splitting the trace into phases based on the cache size.
-%
+hold the recency and frequency properties.
+
+New properties
+
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/phase.png}
-    \caption{Access phases in Alibaba for different cache sizes.}
+    \caption{Access phases in Alibaba for different cache sizes.\TODO{update}}
     \label{fig:wss}
 \end{figure}
 
@@ -126,8 +159,6 @@ When the cache size is larger, it contains more objects, and frequently accessed
 In figure~\ref{fig:wss}(b), frequently accessed objects in phase 0 are active in the rest phase with more accesses(darker color), and the objects in phase 3 are active in phases 5 and 7, which helps to discover the access pattern with cache size.
 
 
-
-%According to how many times the object accessed and how many phases it appears, we mark the object into four types dynamicly.  \dots
 We categorize objects into four types based on the number of accesses and phases in which they appear. 
 %
 They are classified as frequently accessed (FA) and infrequently accessed (IA) objects based on their access frequency and divided into multi-phase (MP) and few-phase (FP) objects based on their occurrence across phases.
@@ -156,8 +187,6 @@ While if the footprint is six and there is a request for \cc{G}, we keep \cc{A},
 
 
 
-\subsection{Dynamicly fit the phase and cache size}
-\label{ss:dynamic-adjust}
 After applying the classification method~(\autoref{ss:split-trace}), we describe the relationship between access patterns and cache size from the perspective of access phases.
 %
 The more hits within a phase, the more suitable the access pattern is for caching. This also indicates that the cache is relatively large, with a higher hit ratio.
@@ -172,29 +201,10 @@ We dynamically adjust the criteria for caching objects based on the overall acce
     \centering
     \subfigure[MRC]{\input{data/fiumrc}}
     \subfigure[Phases for 2MB]{\includegraphics[width=0.47\columnwidth]{fig/fiuwss.png}}
-    \caption{Miss ratio and analysis for fiu.}
+    \caption{Miss ratio and analysis for fiu.\TODO{rewrite MRC without prefetching}}
     \label{fig:fiu}
 \end{figure}
 
-%We analyze \XXX{5000+} workloads and decide to cache part of the objects.
-%
-We count the frequency at which an object is accessed and calculate the average resue time, discovering a linear-logarithmic relationship between them. 
-%
-%With the metadata in the ghost cache, \sys discover the access frequency distribution of the objects more than a phase and cache FA or MP objects dynamically~(\autoref{ss:integrate}). 
-%
-As shown in figure~\ref{fig:alibb}, a small amount of objects are accessed many times, while a large amount are accessed only a few times. 
-%
-The object accessed frequently has a very short average reuse time, meaning that an object accessed multiple times within a phase is more likely to be important.
-%
-They are \cc{FA-MP} objects, and LRU-friendly and LFU-friendly works well for them.
-%
-In figure~\ref{fig:alibb}(a), we analyze the access and average reuse time distribution in the Alibaba benchmark.
-%
-About \textbf{1 million} objects are accessed less than \textbf{10} times, while \textbf{hundreds} of objects are accessed more than \textbf{10 thousand} times.
-%
-The average reuse time of the objects accessed less than \textbf{10} times is about \textbf{100 million}, while the average reuse time of the objects accessed more than \textbf{10 thousand} times is about \textbf{1000}.
-%
-The distribution is the same as the one in figure~\ref{fig:alibb}(b), which is analyzed in the Twitter benchmark.
 
 The linear-logarithmic relationship exhibits the transformation from FA-MP objects to IA-MP and FA-FP objects when the cache size is reduced.
 %
@@ -240,12 +250,6 @@ With prefetching, \sys outperforms the other policies by about 20\%.
 %\sys leverage phase and aging function to hold \cc{FA-FP} objects for a period of time (\S\ref{ss:ghost}) and speculatively retain \cc{IA-MP} objects (\S\ref{ss:dueling}).
 %
 
-\begin{figure}[t]
-    \centering
-    \input{data/pop}
-    \caption{Access frequency and average reuse time distribution.}
-    \label{fig:alibb}
-\end{figure}
 
 If the cache size is relatively large, there are too many objects accessed more than once, so we improve the criteria to discover the important objects. 
 %
@@ -261,15 +265,4 @@ With the access frequency distribution, \sys dynamically increases the number of
 %
 What's more, \sys leverages the space of the ghost cache to prefetch the objects that are accessed in sequence~(\S\ref{ss:ghost}).
 
-If the cache size is relatively small, some data may not be accessed until several phases later. 
-%
-As discussed in S3-FIFO~\cite{}, many objects are accessed only once in the trace (one-hit-wonder), and S3-FIFO evicts them quickly, retrieving reaccessed objects from the ghost cache.
-%
-In many policies, the number of objects in the ghost cache is equal to or less than the cache size, so it is hard to discover the reuse beyond this scope.
-%
-If this happens commonly, the miss ratio is larger than 50\%, and we need to guess which objects are important, because the cache size is too small or the trace is not suitable for the cache.
-%
-Therefore, \sys speculatively retains these objects to reach the optimal policy~(\autoref{ss:dueling}).
-%
-As in figure~\ref{fig:cloudphysics}, the cache size is 0.3\% of the working set size, and \sys achieves 95\% performance of the optimal policy.
-%
+
