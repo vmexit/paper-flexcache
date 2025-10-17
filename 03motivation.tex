@@ -6,7 +6,7 @@ Prior work classifies primitive access patterns based on access frequency and re
 %
 Unfortunately, this type of classification leaves a huge portion of undefined accesses between the discrete access patterns, and the non-adaptive analysis has limited capability to guide the design of online algorithms.
 %
-To overcome this challenge, this paper proposes a new perspective to \textbf{adaptively} classify the workload into \textbf{cooperative} types based on \textit{phase and hotness} and converts it into an \textbf{online} version to guide the design of a reliable cache eviction algorithm in different cache sizes~(\TODO{cite design}).
+To overcome this challenge, this paper proposes a new perspective to \textbf{adaptively} classify the workload into \textbf{cooperative} types based on \textit{phase and hotness} and converts it into an \textbf{online} version to guide the design of a reliable cache eviction algorithm in different cache sizes~(\TODO{ref design}).
 
 This section presents how phase size reveals the intrinsic locality property of workloads~(\autoref{ss:adaptive-phases}), how different hotness during phases reflects locality changes~(\autoref{ss:hotness-during-phases}), and the characteristics of the four primitive types based on phase and hotness~(\autoref{ss:phase-hotness-based-types}).
 
@@ -51,7 +51,7 @@ In the other cases, the data is distributed in different phases, and persistent 
     \label{fig:Phase-based}
 \end{figure}
 
-As shown in figure~\ref{fig:Phase-based}, we demonstrate how to split the trace into phases based on the footprint size and type the accesses dynamically in contiguous phase type space.
+As shown in figure~\ref{fig:Phase-based}(1), we demonstrate how to split the trace into phases based on the footprint size and type the accesses dynamically in contiguous phase type space.
 %
 For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, there are three phases: \cc{ABCDAB}, \cc{EFABA}, and \cc{CGAH}.
 %
@@ -63,14 +63,21 @@ While if we use footprint six to split the trace, there are two phases: \cc{ABCD
 %
 \cc{A}, \cc{B}, and \cc{C} appear in all phases as persistent types, and \cc{D}, \cc{E}, \cc{F}, \cc{G}, and \cc{H} appear in only one phase as ephemeral types.
 
-Splitting a workload into phases does not match the online algorithm's workflow, and we propose an optimized online version for \sys~(\TODO{cite}).
+Splitting a workload into phases does not match the online algorithm's workflow, and we propose an optimized \textbf{online version} for \sys~(\TODO{ref}).
 %
+A sliding window with a fixed footprint size provides the same effect to splitting the trace into phases in a fine-grained manner.
+%
+To reduce the space overhead of recording all accesses in the sliding window, a FIFO queue with a frequency counter has a similar effect to the sliding window.
+%
+An object enters the head of FIFO queue when its phase begins and is aged at the tail of the queue, indicating the end of the phase.
+%
+As shown in figure~\ref{fig:Phase-based}(2), with footprint four, \cc{ABCDAB} fill the FIFO queue, and the aging function is halfing the frequency counter and evicting the object with a zero counter.
+%
+In this case, \cc{A} and \cc{B} are persistent types, others are ephemeral types, and \sys will catch \cc{C} with a Sketch~\cite{}.
+%
+While with footprint six, \cc{ABC} are persistent types, and others are ephemeral types.
 
-An optimized online version with a sliding window for ~(\TODO{cite design}).
 
-
-
-real-world phases
 
 
 \subsection{Hotness during phases}
