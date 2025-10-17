@@ -45,17 +45,28 @@ In the other cases, the data is distributed in different phases, and persistent 
     \includegraphics[width=\columnwidth]{fig/cachesizeaware.drawio.pdf}
     \caption{Phase-based classification.(1) Split the workload into phases based on the footprint size. 
     (2) The sliding window and aging function dynamically mark the object types.
-    With a large phase size as footprint six, \cc{A}, \cc{B}, and \cc{C} are persistent types for all phases, and others are ephemeral types.
-    With a small phase size as footprint four, only \cc{A} appears in all phases as a persistent type, and \cc{B} and \cc{C} occur in some phases as persistent type compared to others as ephemeral types.
+    With a large phase size as footprint six, \cc{A}, \cc{B}, and \cc{C} appears for all phases.
+    With a small phase size as footprint four, only \cc{A} appears in all phases, and \cc{B} and \cc{C} occur in some phases.
     }
     \label{fig:Phase-based}
 \end{figure}
 
-As shown in figure~\ref{fig:Phase-based}, we demonstrate how to split the trace into phases based on the footprint size and an online version with a sliding window for ~(\TODO{cite design}).
+As shown in figure~\ref{fig:Phase-based}, we demonstrate how to split the trace into phases based on the footprint size and type the accesses dynamically in contiguous phase type space.
 %
 For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, there are three phases: \cc{ABCDAB}, \cc{EFABA}, and \cc{CGAH}.
+%
+\cc{A} appears in all phases as a persistent type, and \cc{D}, \cc{E}, \cc{F}, \cc{G}, and \cc{H} appear in only one phase as ephemeral types.
+%
+Compared to ephemeral types, \cc{B} and \cc{C} appear in two phases and are more likely to be persistent type in a contiguous phase type space.
+%
+While if we use footprint six to split the trace, there are two phases: \cc{ABCDABEF} and \cc{ABACGAH}.
+%
+\cc{A}, \cc{B}, and \cc{C} appear in all phases as persistent types, and \cc{D}, \cc{E}, \cc{F}, \cc{G}, and \cc{H} appear in only one phase as ephemeral types.
 
+Splitting a workload into phases does not match the online algorithm's workflow, and we propose an optimized online version for \sys~(\TODO{cite}).
+%
 
+An optimized online version with a sliding window for ~(\TODO{cite design}).
 
 
 
