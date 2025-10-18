@@ -1,5 +1,63 @@
-\section{Design}
+\section{The \sys Design}
 \label{s:design}
+Inspired by \autoref{s:phase-hotness}, we presents \sys, a phase- and hotness-based adaptive cache eviction algorithm that covers access patterns space reliably.
+%
+This section presents \sys's design goals and challenges~(\autoref{ss:design-goals-and-challenges}), an overview of \sys~(\autoref{ss:overview}), and concludes with a discussion~(\autoref{ss:discussion-and-limitations}).
+
+\subsection{Design Goals and Challenges}
+\label{ss:design-goals-and-challenges}
+We design \sys to meet the following goals and resolve the corresponding challenges.
+
+\textbf{Online patterns identification.}
+%
+To receive a timely and accurate access pattern, \sys works in an online optimization with FIFO queues and a sketch for phase classification~(\autoref{ss:adaptive-phases}) and access frequency distribution for hotness classification~(\autoref{ss:hotness-during-phases}).
+
+\textbf{Algorithm for patterns.}
+%
+To reduce the analysis overhead, \sys integrates with the online pattern identification.
+%
+\sys also separates function parts to handle different characteristics of patterns and leverages a suspicious area to confirm the changes of data types for reliability.
+
+\textbf{Efficiency and scalability.}
+%
+An excellent eviction algorithm should be efficient and scalable.
+%
+\sys has a high hit ratio to reduce the bandwidth consumption to the backend storage.
+%
+\sys updates metadata and types when needed to reduce operations for high throughput, and it leverages FIFO queues and a sketch for lock-free implementations to improve scalability.
+
+
+\subsection{\sys Overview}
+\label{ss:overview}
+
+\textbf{\sys components.} Figure~\ref{fig:overview} shows the components and wrokflow of \sys. 
+%
+The filter~(\ABB{F}), main~(\ABB{M}), and suspicious~(\ABB{S}) queue store metadata and values, while the ghost queue~(\ABB{G}), and the sketch~(\ABB{K}) store metadata.
+%
+Extra metadata includes hotness counter only, and \sys records the access frequency distribution in an array and adjusts the hotness threshold field.
+%
+\ABB{F} filters out \textit{infrequent-ephemeral} data quickly, and \ABB{M} holds most \textit{frequent-persistent} data.
+%
+\ABB{G} suggests \textit{frequent-ephemeral} data, and \ABB{K} helps to find \textit{infrequent-persistent} data.
+%
+\ABB{S} checks and confirms the type changes of data in the cache at the end of a phase.
+
+\textbf{Workflow of \sys.}
+
+\textbf{Phases in \sys.}
+
+\textbf{Adaption and parameters in \sys.}
+
+\textbf{Implementation}
+
+
+\subsection{Discussion and Limitations}
+\label{ss:discussion-and-limitations}
+%overhead
+%discussion about prefetching
+%limitation in different case
+
+
 This section describes the design of \sys, a phase-aware and cache-size-aware replacement policy to be the optimal replacement policy in all cache sizes.
 %
 We will discuss the overview of \sys in ~(\autoref{ss:overview}), and how it handles the FA-MP and IF-FP objects in ~(\autoref{ss:filter-hold}).
