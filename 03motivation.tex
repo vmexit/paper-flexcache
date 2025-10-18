@@ -129,11 +129,49 @@ It can also classify data when threshold changes due to access or aging occurs t
 
 \subsection{Phase and hotness based types}
 \label{ss:phase-hotness-based-types}
-New types
+We classify data into four cooperative types based on phase and hotness analysis.
+%
+Phase analysis captures the intrinsic locality property in long-term scale, and hotness analysis reveals the locality changes in short-term scale.
+%
+With phase analysis, data is either persistent or ephemeral, and with hotness analysis, data is either frequent or infrequent.
+%
+Therefore, we classify data into four types: \textit{frequent-persistent}, \textit{frequent-ephemeral}, \textit{infrequent-persistent}, and \textit{infrequent-ephemeral}.
 
-hold the recency and frequency properties.
+The analysis is fine-grained in phase and hotness dimensions, so the contiguous values support an adaptive classification of data types.
+%
+Once finished analysis, data has a phase information, how many phases it appears, and a hotness information, how many times it is accessed in the phase.
+%
+Taking hotness information as x-axis and phase information as y-axis as shown in figure~\ref{fig:insight}, each data point has a coordinate in the phase-hotness space.
+%
+To adaptively classify data, changeable thresholds for phase and hotness dimensions separate the space smoothly, which moves zero point in the figure.
+%
+Online version of the classification method in \sys dynamically adjusts the thresholds based on the overall access information, which changes the coordinate of data points and moves the separation lines together.
 
-New properties
+The four primitive types covers all four typical primitive access patterns and their properties~(\S\ref{ss:access-pattern-based-analysis}).
+%
+With an appropriate phase size, an \textit{LFU-friendly} pattern occurs frequently lasting many phases as \textit{frequent-persistent} type, and an \textit{LRU-friendly} pattern trends to reaccess recently, which has a concentrated access in a small number of phases as \textit{frequent-ephemeral} type.
+%
+A \textit{Churn} pattern repeats in many phases with equal probability, and if the phase size mathches the repeated periods, it occurs in many phases and a few times in each phase as \textit{infrequent-persistent} type.
+%
+A \textit{Scan} pattern appears only once in a phase as \textit{infrequent-ephemeral} type.
+%
+This classification method covers recency property by access frequency in a phase and frequency property by the number of phases, and we will discuss spatial locality with prefetching in \TODO{ref}.
+
+
+
+We also observe some properties of the four primitive types and how they change with phase size and hotness threshold.
+%
+The \textit{frequent-persistent} type is a small portion of data, and some frequent data in a phase will reduce its access times in the following phases and becomes \textit{infrequent-persistent} type.
+%
+This is because new data arrives and competes for access opportunities, filling the phase more quickly.
+%
+The \textit{frequent-ephemeral} type always bursts in a phase, then disappears in the following phases, and reappears in a phase. 
+%
+With a larger phase size, some \textit{frequent-ephemeral} and \textit{infrequent-ephemeral} types become \textit{frequent-persistent} type.
+%
+The large phase size captures more accesses, so some infrequent data occurs more in a phase becoming frequent type.
+%
+Accordingly, there are less phases in larger phase size, so the proportion of phases in which the data appears has increased, indicating persistent data.
 
 \begin{figure}[t]
     \centering
@@ -141,61 +179,6 @@ New properties
     \caption{Access phases in Alibaba for different cache sizes.\TODO{update}}
     \label{fig:wss}
 \end{figure}
-
-For the basic cache size aware, we split the trace into phases when the footprint is the same as the cache size.
-%
-We use this cache size-aware method to analyze the trace in Alibaba~\cite{} and find a different way to mark the object types. 
-%
-As shown in figure~\ref{fig:wss}, we set the cache size as 10\% and 15\% WSS, split the trace into phases, with each phase's footprint equal to the cache size, and count the frequency of each object in the phase.
-%
-For the same workload slice, there are 12 phases with 10\% WSS and 8 phases with 15\% WSS.
-%
-In figure~\ref{fig:wss}(a), half of the objects accessed in phase 0 are active in the rest phase, and the other half are inactive.
-%
-Frequently accessed objects in phase 3 are active in phases 7 and 11.
-%
-When the cache size is larger, it contains more objects, and frequently accessed objects are concentrated.
-%
-In figure~\ref{fig:wss}(b), frequently accessed objects in phase 0 are active in the rest phase with more accesses(darker color), and the objects in phase 3 are active in phases 5 and 7, which helps to discover the access pattern with cache size.
-
-
-We categorize objects into four types based on the number of accesses and phases in which they appear. 
-%
-They are classified as frequently accessed (FA) and infrequently accessed (IA) objects based on their access frequency and divided into multi-phase (MP) and few-phase (FP) objects based on their occurrence across phases.
-%
-\sys dynamically marks the objects into four types: FA-MP, FA-FP, IA-MP, and IA-FP.
-%
-It hold FA-MP objects~(\S\ref{ss:filter-hold}), treats FA-FP and IA-MP as suspicious objects~(\S\ref{ss:ghost},\S\ref{ss:dueling}), and filters IA-FP objects.
-
-Figure ~\ref{fig:exapmle} shows how the object type changes in different cache sizes. 
-%
-For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, only \cc{A} is an FA-MP object, which is accessed 5 times for 3 phases. 
-%
-\cc{B} and \cc{C} are FA-FP and IA-MP objects, and others are IA-FP objects. 
-%
-While if we use footprint six to split the trace, \cc{A}, \cc{B}, and \cc{C} are FA-MP objects. 
-%
-With this method, the access pahses change with the cache size, and the object types change with the access phases and cache size.
-%
-To optimize the basic version, we use a sliding window and an appropriate aging function to discover what objects are in the same phase dynamically.
-%
-In figure~\ref{fig:exapmle}(2), when the footprint is four, there is a request for \cc{E}, we age \cc{A}, \cc{B}, and \cc{C}, and finally we decide to evict \cc{C} in the sliding window.
-%
-While if the footprint is six and there is a request for \cc{G}, we keep \cc{A}, \cc{B}, and \cc{C} after aging and evict \cc{D} to keep the phase.
-%
-\sys integrates the sliding window and aging function to the replacement policy only with a few bits as S3-FIFO~(\S\ref{ss:integrate}).
-
-
-
-After applying the classification method~(\autoref{ss:split-trace}), we describe the relationship between access patterns and cache size from the perspective of access phases.
-%
-The more hits within a phase, the more suitable the access pattern is for caching. This also indicates that the cache is relatively large, with a higher hit ratio.
-%
-In addition to considering an object's access recency and frequency, we need to consider the phases' access distribution.
-%
-Here come questions: Should we cache the objects in the phase with some accesses or discard the objects in the phase with few accesses?
-%
-We dynamically adjust the criteria for caching objects based on the overall access information of the cache, in order to adapt to changes in phase characteristics.
 
 \begin{figure}[t]
     \centering
@@ -205,64 +188,13 @@ We dynamically adjust the criteria for caching objects based on the overall acce
     \label{fig:fiu}
 \end{figure}
 
-
-The linear-logarithmic relationship exhibits the transformation from FA-MP objects to IA-MP and FA-FP objects when the cache size is reduced.
+%As shown in figure~\ref{fig:fiu}(b), when we analyze the workload with a cache size of 2MB, there are two kinds of phases: one is the phase 0 with a frequently accessed object, and the other is the phase 4 with a few accessed objects.
 %
-When we analyze the whole workload, the cache size equals the working set size, and there is only one phase.
+%If the cache size is small, phase 0 contains important patterns, and phase 4 contains interference patterns.
 %
-When we reduce the cache size, the number of phases increases, and the frequently accessed (FA) objects are distributed among them.
+%As we mentioned in~(\autoref{ss:adaption-criteria}), policies store the filtered objects in the ghost cache, so when the cache size is close to 1MB, they can record the objects in phase 4 to the ghost cache.
 %
-If they are evenly distributed across many phases, they are \cc{FA-MP} objects with many accesses or \cc{IF-MP} objects with few accesses.
+%Then, phase 10 repeats the phase 4, and the policies evict the objects in phase 0 to keep the phase 4, leading to a performance drop.
 %
-If they are concentrated in a few phases, they are \cc{FA-FP} objects.
+%\sys integrates the phase information and the access frequency distribution to dynamically adjust the criteria~(\S\ref{ss:integrate}), which filters the objects in phase 4 and keeps the objects in phase 0.
 %
-In figure~\ref{fig:wss}(a), active objects in phase 0 are IA-MP objects, and the objects in phase 3 are FA-FP objects.
-%
-%The replacement policy should dynamically adjust the criteria from the phases information to cover the 
-
-Prior work cannot dynamically mark the object types because it is too optimistic about the filter and ghost cache objects.
-%
-They design replacement policies~\cite{} to retain FA-MP objects while quickly evicting IA-FP objects.
-%
-For instance, LFU is good at retaining FA objects, while LRU prefers MP objects.
-%
-However, they do not analyze the object from the whole trace; they only analyze it from the ghost and filter cache, which is insufficient to determine the object type.
-%
-In figure~\ref{fig:fiu}(a), many policies do not discover the overall access behavior, which hurts the performance even if it enlarges the cache size.
-%
-LeCaR adjusts the policy based on access to the ghost cache and the fact that their miss ratio waves considerably when the cache size changes.
-%
-ARC thinks a request hitting the filter or ghost cache is important, so it moves the object to the main cache.
-
-As shown in figure~\ref{fig:fiu}(b), when we analyze the workload with a cache size of 2MB, there are two kinds of phases: one is the phase 0 with a frequently accessed object, and the other is the phase 4 with a few accessed objects.
-%
-If the cache size is small, phase 0 contains important patterns, and phase 4 contains interference patterns.
-%
-As we mentioned in~(\autoref{ss:adaption-criteria}), policies store the filtered objects in the ghost cache, so when the cache size is close to 1MB, they can record the objects in phase 4 to the ghost cache.
-%
-Then, phase 10 repeats the phase 4, and the policies evict the objects in phase 0 to keep the phase 4, leading to a performance drop.
-%
-\sys integrates the phase information and the access frequency distribution to dynamically adjust the criteria~(\S\ref{ss:integrate}), which filters the objects in phase 4 and keeps the objects in phase 0.
-%
-With prefetching, \sys outperforms the other policies by about 20\%.
-%However, they use static criteria to categorize objects and fail to analyze the type distribution to fit the cache size, leading to huge performance variations with different cache sizes.(\TODO{ figure maybe figure cacheus in fiu, mrc waves})
-%
-%\sys leverage phase and aging function to hold \cc{FA-FP} objects for a period of time (\S\ref{ss:ghost}) and speculatively retain \cc{IA-MP} objects (\S\ref{ss:dueling}).
-%
-
-
-If the cache size is relatively large, there are too many objects accessed more than once, so we improve the criteria to discover the important objects. 
-%
-As shown in figure~\ref{fig:fiu}(b), most of the objects are accessed many times, and then here comes repeated access for about 40\% cache size.
-%
-Many cache replacement policies with a ghost cache can discover it, but they will move all repeatedly accessed objects to the main cache without considering the whole cache.
-%
-These objects pollute the cache and hurt the performance.
-%
-It repeats six times in the trace; only a large cache size can discover it and suffer from it.
-%
-With the access frequency distribution, \sys dynamically increases the number of accesses required for an object to be promoted into the main cache~(\S\ref{ss:integrate}).
-%
-What's more, \sys leverages the space of the ghost cache to prefetch the objects that are accessed in sequence~(\S\ref{ss:ghost}).
-
-
