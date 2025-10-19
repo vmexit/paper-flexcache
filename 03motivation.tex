@@ -68,11 +68,13 @@ Splitting a workload into phases does not match the online algorithm's workflow,
 %
 A sliding window with a fixed footprint size provides the same effect to splitting the trace into phases in a fine-grained manner.
 %
-To reduce the space overhead of recording all accesses in the sliding window, a FIFO queue with a frequency counter has a similar effect to the sliding window, which also hold the relative access sequence.
+To reduce the space overhead of recording all accesses in the sliding window, a FIFO queue with a hotness counter has a similar effect to the sliding window, which also hold the relative access sequence.
 %
-An object enters the head of FIFO queue when its phase begins and is aged at the tail of the queue, indicating the end of the phase.
+An object enters the head of FIFO queue when its phase begins.
 %
-As shown in figure~\ref{fig:Phase-based}(2), with footprint four, \cc{ABCDAB} fill the FIFO queue, and the aging function is halfing the frequency counter and evicting the object with a zero counter.
+Hotness analysis increases the hotness counter when hit occurs and ages the object at the tail of the queue, indicating the end of the phase.
+%
+As shown in figure~\ref{fig:Phase-based}(2), with footprint four, \cc{ABCDAB} fill the FIFO queue, and the aging function is halfing the hotness counter and evicting the object with a zero counter.
 %
 In this case, \cc{A} and \cc{B} are persistent types, others are ephemeral types, and \sys will catch \cc{C} with a Sketch~\cite{}.
 %
@@ -90,21 +92,21 @@ The hotness analysis is a compensation for phase analysis.
 
 We classify the data into \textbf{frequent} and \textbf{infrequent} types dynamically based on access hotness in a phase.
 %
-To properly classify the data, we collect the access frequency distribution of data in the phase as hotness information.
+To properly classify the data, we collect the hotness distribution of data in the phase as hotness information.
 %
-Without lose of generality, only a part of data can be kept in the cache, so we can choose a portion of data to be cached based on access frequency.
+Without lose of generality, only a part of data can be kept in the cache, so we can choose a portion of data to be cached based on the hotness counter.
 %
-Then, we sort data accesses by frequency in descending order, and progressively fill the portion.
+Then, we sort data by the hotness counter in descending order, and progressively fill the portion.
 %
-The access frequency at which reaches the portion is treated as the threshold to separate frequent and infrequent types.
+the hotness counter at which reaches the portion is treated as the hotness threshold to separate frequent and infrequent types.
 %
 The threshold changes with the target portion adaptively in different phases.
 
 As shown in figure~\ref{fig:wss}, hotness changes with phase and phase size.
 %
-In the figure, a workload slice from Alibaba~\cite{} is split into phases with different phase sizes, and the access frequency distribution is shown in heatmap.
+In the figure, a workload slice from Alibaba~\cite{} is split into phases with different phase sizes, and the hotness distribution is shown in heatmap.
 %
-\XXX{For visualization, we cap the maximum frequency at 4; values above 4 are still represented as 4, and we cut off some data accessed only once in this slice.}
+\XXX{For visualization, we cap the maximum hotness counters at 4; values above 4 are still represented as 4, and we cut off some data accessed only once in this slice.}
 %
 Frequent data (accessed more than four times in a phase) are more likely to be accessed in the following phases, indicating good locality for caching.
 %
@@ -116,9 +118,9 @@ When the phase size is larger, frequent data are concentrated exhibiting better 
 
 Hotness analysis is also an offline version, and it can cope with the online phase analysis~(\ref{ss:adaptive-phases}) to form an online version for \sys~(\TODO{ref}).
 %
-The offline hotness analysis collects the access frequency distribution and classifies data based on the threshold at the end of each phase.
+The offline hotness analysis collects the hotness distribution and classifies data based on the threshold at the end of each phase.
 %
-In the online version, access frequency distribution manages data in the FIFO queue for a phase.
+In the online version, hotness distribution manages data in the FIFO queue for a phase.
 %
 When access or aging occurs, it uses the new distribution to update the threshold dynamically.
 %
@@ -155,7 +157,7 @@ A \textit{Churn} pattern repeats in many phases with equal probability, and if t
 %
 A \textit{Scan} pattern appears only once in a phase as \textit{infrequent-ephemeral} type.
 %
-This classification method covers recency property by access frequency in a phase and frequency property by the number of phases, and we will discuss spatial locality with prefetching in \TODO{ref}.
+This classification method covers recency property by hotness distribution in a phase and frequency property by the number of phases, and we will discuss spatial locality with prefetching in \TODO{ref}.
 
 We also observe some properties of the four primitive types and how they change with phase size and hotness threshold.
 %

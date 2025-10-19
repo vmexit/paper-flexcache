@@ -10,7 +10,7 @@ We design \sys to meet the following goals and resolve the corresponding challen
 
 \textbf{Online patterns identification.}
 %
-To receive a timely and accurate access pattern, \sys works in an online optimization with FIFO queues and a sketch for phase classification~(\autoref{ss:adaptive-phases}) and access frequency distribution for hotness classification~(\autoref{ss:hotness-during-phases}).
+To receive a timely and accurate access pattern, \sys works in an online optimization with FIFO queues and a sketch for phase classification~(\autoref{ss:adaptive-phases}) and hotness distribution for hotness classification~(\autoref{ss:hotness-during-phases}).
 
 \textbf{Algorithm for patterns.}
 %
@@ -34,7 +34,11 @@ An excellent eviction algorithm should be efficient and scalable.
 %
 The filter~(\ABB{F}), main~(\ABB{M}), and suspicious~(\ABB{S}) queue store metadata and values, while the ghost queue~(\ABB{G}), and the sketch~(\ABB{K}) store metadata.
 %
-Extra metadata includes hotness counter only, and \sys records the access frequency distribution in an array and adjusts the hotness threshold field.
+To keep relative access order for phase awareness, all the queues (\ABB{F}, \ABB{M}, \ABB{S}, \ABB{G}) are FIFO-based with a fixed size.
+%
+Extra metadata includes hotness counter for hotness awareness and suspected field for type changing.
+%
+\sys records the hotness distribution in an array for all the data in the cache, including metadata, and adjusts the hotness threshold field.
 %
 \ABB{F} filters out \textit{infrequent-ephemeral} data quickly, and \ABB{M} holds most \textit{frequent-persistent} data.
 %
@@ -43,10 +47,64 @@ Extra metadata includes hotness counter only, and \sys records the access freque
 \ABB{S} checks and confirms the type changes of data in the cache at the end of a phase.
 
 \textbf{Workflow of \sys.}
+%
+\BC{1} For phase analysis, \ABB{K} records all the data movement out of \ABB{F} and checked data by \ABB{S} with a forget function, and we will discuss it later.
+%
+\BC{2} For hotness analysis, \sys updates the hotness distribution and adjust the hotness threshold field whenever a cache hit or eviction occurs, and we will discuss it later.
+%
+\BC{3} All new data not in the cache are inserted into \ABB{F}.
+%
+\BC{4} Eviction in \ABB{F}
+%
+\BC{5} If hit occurs in \ABB{G}, \sys promotes \textit{frequent-ephemeral} data to \ABB{M} and susppects some \textit{frequent-ephemeral} data.
+%
+\BC{6} \TODO{suspect in \sys}
+\sys moves the suspected data to \ABB{S} for further examination and keeps the duplicated metadata in \ABB{G} for phase analysis.
+%
+\BC{7} \TODO{hit and eviction in M}
+%
+\BC{8} \TODO{check in S}
+\BC{9} \TODO{suspected in S}
+
+If the hotness counter of an object in \ABB{F} or \ABB{G} exceeds the threshold, \sys promotes it to \ABB{M} as \textit{frequent-ephemeral} type, which is likely to be \textit{frequent-persistent} type.
+%
+\BC{4} If hit occurs in \ABB{G}, \sys suspects that the corresponding data might be \textit{frequent-ephemeral} type.
+%
+Based on the \ABB{K} information, \sys suspects that some data in \ABB{F} may be \textit{infrequent-persistent} type.
+%
+Then \sys moves suspected data with a suspected field to \ABB{S} for further examination and keeps metadata in \ABB{G} for phase analysis.
+%
+\BC{5} 
+%
+For queues that exceed their size limit, \sys moves \textit{infrequent-ephemeral} data from \ABB{F} to \ABB{G}, places all data from \ABB{M} into \ABB{S} for verification, and evicts the excess \textit{infrequent-ephemeral} data from \ABB{G}.
+%
+\BC{6} \ABB{S} checks the suspected data from \ABB{F} and \ABB{G} and the last phase data from \ABB{M}.
+%
+If cache hits suspected data, \sys confirms suspected \textit{frequent-ephemeral} data from \ABB{G} and \textit{infrequent-persistent} data from \ABB{K} and promotes them to \ABB{M}.
+%
+
+
+
+
+For simplicity, the suspicious cache is a small part of the main cache, so we move the objects in the main cache to the suspicious cache and use the aging function to judge whether objects in the suspicious cache are evicted or promoted to the main cache when eviction occurs.
+%
+\BC{7} CBF records all objects' movement in the filter, ghost, and suspicious cache.
+%
 
 \textbf{Phases in \sys.}
 
+\textbf{Hotness in \sys.}
+\sys increases the hotness counter by one when a hit occurs, and only decrease the hotness counter when the object is evicted from \ABB{G} or ages in \ABB{S}.
+
+\textbf{Type changes in \sys.}
+\BC{1} as \textit{infrequent-ephemeral} type
+
+
+
 \textbf{Adaption and parameters in \sys.}
+
+%
+
 
 \textbf{Implementation}
 
@@ -58,27 +116,17 @@ Extra metadata includes hotness counter only, and \sys records the access freque
 %limitation in different case
 
 
-This section describes the design of \sys, a phase-aware and cache-size-aware replacement policy to be the optimal replacement policy in all cache sizes.
-%
-We will discuss the overview of \sys in ~(\autoref{ss:overview}), and how it handles the FA-MP and IF-FP objects in ~(\autoref{ss:filter-hold}).
-%
-With limited space, we leverage the ghost cache to store the metadata of the evicted objects to find FA-FP objects and prefetch sequence accessed objects in ~(\autoref{ss:ghost}).
-%
-We also introduce an extra suspicious area to record IA-MP objects in ~(\autoref{ss:dueling}).
-%
-Finally, we discuss how to integrate \sys with phase-aware, dynamically adjust the criteria, and prefetch objects in ~(\autoref{ss:integrate}).
-
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/overview.drawio.pdf}
-    \caption{Overview for \sys. Cache space consists of five parts: filter cache, main cache, suspicious cache, ghost cache, and CBF. The workflow has three major parts, (1)cache promotion and eviction in four sub-cache. (2)IA-MP objects in the filter cache duels with the tail object in the suspicious cache with CBF. (3)Leverage the metadata in the ghost cache to find FA-FP objects and prefetch sequence accessed objects.}
+    \caption{Overview for \sys. Cache space consists of five parts: filter cache, main cache, suspicious cache, ghost cache, and CBF. The workflow has three major parts, (1)cache promotion and eviction in four sub-cache. (2)IA-MP objects in the filter cache duels with the tail object in the suspicious cache with CBF. (3)Leverage the metadata in the ghost cache to find FA-FP objects and prefetch sequence accessed objects.\TODO{update}}
     \label{fig:overview}
 \end{figure}
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{fig/phaseflow.drawio.pdf}
-    \caption{\sys consists of two phaseflows.(1)Frequently accessed objects' movement from the main cache to the suspicious cache and reinsertion to the main cache. (2)Infrequently accessed objects' movement from the filter cache to the ghost cache. Objects' type changes with suspection in the filter and ghost cache.}
+    \caption{\sys consists of two phaseflows.(1)Frequently accessed objects' movement from the main cache to the suspicious cache and reinsertion to the main cache. (2)Infrequently accessed objects' movement from the filter cache to the ghost cache. Objects' type changes with suspection in the filter and ghost cache.\TODO{update}}
     \label{fig:phaseflow}
 \end{figure}
 
@@ -103,7 +151,7 @@ The workflow of \sys is as follows:
 All the sub-caches in the \sys are FIFO-based to emulate the sliding window discussed in~(\autoref{ss:split-trace}) with a fixed capability. 
 %
 %
-\BC{1} All new objects and prefetched objects are inserted into the filter cache.
+\BC{1} All new objects objects are inserted into the filter cache.
 %
 \BC{2} Whenever a cache hit occurs, we record the \textbf{access frequency distribution} of all the objects in the cache and adjust the criteria for FA objects.
 %
