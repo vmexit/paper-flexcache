@@ -44,27 +44,51 @@ Extra metadata includes hotness counter for hotness awareness and suspected fiel
 %
 \ABB{G} suggests \textit{frequent-ephemeral} data, and \ABB{K} helps to find \textit{infrequent-persistent} data.
 %
-\ABB{S} checks and confirms the type changes of data in the cache at the end of a phase.
+During the above process, \sys makes educated guesses about some \textit{frequent-ephemeral} data as \textit{frequent-ephemeral} or \textit{infrequent-persistent} data, moving them to \ABB{S} for observation.
+%
+\ABB{S} confirms suspected data and checks data types from \ABB{M} at the end of a phase.
 
 \textbf{Workflow of \sys.}
 %
-\BC{1} For phase analysis, \ABB{K} records all the data movement out of \ABB{F} and checked data by \ABB{S} with a forget function, and we will discuss it later.
+\BC{1} For phase analysis, \ABB{K} records all the data movement out of \ABB{F} and checked data by \ABB{S} with a forget function.
 %
-\BC{2} For hotness analysis, \sys updates the hotness distribution and adjust the hotness threshold field whenever a cache hit or eviction occurs, and we will discuss it later.
+\BC{2} For hotness analysis, \sys updates the hotness distribution and adjust the hotness threshold field whenever a cache hit or eviction occurs.
 %
-\BC{3} All new data not in the cache are inserted into \ABB{F}.
+We will discuss the phase and hotness in \sys later in details.
+
+For the data in \ABB{F} and \ABB{G}, \BC{3} All new data not in the cache are inserted into \ABB{F}.
 %
-\BC{4} Eviction in \ABB{F}
+\BC{4} \sys does not move data in \ABB{F} directly when its type changes.
 %
-\BC{5} If hit occurs in \ABB{G}, \sys promotes \textit{frequent-ephemeral} data to \ABB{M} and susppects some \textit{frequent-ephemeral} data.
+Instead, \sys moves \textit{frequent-ephemeral} data to \ABB{M} and \textit{infrequent-ephemeral} data to \ABB{G} when \ABB{F} exceeds its size limit.
 %
-\BC{6} \TODO{suspect in \sys}
-\sys moves the suspected data to \ABB{S} for further examination and keeps the duplicated metadata in \ABB{G} for phase analysis.
+\BC{5} If hit occurs in \ABB{G}, \sys promotes \textit{frequent-ephemeral} data to \ABB{M} and evicts data when \ABB{G} exceeds its size limit.
 %
-\BC{7} \TODO{hit and eviction in M}
+\BC{6} \sys makes educated guesses about \textit{infrequent-ephemeral} data: when a hit occurs in \ABB{G}, it assumes the data belongs to the \textit{frequent-ephemeral};
 %
-\BC{8} \TODO{check in S}
-\BC{9} \TODO{suspected in S}
+when data is evicted from \ABB{F}, it assumes to be \textit{infrequent-persistent} with the help of \ABB{K}.
+%
+\sys places the suspected data into \ABB{S} for verification, while retaining its metadata in \ABB{G} for phase analysis.
+%
+
+For the data in \ABB{M} and \ABB{S}, \BC{7} when \ABB{M} exceeds its size limit, \sys moves data in \ABB{M} to \ABB{S} for type verification.
+%
+\BC{8} In \ABB{S}, \sys checks whether data from \ABB{M} is accessed again in the last phase.
+%
+If hit occurs, \sys confirms it as \textit{frequent-persistent} data and promotes it to \ABB{M}; otherwise, reduces its hotness counter, evicting it if the counter reaches zero.
+%
+\BC{9} For suspected data, \sys checks whether it is accessed again in \ABB{S} as an observation window, and promotes it to \ABB{M} if hit occurs; otherwise, it is evicted from \ABB{S}.
+
+\textbf{Phases Discussion.}
+%
+\sys integrates phase size with cache size and keeps data in the cache for at least one phase.
+%
+All the queues in \sys are FIFO-based which maintains the relative access order, so we only discuss the workflow between the queues for phase.
+%
+There are two phaseflows for \textit{frequent} and \textit{infrequent} data separately as in figure~\ref{fig:phaseflow}.
+%
+
+
 
 If the hotness counter of an object in \ABB{F} or \ABB{G} exceeds the threshold, \sys promotes it to \ABB{M} as \textit{frequent-ephemeral} type, which is likely to be \textit{frequent-persistent} type.
 %
@@ -83,15 +107,9 @@ For queues that exceed their size limit, \sys moves \textit{infrequent-ephemeral
 If cache hits suspected data, \sys confirms suspected \textit{frequent-ephemeral} data from \ABB{G} and \textit{infrequent-persistent} data from \ABB{K} and promotes them to \ABB{M}.
 %
 
-
-
-
 For simplicity, the suspicious cache is a small part of the main cache, so we move the objects in the main cache to the suspicious cache and use the aging function to judge whether objects in the suspicious cache are evicted or promoted to the main cache when eviction occurs.
 %
-\BC{7} CBF records all objects' movement in the filter, ghost, and suspicious cache.
-%
 
-\textbf{Phases Discussion.}
 
 \textbf{Hotness Discussion.}
 \sys increases the hotness counter by one when a hit occurs, and only decrease the hotness counter when the object is evicted from \ABB{G} or ages in \ABB{S}.
