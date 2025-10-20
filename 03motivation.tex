@@ -90,17 +90,17 @@ When we conpare the hotness of data in different phases, changed hotness indicat
 %
 The hotness analysis is a compensation for phase analysis.
 
-We classify the data into \textbf{frequent} and \textbf{infrequent} types dynamically based on access hotness in a phase.
+Data are dynamically classified into \textbf{frequent} and \textbf{infrequent} categories based on a hotness threshold determined within each phase.
 %
-To properly classify the data, we collect the hotness distribution of data in the phase as hotness information.
+To achieve accurate classification, each data item is assigned a hotness counter, and the overall distribution of these counters within the phase is collected as hotness information.
 %
-Without lose of generality, only a part of data can be kept in the cache, so we can choose a portion of data to be cached based on the hotness counter.
+Without lose of generality, only a subset of data can reside in the cache, a target caching proportion is defined according to the system configuration.
 %
-Then, we sort data by the hotness counter in descending order, and progressively fill the portion.
+All data items are then sorted in descending order of their hotness counters, and entries are progressively selected to fill the target cache portion.
 %
-the hotness counter at which reaches the portion is treated as the hotness threshold to separate frequent and infrequent types.
+The hotness counter corresponding to the boundary of this portion is designated as the hotness threshold, which serves to distinguish frequent data from infrequent data.
 %
-The threshold changes with the target portion adaptively in different phases.
+This threshold adapts across phases in response to variations in the target cache proportion, thereby maintaining classification consistency under different workload dynamics.
 
 As shown in figure~\ref{fig:wss}, hotness changes with phase and phase size.
 %
