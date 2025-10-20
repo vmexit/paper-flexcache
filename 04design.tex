@@ -75,7 +75,7 @@ For the data in \ABB{M} and \ABB{S}, \BC{7} when \ABB{M} exceeds its size limit,
 %
 \BC{8} In \ABB{S}, \sys checks whether data from \ABB{M} is accessed again in the last phase.
 %
-If hit occurs, \sys confirms it as \textit{frequent-persistent} data and promotes it to \ABB{M}; otherwise, reduces its hotness counter, evicting it if the counter reaches zero.
+If hit occurs, \sys confirms it as \textit{persistent} data and promotes it to \ABB{M}; otherwise, reduces its hotness counter, evicting it if the counter reaches zero.
 %
 \BC{9} For suspected data, \sys checks whether it is accessed again in \ABB{S} as an observation window, and promotes it to \ABB{M} if hit occurs; otherwise, it is evicted from \ABB{S}.
 
@@ -140,12 +140,22 @@ Then, \sys updates the data type based on the hotness threshold if hit occurs in
 %
 To reduce the operation overhead for efficiency, \sys only updates data type when needed, eventhough online algorithm can identify data type timely.
 %
-
-
-\BC{1} as \textit{infrequent-ephemeral} type
-
-%\textbf{Adaption and parameters in \sys.}
+Therefore, type identification happens before data movement between queues or hit occurs in \ABB{G}.
 %
+All new data inserted into \ABB{F} is treated as \textit{infrequent-ephemeral} type initially~(\BC{3}).
+%
+If the hotness counter of an object in \ABB{F} or \ABB{G} exceeds the threshold, the \textit{infrequent-ephemeral} data becomes \textit{frequent-ephemeral} type~(\BC{4},\BC{5}).
+%
+
+Almost all type transitions happen in \ABB{S}, while \ABB{M} only stores data for phase analysis~(\BC{7}).
+%
+\ABB{S} does not change \textit{frequent-persistent} and \textit{infrequent-persistent} data from \ABB{M} and only decreases their hotness counter when aged~(\BC{8}).
+%
+If \textit{frequent-ephemeral} data from \ABB{M} is alive in the new phase, \sys transits it to \textit{frequent-persistent} type~(\BC{8}).
+%
+For suspected data from \ABB{F} and \ABB{G}~(\BC{6}), if hit occurs in \ABB{S}, \sys confirms the data type from \textit{infrequent-ephemeral} to \textit{infrequent-persistent} or to \textit{frequent-ephemeral} type~(\BC{9}).
+%
+\sys evicts data without access for many phases based on hotness counter and does not change their types.
 
 
 \textbf{Implementation}
