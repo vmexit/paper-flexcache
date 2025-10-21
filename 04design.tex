@@ -66,7 +66,7 @@ Instead, \sys moves \textit{frequent-ephemeral} data to \ABB{M} and \textit{infr
 %
 \BC{6} \sys makes educated guesses about \textit{infrequent-ephemeral} data: when a hit occurs in \ABB{G}, it assumes the data belongs to the \textit{frequent-ephemeral};
 %
-when data is evicted from \ABB{F}, it assumes to be \textit{infrequent-persistent} with the help of \ABB{K}.
+when data is evicted from \ABB{F}, if it have been recorded in \ABB{K} for enough times, execeeding a threshold and more than the last data in \ABB{S}, it assumes to be \textit{infrequent-persistent}.
 %
 \sys places the suspected data into \ABB{S} for verification, while retaining its metadata in \ABB{G} for phase analysis.
 %
@@ -111,9 +111,9 @@ Therefore, a basic version of \ABB{K} only needs to record data movement out of 
 %
 While \ABB{K} targets for \textit{infrequent-persistent} data, to reduce the influence of other types, \ABB{K} delays recording data out of \ABB{M} and records data checked by \ABB{S}.
 %
-To reduce the influence of suspected data, \ABB{K} ignores it and records data into \ABB{G}.
+To reduce the influence of suspected data, \ABB{K} ignores data out of \ABB{G} and records data into \ABB{G}.
 %
-Finally, \ABB{K} leverages a forget function to forget old records beyond many phases.
+Finally, \ABB{K} conservatively proposes \textit{infrequent-persistent} data and leverages a forget function to forget old records beyond many phases.
 
 
 \textbf{Hotness Discussion.}
@@ -185,20 +185,113 @@ For example, a fingerprint has 4 Byte of hashed key and a timestamp has 4 Byte o
 %
 \sys stores a scope of timestamps based on the phase size and evicts data beyond the scope.
 
-sketch implementation
+\ABB{K} with a forget function has many candidate implementations, which are scalable.
+%
+A Counting Bloom Filter (CBF)~\cite{} increases all the indexed counters when recording data with less space overhead and false positives.
+%
+A Count-Min Sketch (CMS)~\cite{} only increases the minimum indexed counter, which reduce false positives.
+%
+A sliding window sketch~\cite{} provides various forget functions, which separates \ABB{K} into many sub-sketches for different phases.
+%
+At the beginning of a new phase, it inserts records into a new sub-sketch and forgets the oldest sub-sketch beyond many phases.
+%
+To improve the space utility, \ABB{K} is a sketch and clean a fraction of counters with a forget function periodically.
+%
+A fine-grained forget function ages counters one by one after a fixed number of inserations, which averages the operation overhead for efficiency.
 
 
 \subsection{Discussion and Limitations}
 \label{ss:discussion-and-limitations}
-%overhead
-%discussion about prefetching
-%limitation in different case
-Adaption //hotness and phase changes
-parameters/ sketch, cache sizes
-cache size / object size
-overhead Extra metadata
-prefetching
-limitations
+\textbf{Online Adaption.} \sys integrates online phase and hotness analysis with cache size to adapt to various access patterns.
+%
+With different cache sizes, data experiences different phase sizes in \ABB{M} and \ABB{G}, and hotness threshold changes with phase.
+%
+Therefore, to adjust the phase size and hotness threshold, it is convenient to change the size of \ABB{M} and \ABB{G} and the target portion.
+%
+
+However, there is not a proper theoretical model to guide the adjustment of components size with changed types.
+%
+There are some theoretical models for fixed classification into different components, which generate the MRC of each components and optimize the overall hit ratio~\cite{}.
+%
+Therefore, we leave the adaption of \sys to future work and use fixed sizes for all the components in this paper.
+%
+The \ABB{F} is 10\% of the cache size, \ABB{S} is 5\%, and \ABB{M} is about 85\%.
+%
+
+\textbf{Computation overhead.} 
+%
+\sys does not introduce extra computation overhead as prior work~\cite{}.
+%
+With a maximum value for hotness counter and delayed type checking, \sys thus performs negligible metadata updates on cache hits.
+%
+When cache miss occurs, \sys checks data in \ABB{S} gradually as prior work~\cite{}, and hotness distribution can be updated lock-free using atomic operations.
+%
+Hash function is used widely in basic operations and \ABB{K}, while xxHash provides 31.5 GB/s operations~\cite{}, which is not a bottleneck for the performance.
+%
+
+\textbf{Space overhead.} 
+%
+\sys introduces space overhead for metadata and components \ABB{G} and \ABB{K}.
+%
+\sys uses 3 bits to store the access frequency, which is sufficient for most workloads.
+%
+With a bit for suspection, the 4 bits can often be piggybacked on the unused flags in the metadata.
+%
+\ABB{G} stores the same number of data (only metadata) as the total size of other queues.
+%
+Assuming the average object size is 4KB, and the object id is 4 bytes, \ABB{G} uses 0.1\% of the total memory space.
+%
+In Count-Min Sketch~\cite{}, with a false positive error rate of 1\% and error range of 1, a 8-phase \textit{infrequent-persistent} data requires about 3 bits for record.
+%
+\ABB{K} comsumes about 0.13\% of the total memory space.
+%, and there are 40.5 bits for each object.
+%the space amplification is about 13.5.
+
+\textbf{Prefetching.} \sys can prefetch in \ABB{G} for \textit{infrequent-empheral} data or integrate with other prefetchers.
+%
+A typical \textit{Churn} pattern has a sequence of accesses, while \ABB{K} would not cover all of them for limited space.
+%
+As discussed in \autoref{ss:overview}, \ABB{G} also keeps the relative access order for phase awareness, which provides an opportunity for prefetching.
+%
+When continueous data is accessed in \ABB{G}, \sys can prefetch the following data in the sequence to \ABB{F} and maintain metadata in \ABB{G}.
+%
+If prefetching hits in \ABB{F}, it would be treated as normal data; otherwise, \sys will evict it.
+%
+When \sys intergates with other prefetchers, \sys can leverage the prefetcher to insert data into \ABB{F} directly, which will not affect other queues.
+
+\textbf{Limitations.}
+%
+On workloads with tiny objects, linked-list implementation of FIFO queues would introduce high space overhead for pointers.
+%
+\ABB{G} and \ABB{K} would also introduce high space overhead for metadata, and \sys needs to limit their sizes.
+%
+
+\textbf{Adversarial workloads for \sys.}
+%
+\sys highly relies on phase and hotness analysis to identify access patterns.
+%
+Workloads with large reuse which apporaches the phase size are challenge for phase analysis.
+%
+The large reuse would have many hits in \ABB{G} rather than \ABB{M} for the first phase in \sys, and it will be evicted by suspected data in \ABB{S} at the end of the phase, leading to many misses.
+%
+Workloads with many equal hotness counters are challenge for hotness analysis.
+%
+In this case, the hotness threshold would cut through many data, and \sys have to discard or pick up some data.
+%
+For example, many data accessed only once or twice in a phase, and \ABB{K} suspects a part of them as useful data.
+%
+
+Other algorithms also suffer from these workloads, and large cache size or prefetcher can mitigate the influence.
+%
+Algorithms with a small filter queue~(S3-FIFO~\cite{}, 2Q~\cite{}) also evict data to ghost queue, leading to misses.
+%
+Algorithms without a sketch~(ARC~\cite{},CACHEUS~\cite{}) also discard useful data due to limited accesses.
+%
+With large cache size, algorithms can catch marginal accesses.
+%
+Most of equal hotness counters come from repeated accesses in a sequence, and prefetchers can help to catch them.
+%
+
 
 
 \begin{figure}[t]

@@ -122,11 +122,11 @@ The offline hotness analysis collects the hotness distribution and classifies da
 %
 In the online version, hotness distribution manages data in the FIFO queue for a phase.
 %
-When access or aging occurs, it uses the new distribution to update the threshold dynamically.
+When access or eviction occurs, it uses the new distribution to update the threshold dynamically.
 %
 With the new threshold, the online analysis classifies data into frequent and infrequent types.
 %
-It can also classify data when threshold changes due to access or aging occurs to reduce the overhead.
+It can also classify data when threshold changes due to access or eviction occurs to reduce the overhead.
 
 
 \subsection{Phase and hotness based types}
