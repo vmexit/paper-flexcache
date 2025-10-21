@@ -159,30 +159,33 @@ For suspected data from \ABB{F} and \ABB{G}~(\BC{6}), if hit occurs in \ABB{S}, 
 
 
 \textbf{Implementation}
-efficiency and scalability
+The FIFO-based queues have different implementations for \textit{find}, \textit{delete}, \textit{insert}, and \textit{eviction} operations to improve efficiency and scalability.
+%
+It is efficient to operate \textit{insert} and \textit{eviction} operations in the head or tail of the queue.
+%
+However, it is impossiable to scan the whole queue for \textit{find} and \textit{delete} operations.
+%
+Therefore, \sys decouples the storage logic and evcition algorithm logic as prior work~\cite{}.
+%
+The storage logic leverages a hash table to index the position of data, which is efficiency and scalable.
 
-If the hotness counter of an object in \ABB{F} or \ABB{G} exceeds the threshold, \sys promotes it to \ABB{M} as \textit{frequent-ephemeral} type, which is likely to be \textit{frequent-persistent} type.
+A FIFO-based queue in evcition algorithm logic has linked-list or ring-buffer implementation.
 %
-\BC{4} If hit occurs in \ABB{G}, \sys suspects that the corresponding data might be \textit{frequent-ephemeral} type.
+With linked-list implementation, linked-list pointers can intergate with storage logic with a hook portabliy, but have to manage pointers with atomic operations, which reduces scalability.
 %
-Based on the \ABB{K} information, \sys suspects that some data in \ABB{F} may be \textit{infrequent-persistent} type.
-%
-Then \sys moves suspected data with a suspected field to \ABB{S} for further examination and keeps metadata in \ABB{G} for phase analysis.
-%
-\BC{5} 
-%
-For queues that exceed their size limit, \sys moves \textit{infrequent-ephemeral} data from \ABB{F} to \ABB{G}, places all data from \ABB{M} into \ABB{S} for verification, and evicts the excess \textit{infrequent-ephemeral} data from \ABB{G}.
-%
-\BC{6} \ABB{S} checks the suspected data from \ABB{F} and \ABB{G} and the last phase data from \ABB{M}.
-%
-If cache hits suspected data, \sys confirms suspected \textit{frequent-ephemeral} data from \ABB{G} and \textit{infrequent-persistent} data from \ABB{K} and promotes them to \ABB{M}.
-%
+Ring-buffer implementation is more scalable with less atomic operations, but it requires extra space for the buffer, which also wastes space when workload has many \textit{delete} operations.
 
-For simplicity, the suspicious cache is a small part of the main cache, so we move the objects in the main cache to the suspicious cache and use the aging function to judge whether objects in the suspicious cache are evicted or promoted to the main cache when eviction occurs.
+\ABB{G} can be further simplified for efficiency and scalability.
 %
+Since \ABB{G} will not delete data except for eviction~(\BC{6}), it has less operations and space overhead in both linked-list and ring-buffer implementations.
+%
+An accurate \ABB{G} can be used for prefetching~(\TODO{ref}), while a lossy \ABB{G} can instead evcition algorithm logic with a timestamp and fingerprint field.
+%
+For example, a fingerprint has 4 Byte of hashed key and a timestamp has 4 Byte of insertion time.
+%
+\sys stores a scope of timestamps based on the phase size and evicts data beyond the scope.
 
-
-
+sketch implementation
 
 
 \subsection{Discussion and Limitations}
@@ -191,8 +194,9 @@ For simplicity, the suspicious cache is a small part of the main cache, so we mo
 %discussion about prefetching
 %limitation in different case
 Adaption //hotness and phase changes
-parameters/ sketch, cache size
-overhead
+parameters/ sketch, cache sizes
+cache size / object size
+overhead Extra metadata
 prefetching
 limitations
 
