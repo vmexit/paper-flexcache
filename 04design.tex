@@ -270,16 +270,15 @@ On workloads with tiny objects, linked-list implementation of FIFO queues would 
 %
 \sys highly relies on phase and hotness analysis to identify access patterns.
 %
-Workloads with large reuse which apporaches the phase size are challenge for phase analysis.
+(1) Workloads with large reuse which apporaches the phase size are challenge for phase analysis.
 %
 The large reuse would have many hits in \ABB{G} rather than \ABB{M} for the first phase in \sys, and it will be evicted by suspected data in \ABB{S} at the end of the phase, leading to many misses.
 %
-Workloads with many equal hotness counters are challenge for hotness analysis.
+(2) Workloads with greatly changed hotness distribution are challenge for hotness analysis.
 %
-In this case, the hotness threshold would cut through many data, and \sys have to discard or pick up some data.
+In this case, the hotness threshold would change frequently, and \ABB{K} takes time to learn it. 
 %
-For example, many data accessed only once or twice in a phase, and \ABB{K} suspects a part of them as useful data.
-%
+
 
 Other algorithms also suffer from these workloads, and large cache size or prefetcher can mitigate the influence.
 %

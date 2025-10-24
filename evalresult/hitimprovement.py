@@ -14,15 +14,25 @@ if not os.path.exists(outputdir):
 dropcolumn=["Belady"]
 #accp4 ARC Cacheus Clock FIFO FIFO-Merge GDSF Hyperbolic LHD LIRS LeCaR QDLP S3FIFO S4LRU TwoQ WTinyLFU
 column = ["accp4", "ARC", "Cacheus", "Clock", "FIFO", "FIFO-Merge", "GDSF", "Hyperbolic", "LHD", "LIRS", "LeCaR", "QDLP", "S3FIFO", "S4LRU", "WTinyLFU", "TwoQ", "accp4c", "accp4p"]
-column = ["FlexCache", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
+column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
+column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU"]
 
-def getrelative(df):
+def getrelativehr(df):
     dfrelative = pd.DataFrame()
     mindf = df.min(axis=1)
-    mindf = df["FIFO"]
+    mindf = df["LRU"]
     for column in df.columns:
         dfrelative[column] = (1-df[column])/(1-mindf)
     dfrelative.fillna(1, inplace=True)
+    return dfrelative  
+
+def getrelativemr(df):
+    dfrelative = pd.DataFrame()
+    mindf = df.min(axis=1)
+    mindf = df["LRU"]
+    for column in df.columns:
+        dfrelative[column] = (mindf-df[column])/(mindf)
+    dfrelative.fillna(0, inplace=True)
     return dfrelative  
 
 def readfile(filepath):
@@ -32,9 +42,12 @@ def readfile(filepath):
         if col in df.columns:
             df.drop(col, axis=1, inplace=True)
     df.columns = df.columns.str.replace("flex-0.10-0.05-1.00", "FlexCache")
-    dfret = getrelative(df)
+    df.columns = df.columns.str.replace("S3FIFO", "S3-FIFO")
+    dfret = getrelativehr(df)
     rhr = dfret.prod(axis=0)**(1/len(dfret))
     rhr = rhr - 1
+    #dfret = getrelativemr(df)
+    #rhr = dfret.mean()
     return dfret, rhr
    
 def storeRHR(df, outputdir, bench):

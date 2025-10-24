@@ -11,11 +11,11 @@ outputdir = currentdir+"/../data/RHR"
 if not os.path.exists(outputdir):
     os.makedirs(outputdir)
 
-dropcolumn=["Belady", "QDLP"]
+dropcolumn= ["Belady", "QDLP"]
 #accp4 ARC Cacheus Clock FIFO FIFO-Merge GDSF Hyperbolic LHD LIRS LeCaR QDLP S3FIFO S4LRU TwoQ WTinyLFU
 column = ["flex-0.10-0.05-1.00", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
-column = ["FlexCache", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
-
+column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
+column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU"]
 
 def getrelative(df):
     dfrelative = pd.DataFrame()
@@ -28,14 +28,15 @@ def getrelative(df):
 def getdfRHR(filepath, bench, cachesize):
     df = pd.read_csv(filepath,header=0,index_col=0)
     #keeyp rows with any value < 0.9
-    df = df[(df < 0.99).all(1)]
-    df = df[(df < 0.95).any(axis=1)]
+    #df = df[(df < 0.99).all(1)]
+    #df = df[(df < 0.95).any(axis=1)]
     #df = df[(df < 0.9).all(1)]
     for col in dropcolumn:
         if col in df.columns:
             df.drop(col, axis=1, inplace=True)
     dfret = getrelative(df)
     dfret.columns = dfret.columns.str.replace("flex-0.10-0.05-1.00", "FlexCache")
+    dfret.columns = dfret.columns.str.replace("S3FIFO", "S3-FIFO")
     rhr = dfret.prod(axis=0)**(1/len(dfret))
     return dfret, rhr
 
@@ -70,7 +71,7 @@ def performance(df):
         for t in target:
             dfper.at[str(t*100)+"%", col] = (dfsort[col] >= t).sum()/len(dfsort[col])
     dfper = dfper[column]
-    print(dfper)
+    #print(dfper)
     
     
 def calculate(inputdir, outputdir):
