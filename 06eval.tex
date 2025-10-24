@@ -1,77 +1,73 @@
 \section{Evaluation}
 \label{s:eval}
-\begin{figure*}[t]
-    \centering
-    \input{data/averagerhr}
-    \caption{Replacement policies' average relative hit ratio in benchmarks with different cache size.\XXX{complex re-write}}
-    \label{fig:averagerhr}
-\end{figure*}
+Our evaluation answers the following questions:
+\squishlist
+    \item How does \sys perform compared with SOTA algorithms in various workloads and cache sizes for robustness?
+    \item Is \sys efficient in terms of bandwidth and throughput?
+    \item Is \sys scalable compared to adaptive algorithms?
+\squishend
 
-In this section, we evaluate \sys with the benchmarks in table~\ref{tab:traces}. We will discuss the hit ratio improvement (miss ratio reduction) of \sys compared with the state-of-the-arts, the relative hit ratio and the tail performance, and the breakdown performance of \sys.
-
-\begin{figure*}[t]
-    \centering
-    \input{data/tailhrh}
-    \caption{Tail and average relative hit ratio of \sys and SOTA policies in benchmarks with more than 100 traces (the larger the better). Different colors and shapes represent the tail-end performance at various percentages. The larger the icon, the larger the cache size, with three sizes corresponding to 0.4, 0.1, and 0.03 of the WSS. \XXX{complex re-write}}
-    \label{fig:tailhrh}
-\end{figure*}
 \input{06evaltable}
 \subsection{Evaluation setup}
-\textbf{Traces.} We evaluate \sys with 4853 production traces from 10 datasets. 
+\textbf{Traces.} We evaluated \sys with 4853 production traces from 11 datasets. 
 %
-These traces cover key-value, CDN object, and block caches.
+These traces cover key-value, CDN object, and block caches, spanning from \XXX{date}.
 %
-\TODO{In total, the datasets contain 856 billion requests to 61 billion objects, 21,088 TB traffic for total 3,753 TB of data.}
+\TODO{In total, the datasets contain 856 billion requests to 61 billion objects, 21,088 TB traffic for total 3,753 TB of data, as shown in table~\ref{tab:traces}.}
 %
-We analyze and fit the relationship between reuse time distribution and data access frequency in these traces. The approximate slope ranges from -0.85 to -1.02—the closer it is to -1, the more the region exhibits a log-linear distribution, shown in table~\ref{tab:traces}.
+In many large-scale distributed caching system, traces in workloads are served by multiple servers for multi-tenanted services.
+%
+Therefore, we split the Tencent CBS~\cite{} and Alibaba~\cite{} benchmarks into per-tenant traces as prior work~\cite{}.
+
 
 \textbf{Simulator.} We implement \sys in libCacheSim~\cite{} as prior work.
 %
-For the state-of-the-art algorithms, we use the original implementations of the algorithms with the same parameters.
+For the state-of-the-art algorithms~\cite{}, we use the original implementations of the algorithms with the same parameters.
 %
-We integrate the cache-size-based phase partitioning method and data reuse time distribution analysis into the analysis module of the simulator.
+%We integrate the cache-size-based phase partitioning method and data reuse time distribution analysis into the analysis module of the simulator.
 %
+We do not consider the metadata size of different algorithms, for \sys requires limited metadata and production systems usually have more detailed metadata.
+%
+In this scope, we ignore the data management as prior work~\cite{} for benchmarks with different object sizes.
+%
+The production systems store objects of similar sizes in the same slab class, which introduces fragmentation but simplifies memory management.
+%
+It is non-trivial to consider the object size in a system without a slab-based memory management.
 
-
-Unless mentioned, we ignore the object size in the simulator and the metadata size of the cache.
+\textbf{Metrics and methodology.} 
 %
-The production systems use the slab to store the objects with varies size, and evictions are performed in the same slab class.
+We evaluate different algorithms across various cache sizes for robustness and efficiency.
 %
-We remark that adjusting the usage size of different slabs can bring performance gains~\cite{}, but this is beyond the scope of the current algorithm.
-%
-Metadata occupies less than 0.5\% of the cache size, and in production environments, metadata typically contains even more detailed information. 
-%
-Therefore, we ignore the metadata space required by all replacement policies.
-%
-We evaluate the hit rates of different replacement policies across various cache sizes, ranging from 0.3\% to 40\% of the working set size (WSS), defined as the total number of objects in the trace. 
+Cache sizes range from 0.3\% to 20\% of the working set size (WSS), defined as the total number of objects in the trace.
 %
 In some cases, the 0.3\% WSS is too small to be practical, whose cache size is less than 1000 objects, so we ignore it.
 %
-For the byte miss ratio, we follow previous studies by taking object sizes into account and use the total byte size as a replacement for object count.
+With the help of slabs, we ignore the object size for ideal case as prior work~\cite{}.
+%
+To evaluate the efficiency of cache utility, we also consider the objects and consider the byte hit ratio.
 
-Because the hit ratio of the traces used in the evaluation varies greatly, we use the relative hit ratio to show the performance.
+To exhibit the robustness, we evaluate 16 state-of-the-art algorithms and compare them with with a dominant algorithm, which achieves the highest hit ratio for the trace with a specific cache size.
 %
-For each trace and each cache size, we evaluatie 16 SOTA policies, choose the highest hit ratio as the optimal hit ratio, and then calculate relative hit ratio compared to the optimal policy to show the performance distribution of different replacement policies, $P_i = \frac{HR_i}{\max{HR_{alg}}}$.
+Compared with the dominant algorithm, each algorithm have a relative hit ratio distribution for benchmarks in different cache sizes.
 %
-Additionally, following the methodology from previous studies, we calculate the performance improvement relative to FIFO~\cite{}.
+Additionally, we also calculate the performance improvement relative to LRU.
 %
-Benchmarks contain varying numbers of traces. 
-%
-For benchmarks with more than 100 traces, we report both the distribution of relative hit rates and the tail-end performance. 
+For benchmarks with more than 100 traces, we report both the distribution of relative hit rates and the tail performance. 
 %
 For those with fewer than 100 traces, we only calculate the average performance.
-%
 
+\TODO{sensitive analysis}
 We evaluate the impact of different modules on the \sys. 
 %
 In the experiments, we individually disable the prefetching and CBF modules to analyze their respective contributions to performance. 
 %
 Additionally, we adjust the size of the suspicious space to observe how different cache sizes of filter and suspicious cache affect overall performance.
 
+
 \begin{figure*}[t]
     \centering
     \input{data/hitimp}
-    \caption{Relative hit raitio improvements based on FIFO. We disable the CBF with \sys-C and disable the prefetch with \sys-P.}
+    \caption{Relative hit ratio improvements based on FIFO. We disable the CBF with \sys-C and disable the prefetch with \sys-P.}
     \label{fig:hitimp}
 \end{figure*}
 \subsection{Performance for different cache sizes}
