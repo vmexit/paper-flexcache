@@ -13,12 +13,12 @@ if not os.path.exists(outputdir):
 
 dropcolumn= ["Belady", "QDLP"]
 #accp4 ARC Cacheus Clock FIFO FIFO-Merge GDSF Hyperbolic LHD LIRS LeCaR QDLP S3FIFO S4LRU TwoQ WTinyLFU
-column = ["flex-0.10-0.05-1.00", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
-column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
-column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU"]
-row = ["systor", "metaCDN", "twitter", "fiu", "alibabaBlock", "msr", "tencentPhoto", "tencentBlock", "cloudphysics", "metaKV", "wikimedia"]
-row = ["alibabaBlock", "tencentBlock", "cloudphysics", "systor", "msr", "fiu", "twitter", "metaKV", "tencentPhoto", "metaCDN", "wikimedia"]
-row_rename = ["Alibaba", "Tencent", "CloudPhysics", "Systor", "MSR", "fiu", "Twitter", "MetaKV", "TencentPhoto", "MetaCDN", "Wikimedia"]
+out_column = ["accp4", "ARC", "Cacheus", "Clock", "FIFO", "FIFO-Merge", "GDSF", "Hyperbolic", "LHD", "LIRS", "LeCaR", "QDLP", "S3FIFO", "S4LRU", "WTinyLFU", "TwoQ", "accp4c", "accp4p"]
+out_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
+out_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF"]
+out_row = ["systor", "metaCDN", "twitter", "fiu", "alibabaBlock", "msr", "tencentPhoto", "tencentBlock", "cloudphysics", "metaKV", "wikimedia"]
+out_row = ["twitter", "metaKV", "metaCDN", "tencentPhoto", "wikimedia", "tencentBlock", "systor", "fiu", "msr", "alibabaBlock", "cloudphysics"]
+out_row_rename = ["Twitter", "MetaKV", "MetaCDN", "TencentPhoto", "Wikimedia", "Tencent", "Systor", "fiu", "MSR", "Alibaba", "CloudPhysics"]
 
 def getrelative(df):
     dfrelative = pd.DataFrame()
@@ -45,16 +45,16 @@ def getdfRHR(filepath, bench, cachesize):
 
 def storeCDFTail(dfret, outputdir, bench, cachesize, rhr):
     dfsort = dfret.apply(np.sort)
-    dfsort = dfsort[column]
+    dfsort = dfsort[out_column]
     dfsort = dfsort.T
     dfsort.columns = range(1, len(dfsort.columns)+1)
+    target = [0.01,0.03,0.05,0.1,0.3,0.5]
     dfout = pd.DataFrame()
-    dfout["P1"] = dfsort[int(len(dfsort.columns)*0.01)]
-    dfout["P5"] = dfsort[int(len(dfsort.columns)*0.05)]
-    dfout["P10"] = dfsort[int(len(dfsort.columns)*0.1)]
-    dfout["P50"] = dfsort[int(len(dfsort.columns)*0.5)]
-    dfout["average"] = rhr
+    for t in target:
+        dfout["P"+str(int(t*100))] = dfsort[int(len(dfsort.columns)*t)]
+    #dfout["average"] = rhr
     dfout.index.name = "policy"
+    dfout = dfout.T
     dfout.to_csv(outputdir+"/"+bench+str(cachesize)+".dat", sep=' ', float_format='%.3f')
     
 def storeRHR(df, outputdir, bench):
@@ -62,18 +62,18 @@ def storeRHR(df, outputdir, bench):
     tmpres.sort_index(axis=1, ascending=True, inplace=True)
     tmpres = tmpres.T
     tmpres.index.name = "cachesize"
-    tmpres = tmpres[column]
+    tmpres = tmpres[out_column]
     tmpres.to_csv(outputdir+"/"+bench+".dat", sep=' ', float_format='%.3f')
     
 def performance(df):
     dfsort = df.apply(np.sort)
-    dfsort = dfsort[column]
+    dfsort = dfsort[out_column]
     target = [1,0.99,0.95,0.90]
     dfper = pd.DataFrame(columns=df.columns)
     for col in dfsort.columns:
         for t in target:
             dfper.at[str(t*100)+"%", col] = (dfsort[col] >= t).sum()/len(dfsort[col])
-    dfper = dfper[column]
+    dfper = dfper[out_column]
     #print(dfper)
     
     
