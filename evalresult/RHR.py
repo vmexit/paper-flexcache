@@ -16,6 +16,9 @@ dropcolumn= ["Belady", "QDLP"]
 column = ["flex-0.10-0.05-1.00", "S3FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
 column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
 column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU"]
+row = ["systor", "metaCDN", "twitter", "fiu", "alibabaBlock", "msr", "tencentPhoto", "tencentBlock", "cloudphysics", "metaKV", "wikimedia"]
+row = ["alibabaBlock", "tencentBlock", "cloudphysics", "systor", "msr", "fiu", "twitter", "metaKV", "tencentPhoto", "metaCDN", "wikimedia"]
+row_rename = ["Alibaba", "Tencent", "CloudPhysics", "Systor", "MSR", "fiu", "Twitter", "MetaKV", "TencentPhoto", "MetaCDN", "Wikimedia"]
 
 def getrelative(df):
     dfrelative = pd.DataFrame()

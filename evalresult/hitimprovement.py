@@ -11,11 +11,14 @@ outputdir = currentdir+"/../data/hitimp"
 if not os.path.exists(outputdir):
     os.makedirs(outputdir)
 
-dropcolumn=["Belady"]
+dropcolumn=["Belady", "QDLP"]
 #accp4 ARC Cacheus Clock FIFO FIFO-Merge GDSF Hyperbolic LHD LIRS LeCaR QDLP S3FIFO S4LRU TwoQ WTinyLFU
-column = ["accp4", "ARC", "Cacheus", "Clock", "FIFO", "FIFO-Merge", "GDSF", "Hyperbolic", "LHD", "LIRS", "LeCaR", "QDLP", "S3FIFO", "S4LRU", "WTinyLFU", "TwoQ", "accp4c", "accp4p"]
-column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge", "QDLP"]
-column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU"]
+out_column = ["accp4", "ARC", "Cacheus", "Clock", "FIFO", "FIFO-Merge", "GDSF", "Hyperbolic", "LHD", "LIRS", "LeCaR", "QDLP", "S3FIFO", "S4LRU", "WTinyLFU", "TwoQ", "accp4c", "accp4p"]
+out_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
+out_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF"]
+out_row = ["systor", "metaCDN", "twitter", "fiu", "alibabaBlock", "msr", "tencentPhoto", "tencentBlock", "cloudphysics", "metaKV", "wikimedia"]
+out_row = ["twitter", "metaKV", "metaCDN", "tencentPhoto", "wikimedia", "tencentBlock", "systor", "fiu", "msr", "alibabaBlock", "cloudphysics"]
+out_row_rename = ["Twitter", "MetaKV", "MetaCDN", "TencentPhoto", "Wikimedia", "Tencent", "Systor", "fiu", "MSR", "Alibaba", "CloudPhysics"]
 
 def getrelativehr(df):
     dfrelative = pd.DataFrame()
@@ -29,9 +32,18 @@ def getrelativehr(df):
 def getrelativemr(df):
     dfrelative = pd.DataFrame()
     mindf = df.min(axis=1)
-    mindf = df["LRU"]
+    mindf = df["FIFO"]
     for column in df.columns:
-        dfrelative[column] = (mindf-df[column])/(mindf)
+        #dfrelative[column] = (mindf-df[column])/(mindf)
+        numerator = mindf - df[column]
+        # 条件：mindf < df[column]
+        condition = mindf < df[column]
+        # 默认分母是 mindf
+        denominator = mindf.copy()
+        # 在条件满足时，用 df[column] 替换分母
+        denominator = np.where(condition, df[column], mindf)
+        # 计算结果
+        dfrelative[column] = numerator / denominator
     dfrelative.fillna(0, inplace=True)
     return dfrelative  
 
@@ -55,8 +67,20 @@ def storeRHR(df, outputdir, bench):
     tmpres.sort_index(axis=1, ascending=True, inplace=True)
     tmpres = tmpres.T
     tmpres.index.name = "cachesize"
-    tmpres = tmpres[column]
+    tmpres = tmpres[out_column]
     tmpres.to_csv(outputdir+"/"+bench+".dat", sep=' ', float_format='%.3f')
+    
+def find_best(result):
+    bestcounter = {}
+    for bench in result.keys():
+        for cachesize in result[bench].keys():
+            df = result[bench][cachesize]
+            maxidx = df.idxmax()
+            if maxidx not in bestcounter:
+                bestcounter[maxidx] = 0
+            bestcounter[maxidx] += 1
+    print(bestcounter)
+    
      
 def calculate(inputdir, outputdir):
     resultB = {}
@@ -69,7 +93,6 @@ def calculate(inputdir, outputdir):
             if "byte" in name:
                 dfret, rhr = readfile(os.path.join(benchdir, file))
                 resultB[bench][cachesize] = rhr
-                dfret.to_csv("./tmp"+str(cachesize)+".csv", sep=' ', float_format='%.3f')
             else:
                 continue
         storeRHR(pd.DataFrame(resultB[bench]), outputdir, bench+"B")
@@ -79,10 +102,14 @@ def calculate(inputdir, outputdir):
         tmpres = pd.DataFrame()
         for bench in resultB.keys():
             tmpres[bench] = resultB[bench][cachesize]
+        #print(cachesize, tmpres.idxmax())
+        tmpres = tmpres[out_row]
+        tmpres.columns = [out_row_rename[out_row.index(x)] for x in tmpres.columns]
         tmpres = tmpres.T
         tmpres.index.name = "benchmarks"
-        tmpres = tmpres[column]
+        tmpres = tmpres[out_column]
         tmpres.to_csv(outputdir+"/"+str(cachesize)+".dat", sep=' ', float_format='%.3f')
+    #find_best(resultB)
    
 for subdir in os.listdir(inputdir):
     subinputdir = os.path.join(inputdir, subdir)
@@ -94,44 +121,3 @@ for subdir in os.listdir(inputdir):
         print("finish "+subdir)         
         
 exit(0)
-
-result = {}
-for bench in os.listdir(dir):
-    benchdir = os.path.join(dir, bench)
-    result[bench] = {}
-    relative={"1": pd.DataFrame(),"5": pd.DataFrame(),"10": pd.DataFrame(),"50": pd.DataFrame()}
-    for file in os.listdir(benchdir):
-        name = os.path.splitext(file)[0]
-        cachesize = float(name.split("-")[1])
-        df = pd.read_csv(os.path.join(benchdir, file),header=0,index_col=0)
-        for col in dropcolumn:
-            if col in df.columns:
-                df.drop(col, axis=1, inplace=True)
-        dfret = getrelative(df)
-        #rhr = dfret.mean()
-        rhr = dfret.prod(axis=0)**(1/len(dfret))
-        result[bench][cachesize] = rhr - 1
-  
-    tmpres = result[bench]
-    tmpres = pd.DataFrame(tmpres)
-    tmpres.sort_index(axis=1, ascending=True, inplace=True)
-    tmpres = tmpres.T
-    tmpres.index.name = "cachesize"
-    tmpres = tmpres[column]
-    tmpres.to_csv(outputdir+"/"+bench+".dat", sep=' ', float_format='%.3f')
-
-bench = [key for key in result.keys()]
-print(bench)
-for cachesize in result[bench[0]].keys():
-    tmpres = pd.DataFrame()
-    for bench in result.keys():
-        tmpres[bench] = result[bench][cachesize]
-    tmpres = tmpres.T
-    tmpres.index.name = "benchmarks"
-    tmpres = tmpres[column]
-    tmpres.to_csv(outputdir+"/"+str(cachesize)+".dat", sep=' ', float_format='%.3f')
-    
-resultdf = pd.DataFrame(result)
-print(resultdf)
-print(resultdf.columns)
-print(resultdf.index)

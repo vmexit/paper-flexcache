@@ -67,8 +67,15 @@ Additionally, we adjust the size of the suspicious space to observe how differen
 \begin{figure*}[t]
     \centering
     \input{data/hitimp}
-    \caption{Relative hit ratio improvements based on FIFO. We disable the CBF with \sys-C and disable the prefetch with \sys-P.}
+    \caption{Relative hit ratio improvements based on LRU.}
     \label{fig:hitimp}
+\end{figure*}
+
+\begin{figure*}[t]
+    \centering
+    \input{data/hitimpall}
+    \caption{Relative hit ratio improvements based on LRU.}
+    \label{fig:hitimpall}
 \end{figure*}
 \subsection{Performance for different cache sizes}
 \textbf{Average relative hit ratio.} We evaluate \sys and SOTA policies with benchmarks in table~\ref{tab:traces} in different cache size. 
