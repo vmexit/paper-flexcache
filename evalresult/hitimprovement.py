@@ -20,13 +20,40 @@ out_row = ["systor", "metaCDN", "twitter", "fiu", "alibabaBlock", "msr", "tencen
 out_row = ["twitter", "metaKV", "metaCDN", "tencentPhoto", "wikimedia", "tencentBlock", "systor", "fiu", "msr", "alibabaBlock", "cloudphysics"]
 out_row_rename = ["Twitter", "MetaKV", "MetaCDN", "TencentPhoto", "Wikimedia", "Tencent", "Systor", "fiu", "MSR", "Alibaba", "CloudPhysics"]
 
+scope_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "TwoQ", "LRU"]
+
+def findMAXhr(df):
+    filterdf = df[scope_column]
+    dfminalg = filterdf.min(axis=1)
+    dfflexmin = filterdf[dfminalg==filterdf["FlexCache"]]
+    if len(dfflexmin) > 0:
+        impflex = pd.DataFrame()
+        for column in dfflexmin.columns:
+            impflex[column] = (1-dfflexmin["FlexCache"]) / (1-dfflexmin[column])
+        impflex.drop("FlexCache", axis=1, inplace=True)
+        minimp = (1-dfflexmin["FlexCache"]) / (1-dfflexmin["S3-FIFO"])#impflex.min(axis=1)
+        threshold = 1.2
+        if len(minimp) > 0 and max(minimp) > threshold:
+            oridf = dfflexmin[minimp > threshold]
+            impflex = impflex[minimp > threshold]
+            minimp = minimp[minimp > threshold]
+            minimp = minimp[oridf["FlexCache"] < 0.6]
+            if len(minimp) != 0:
+                impflex = impflex[oridf["FlexCache"] < 0.6]
+                oridf = oridf[oridf["FlexCache"] < 0.6]
+                print(oridf)
+                print(impflex)
+                print(minimp)
+
 def getrelativehr(df):
     dfrelative = pd.DataFrame()
+    df = df[(df < 0.99).any(axis=1)]
     mindf = df.min(axis=1)
     mindf = df["LRU"]
     for column in df.columns:
         dfrelative[column] = (1-df[column])/(1-mindf)
     dfrelative.fillna(1, inplace=True)
+    findMAXhr(df)
     return dfrelative  
 
 def getrelativemr(df):
@@ -48,16 +75,18 @@ def getrelativemr(df):
     return dfrelative  
 
 def readfile(filepath):
+    print("reading "+filepath)
     df = pd.read_csv(filepath,header=0,index_col=0)
-    df = df[(df < 0.999).all(1)]
     for col in dropcolumn:
         if col in df.columns:
             df.drop(col, axis=1, inplace=True)
     df.columns = df.columns.str.replace("flex-0.10-0.05-1.00", "FlexCache")
     df.columns = df.columns.str.replace("S3FIFO", "S3-FIFO")
     dfret = getrelativehr(df)
-    rhr = dfret.prod(axis=0)**(1/len(dfret))
-    rhr = rhr - 1
+    rhr = 0
+    if len(dfret) != 0:
+        rhr = dfret.prod(axis=0)**(1/len(dfret))
+        rhr = rhr - 1
     #dfret = getrelativemr(df)
     #rhr = dfret.mean()
     return dfret, rhr

@@ -70,7 +70,7 @@ unset ylabel
 #set xlabel 'cache size(\%)'
 unset ytics
 set key outside top horizontal maxrows 1 spacing 1.0 width -2 offset 0,-1
-set xrange[0:0.6]
+set xrange[0:0.7]
 #set title 'Relative byte hit ratio improvement' offset 0,1
 
 do for [i=1:11] {
@@ -127,7 +127,7 @@ unset ylabel
 #set xlabel 'cache size(\%)'
 unset ytics
 set key outside top horizontal width 1 font "Times,8" offset 0,-1
-set xrange[0:0.6]
+set xrange[0:0.7]
 
 do for [i=1:11] {
     if (i%2 == 0) {
@@ -181,7 +181,7 @@ eval mpNext
 unset ylabel
 unset ytics
 set key outside top horizontal width 5 font "Times,8" offset 0,-1
-set xrange[0:0.6]
+set xrange[0:0.7]
 set xlabel 'Byte hit ratio improvement from LRU'
 
 do for [i=1:11] {

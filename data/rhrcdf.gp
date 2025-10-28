@@ -73,7 +73,7 @@ set ylabel 'Relative hit ratio'
 set yrange [0.4:]
 set ytics  0.1
 set title '(e) Tencent, small cache size' offset 0,-0.5
-set xlabel 'Cumulative distribution'
+set xlabel 'Cumulative distribution(\%)'
 plot "data/RHR/withoutobjsize/tencentBlockB0.03.dat" using 0:2 with linespoints ls 1 pt 9 ps 2 title '', \
      "data/RHR/withoutobjsize/tencentBlockB0.03.dat" using 0:3 with linespoints ls 2 title "", \
      "data/RHR/withoutobjsize/tencentBlockB0.03.dat" using 0:4 with linespoints ls 3 title "", \
