@@ -100,7 +100,43 @@ If its \textit{hotness counter} is zero, \sys evicts it; otherwise, \sys decreas
 
 
 \textbf{Handling different access patterns.}
+%
+The \ABB{F} filters out \textit{infrequent-ephemeral} data to \ABB{G} quickly, with which \sys saves space for other good locality data.
+%
+\sys leverages \ABB{F} and \ABB{G} to suggest \textit{frequent-ephemeral} data for an epoch and degrades its hotness counter every epoch to evict stale data.
+%
+For \textit{frequent-persistent} data, \sys holds them in \ABB{M} for most of the cache space to improve the hit ratio.
+%
+\ABB{K} could catch \textit{infrequent-persistent} data beyond epochs, which appears in many epochs.
+%
+\sys confirms them in \ABB{S} for the first guess and then checks their access for each epoch.
 
+It is significant to discuss how \sys handles data online, which also related to pattern changing.
+%
+When data is accessed without any information, \sys inserts it into \ABB{F} and treats it as \textit{infrequent-ephemeral}.
+%
+If it is frequently accessed in \ABB{F} as \textit{frequent-ephemeral}, \sys clears its hotness counter to check whether it is \textit{frequent-persistent}.
+%
+In another case, \ABB{F} is less than an epoch, so \sys moves it to \ABB{G} for epoch analysis.
+%
+Although hits in \ABB{G} do not controbute to cache utility, it helps \sys identify \textit{frequent-ephemeral} data.
+%
+\ABB{K} records data with long-term information, so \sys only makes educated guesses about \textit{infrequent-persistent} data and confirms them in \ABB{S}.
+%
+
+For example, repeated accesses~(Churn) have a good locality, but they will pollute cache if cache cannot hold them all.
+%
+If cache could hold all of them, they are \textit{frequent-persistent} data and stay in \ABB{M}.
+%
+If cache cannot hold all of them and \ABB{G} could observe the repeatness, \sys takes part of them as \textit{frequent-ephemeral} data in \ABB{M}, and then \ABB{H} gradually raises the hotness threshold to block other \textit{infrequent-persistent} data.
+%
+If \ABB{G} cannot observe the repeatness, \sys guesses part of them to \ABB{S} with the help of \ABB{K}.
+
+
+
+
+
+\newpage
 \textbf{Workflow of \sys.}
 %
 \BC{1} For epoch analysis, \ABB{K} records all the data movement out of \ABB{F} and checked data by \ABB{S} with a forget function.
