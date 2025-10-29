@@ -26,7 +26,7 @@ An excellent eviction algorithm should be efficient and scalable.
 %
 \sys updates metadata and types when needed to reduce operations for high throughput, and it leverages FIFO queues and a sketch for lock-free implementations to improve scalability.
 
-
+\newpage
 \subsection{\sys Overview}
 \label{ss:overview}
 
@@ -42,8 +42,6 @@ The sketch~(\ABB{K}) records the number of epoches data appeared in the past.
 %
 The hotness recorder~(\ABB{H}) has \textit{a hotness threshold field} and an array for the \textit{hotness distribution}.
 
-\textbf{Access patterns in \sys.}
-%
 \sys uses \ABB{F} to filter out \textbf{infrequent-ephemeral} data quickly and \ABB{K} to find \textbf{infrequent-persistent} data.
 %
 \ABB{G} suggests \textbf{frequent-ephemeral} data due to space limitations, and \ABB{M} holds most \textbf{frequent-persistent} data.
@@ -91,6 +89,15 @@ Data suspected to belong to this category are placed into \ABB{S} for verificati
 When \ABB{G} is full, \sys evicts the tail data, updates \ABB{H}, and records epoch information in \ABB{K}.
 %
 When \ABB{M} exceeds its size limit, \sys moves data to \ABB{S} for pattern verification.
+
+\ABB{S} serves as a verification area for data from \ABB{M} and suspected data from \ABB{F} and \ABB{G}.
+%
+If suspected data is accessed during observation, \sys confirms its pattern and promotes it to \ABB{M}; otherwise, \sys evicts it.
+%
+For data from \ABB{M}, \sys records its epoch information in \ABB{K}.
+%
+If its \textit{hotness counter} is zero, \sys evicts it; otherwise, \sys decreases the counter, updates \ABB{H}, increases its \textit{epoch counter}, and moves it to the head of \ABB{M} for another epoch.
+
 
 \textbf{Handling different access patterns.}
 
