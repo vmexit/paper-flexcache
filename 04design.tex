@@ -42,13 +42,13 @@ The sketch~(\ABB{K}) records the number of epoches data appeared in the past.
 %
 The hotness recorder~(\ABB{H}) has \textit{a hotness threshold field} and an array for the \textit{hotness distribution}.
 
-\sys uses \ABB{F} to filter out \textbf{infrequent-ephemeral} data quickly and \ABB{K} to find \textbf{infrequent-persistent} data.
-%
-\ABB{G} suggests \textbf{frequent-ephemeral} data due to space limitations, and \ABB{M} holds most \textbf{frequent-persistent} data.
-%
-\sys makes educated guesses about some patterns changes and moves them to \ABB{S} for observation.
-%
-\ABB{S} also checks data from \ABB{M} at the end of an epoch to confirm their patterns.
+\squishlist
+\item{{\ABB{F} filters out \textbf{infrequent-ephemeral} data quickly}}
+\item{{\ABB{G} observes and suggests \textbf{frequent-ephemeral} data due to \ABB{F} space limitations for an epoch.}}
+\item{{\ABB{K} records data at the end of an epoch to find \textbf{infrequent-persistent} data.}}
+\item{{\ABB{M} holds most \textbf{frequent-persistent} data.}}
+\item{{\ABB{S} checks data guessed by \sys and confirms pattern changes at the end of an epoch.}}
+\squishend
 
 \textbf{Epoch awareness.} 
 %
