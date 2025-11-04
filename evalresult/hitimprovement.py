@@ -15,7 +15,7 @@ dropcolumn=["Belady", "QDLP"]
 #accp4 ARC Cacheus Clock FIFO FIFO-Merge GDSF Hyperbolic LHD LIRS LeCaR QDLP S3FIFO S4LRU TwoQ WTinyLFU
 out_column = ["accp4", "ARC", "Cacheus", "Clock", "FIFO", "FIFO-Merge", "GDSF", "Hyperbolic", "LHD", "LIRS", "LeCaR", "QDLP", "S3FIFO", "S4LRU", "WTinyLFU", "TwoQ", "accp4c", "accp4p"]
 out_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "Hyperbolic", "LHD", "S4LRU", "TwoQ", "Clock", "FIFO", "FIFO-Merge"]
-out_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF"]
+out_column = ["FlexCache", "S3-FIFO", "ARC", "Cacheus", "LeCaR", "LIRS", "WTinyLFU", "GDSF", "CAR", "GLCache"]
 out_row = ["systor", "metaCDN", "twitter", "fiu", "alibabaBlock", "msr", "tencentPhoto", "tencentBlock", "cloudphysics", "metaKV", "wikimedia"]
 out_row = ["twitter", "metaKV", "metaCDN", "tencentPhoto", "wikimedia", "tencentBlock", "systor", "fiu", "msr", "alibabaBlock", "cloudphysics"]
 out_row_rename = ["Twitter", "MetaKV", "MetaCDN", "TencentPhoto", "Wikimedia", "Tencent", "Systor", "fiu", "MSR", "Alibaba", "CloudPhysics"]
@@ -119,11 +119,8 @@ def calculate(inputdir, outputdir):
         for file in os.listdir(benchdir):
             name = os.path.splitext(file)[0]
             cachesize = float(name.split("-")[-1])
-            if "byte" in name:
-                dfret, rhr = readfile(os.path.join(benchdir, file))
-                resultB[bench][cachesize] = rhr
-            else:
-                continue
+            dfret, rhr = readfile(os.path.join(benchdir, file))
+            resultB[bench][cachesize] = rhr
         storeRHR(pd.DataFrame(resultB[bench]), outputdir, bench+"B")
 
     bench = [key for key in resultB.keys()]
