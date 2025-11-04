@@ -20,15 +20,25 @@ def updateH(delhot, inchot):
         if counter > CacheSize:
             @\ABB{H}.threshold@ = i
             break
+        
+def recordEviction(d):
+    @\ABB{K}@.counter ++
+    if @\ABB{K}@.counter >= EPOCHmax:
+        @\ABB{K}@.counter = 0
+        @\ABB{K}@.ageEpoch()
+    @\ABB{K}@.incEpoch(d)
+
+def epochUtility(d):
+    return @\ABB{K}.findEpoch(d)@ + d.hotness
 
 def updatePattern(d):
-    if d.hotness >= @\ABB{H}.threshold@:
-        if d.epoch > 1:
-            d.pattern = FP
-        else:
-            d.pattern = FE
+    guard = @\ABB{S}@.tail
+    epochGuard = @\ABB{K}.findEpoch(guard)@
+    if @\ABB{K}.findEpoch(d)@ > epochGuard:
+        d.patternE = PERSISTENT
     else:
-        if d.epoch > 1:
-            d.pattern = IP
-        else:
-            d.pattern = IE
+        d.patternE = EPHEMERAL
+    if d in @\ABB{M}@ or @\ABB{S}@:
+        d.patternH = FREQUENT
+    else:
+        d.patternH = INFREQUENT
