@@ -4,7 +4,8 @@ Software caches, e.g., Memcached~\cite{}, Redis~\cite{}, and the Linux page cach
 %
 For the cache to work in a variety of scenarios, it should be 
 %
-(1) \textit{reliable}: whatever the workload and cache size are, the cache should keep a high hit ratio for short latencies; \FY{robustness}
+(1) \textit{reliable}: whatever the workload and cache size are, the cache should keep a high hit ratio for short latencies; \FY{I think it's better to use the word robust}
+
 %
 (2) \textit{efficient}: it should manage data in the cache space effectively for low bandwith consumption and high throughput; and 
 %
@@ -14,7 +15,7 @@ The cache eviction algorithm is the core component for a cache to achieve reliab
 
 To design a reliable cache eviction algorithm, prior work analyzes workload access patterns~\cite{} and proposes non-adaptive~\cite{} and adaptive~\cite{} algorithms to handle them.
 %
-There are four typical primitive access patterns: \textit{LFU-friendly}, \textit{LRU-friendly}, \XXX{\textit{Churn}}, and \textit{Scan}~\cite{}.\FY{explain the four patterns briefly}
+There are four typical primitive access patterns: \textit{LFU-friendly}, \textit{LRU-friendly}, \XXX{\textit{Churn}}, and \textit{Scan}~\cite{}.\FY{Maybe you can explain the four patterns briefly}
 %
 A non-adaptive algorithm~\cite{} makes a predefined assumption about access distribution and consistently leverages a fixed criterion and workflow to manage one or part of target access patterns; 
 %
@@ -30,7 +31,7 @@ What is more, S3FIFO has a high throughput close to Segcache~\cite{} and achieve
 %
 As shown in figure~\ref{fig:cloudphysics}, non-adaptive algorithms, e.g., S3FIFO and WTinyLFU~\cite{}, outperform adaptive algorithms, e.g., ARC~\cite{}, in small and large cache sizes separately.
 
-\FY{linking words between paragraph}Prior adaptive algorithms failed to cover the full spectrum of access patterns because they rely on two interpolated discrete patterns.\FY{which two patterns?}
+\FY{Add a few linking words between paragraphs}Prior adaptive algorithms failed to cover the full spectrum of access patterns because they rely on two interpolated discrete patterns.\FY{I didn't get what the two patterns are.}
 %
 There are two types of adaptive algorithms: \textit{spatial adaptive} algorithm~\cite{} and \textit{temporal adaptive} algorithm~\cite{}.
 %
@@ -41,7 +42,7 @@ Temporal adaptive algorithms leverage two basic policies for different primitive
 They alternate between two basic policies, and, what is more, if a basic policy targets more than one primitive access pattern, the two policies will duel and interfere with each other.\FY{I didn't quite get the two algorithms. Does the pattern here mean the 4 basic patterns? Besides, maybe you can give some examples of the basic policies.}
 %
 
-To preserve a high cache hit rate in various complex access patterns, our {\textit{key insight}} is that \textbf{To be effective, a cache eviction algorithm should cover all contiguous space \FY{maybe you should explain the figure first so that I can understand your key insight. Besides, you mentioned 3 points at the very beginning but only effective here.}of access patterns by phase and hotness adaption, rather than interpolation between discrete access patterns as done in prior work.} 
+To preserve a high cache hit rate in various complex access patterns, our {\textit{key insight}} is that \textbf{To be effective, a cache eviction algorithm should cover all contiguous space \FY{Maybe you should explain the figure first so that I can understand your key insight. Besides, you mentioned 3 points at the very beginning but only effective here.}of access patterns by phase and hotness adaption, rather than interpolation between discrete access patterns as done in prior work.} 
 %
 As shown in figure~\ref{fig:insight}, spatial adaptive algorithms target frequency- and recency-based data, which lies between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
 %
@@ -73,7 +74,7 @@ As shown in figure~\ref{fig:insight}, new primitive types reveal the relationshi
 
 Based on characterization of types, this paper proposes \sys, a reliable, efficient, and scalable cache eviction algorithm.
 %
-\FY{Too much detail here. I think these are your implementations.I think here we just need to explain the three advantages of flexcache.}\sys uses a small queue to filter out \textit{infrequent-ephemeral} data, a ghost queue with only metadata to track \textit{frequent-ephemeral} data, and a sketch recording the number of phases \textit{infrequent-persistent} data appears with a forget function.
+\FY{I think these are your implementations. From my perspective, here we just need to explain the three advantages of flexcache.}\sys uses a small queue to filter out \textit{infrequent-ephemeral} data, a ghost queue with only metadata to track \textit{frequent-ephemeral} data, and a sketch recording the number of phases \textit{infrequent-persistent} data appears with a forget function.
 %
 Since data types will change from one to another and \textit{frequent-persistent} requires a long time observation, \sys uses a suspicious queue to check and confirm the type of data and holds data to be cached in a main queue, which consumes most of the cache space.
 %
