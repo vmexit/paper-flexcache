@@ -33,12 +33,12 @@ def epochUtility(d):
 
 def updatePattern(d):
     guard = @\ABB{S}@.tail
-    epochGuard = @\ABB{K}.findEpoch(guard)@
-    if @\ABB{K}.findEpoch(d)@ > epochGuard:
+    epochGuard = epochUtility(guard)
+    if epochUtility(d) > epochGuard:
         d.patternE = PERSISTENT
     else:
         d.patternE = EPHEMERAL
-    if d in @\ABB{M}@ or @\ABB{S}@:
+    if d.hotness > @\ABB{H}.threshold@:
         d.patternH = FREQUENT
     else:
         d.patternH = INFREQUENT
