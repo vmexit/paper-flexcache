@@ -2,29 +2,30 @@
 \label{s:design}
 Inspired by \autoref{s:epoch-hotness}, we presents \sys, a epoch- and hotness-based adaptive cache eviction algorithm that covers access patterns space reliably.
 %
-This section presents \sys's design goals and challenges~(\autoref{ss:design-goals-and-challenges}), an overview of \sys~(\autoref{ss:overview}), and concludes with a discussion~(\autoref{ss:discussion-and-limitations}).
+This section presents \sys's design goals~(\autoref{ss:design-goals}), an overview of \sys~(\autoref{ss:overview}), and concludes with a discussion~(\autoref{ss:discussion-and-limitations}).
 
-\subsection{Design Goals and Challenges}
-\label{ss:design-goals-and-challenges}
-We design \sys to meet the following goals and resolve the corresponding challenges.
+\subsection{Design goals}
+\label{ss:design-goals}
 
-\textbf{Online patterns identification.}
-%
-To receive a timely and accurate access pattern, \sys works in an online optimization with FIFO queues and a sketch for epoch classification~(\autoref{ss:adaptive-epochs}), hotness distribution for hotness classification~(\autoref{ss:hotness-during-epochs}), and adjusts patterns with cache size.
+The design of \sys is guided by the following goals.
 
-\textbf{Algorithm for patterns.}
-%
-To reduce the analysis overhead, \sys integrates with the online pattern identification.
-%
-\sys also separates function parts to handle different characteristics of patterns and leverages a suspicious area to confirm the changes of data types for reliability.
+\PN{Cover most access patterns.}
 
-\textbf{Efficiency and scalability.}
+\PN{Self-adaptive parameters.}
+Tuning parameters is notoriously difficult for cache eviction algorithms~\cite{}.
+
+\PN{Lazy promotion and quick demotion.}
 %
-An excellent eviction algorithm should be efficient and scalable.
+Recent advances in cache eviction algorithms~\cite{} have shown that lazy promotion and quick demotion can effectively improve cache performance.
+
+\PN{Uses Queues to achieve multicore scalability.}
 %
-\sys has a high hit ratio to reduce the bandwidth consumption to the backend storage.
+Many Modern cache replacement algorithms are built with cache primitives, such as FIFO queues and LRU~\cite{}.
 %
-\sys updates metadata and types when needed to reduce operations for high throughput, and it leverages FIFO queues and a sketch for lock-free implementations to improve scalability.
+\sys uses FIFO queues to achieve multicore scalability.
+
+
+
 
 \newpage
 \subsection{\sys Overview}
