@@ -27,11 +27,43 @@
 \PN{Adaptive Cache Eviction Algorithms.}
 
 
-\section{Motivation}
+\section{How Modern Cache Workloads Behave}
+\label{s:motivation}
+
+\subsection{Characteristics of Modern Cache Workloads}
+
+\DZ{Make the case that most modern cache workloads are diverse and evolving.}
+
+\PN{Diverse Access Patterns.}
+
+\PN{Evolving Access Patterns.}
+
+\subsection{How Existing Cache Eviction Algorithms Perform}
+
+\subsubsection{Static cache eviction algorithms.}
+
+\subsubsection{Adaptive cache eviction algorithms.}
+%
+Adaptive cache eviction algorithms promise to efficiently handle modern 
+workloads by adjusting their behavior based on observed access patterns.
+%
+However, existing adaptive cache eviction algorithms fall short of this 
+promise, to a degree that they are reported to even underperform their static 
+counterparts~\cite{}. 
+%
+Indeed, as mentioned in prior work~\cite{}, converting a static cache eviction 
+into an adaptive one even leads to performance degradation.
+
+Our analysis reveals that existing adaptive cache eviction algorithms are ineffective for the following three reasons. 
+
+\PN{Limitation \#1: Cannot handle important access patterns.}
 
 
+\PN{Limitation \#2:.}
+\DZ{I know that use multiple algorithms is a problem, but what is the real limitation here?}
 
-
+\PN{Limitation \#3:}
+\DZ{I know that adapt queue sizes is a problem, but what is the real limitation here?}
 
 
 
