@@ -20,6 +20,8 @@ To effectively enhance system performance, a cache eviction algorithm should pos
 
 \PN{High hit rate and Low latency.} 
 %
+A hit rate is the ratio of requests served from the cache to the total requests.
+%
 In the cache system, there is a fast cache layer and a slow backend layer. 
 %
 If a requested data is found in the cache, system responses quickly with low latency; otherwise, it has to fetch data from the slow backend, incurring high latency.
@@ -28,7 +30,9 @@ A good cache eviction algorithm should maximize the hit rate to minimize serving
 
 \PN{High throughput.}
 %
-A cache system often handles a large number of data requests per second~(QPS).
+A throughput is the number of requests processed per unit time~(QPS).
+%
+%A cache system often handles a large number of data requests per second.
 %
 A high throughput cache system can process many requests concurrently, ensuring that the cache does not become a bottleneck in the data access path.
 %
@@ -36,11 +40,11 @@ Otherwise, server providers have to increase resources to handle the same worklo
 
 \PN{Multicore Scalability.}
 %
-Modern servers have multiple CPU cores.
-%
-For example, AMD EPYC 9965 processor has 192 cores~\cite{}.
-%
 In an ideal scenario, throughput should scale linearly with the number of CPU cores.
+%
+Modern servers have multiple CPU cores, and for example, AMD EPYC 9965 processor has 192 cores~\cite{}.
+%
+With a multicore scalable cache eviction algorithm, the cache system can fully utilize the computing resources of the server to achieve high throughput.
 %
 However, updating metadata in a cache eviction algorithm often requires locks to ensure consistency, which limits multicore scalability.
 %
@@ -77,12 +81,32 @@ ARC~\cite{} and CAR~\cite{} separate data into different parts based on access p
 \DZ{Make the case that most modern cache workloads are diverse and evolving.}
 
 \PN{Diverse Access Patterns.}
+%
+Prior work classifies access space into several primitive patterns, including \textit{LFU-friendly}, \textit{LRU-friendly}, \textit{Churn}, and \textit{Scan}~\cite{}.
+%
+There are also \textit{One-hit wonder}~\cite{} and \textit{Inter-Reference Recency}~\cite{} patterns.
+%
+Real-world workloads are often a complex mixture of these primitive access patterns with different contributions.
 
 \PN{Evolving Access Patterns.}
+%
+With the time passing, the access pattern of a workload may change.\XXX{do we need a figure here?}
+%
+In the cloud block storage~\cite{}, a \textit{Scan} pattern becomes a \textit{Churn} after some repeated accesses.
+%
+In the KV store and CDN workloads~\cite{}, the \textit{One-hit wonder} pattern evolves into a \textit{LRU-friendly} or \textit{LFU-friendly} pattern as popular objects emerge.
 
 \subsection{How Existing Cache Eviction Algorithms Perform}
 
 \subsubsection{Static eviction algorithms.}
+%
+Static eviction algorithms target for predefined access patterns.
+%
+2Q~\cite{} has a limited ghost space to record the access history, which prefers data hitted more than once in the ghost space.
+%
+TinyLFU~\cite{} uses a Count-Bloom filter~\cite{} to record access frequency, which favors frequently accessed data.
+%
+They usually perform well in specific access patterns but poorly in others.
 
 \subsubsection{Adaptive eviction algorithms.}
 %
@@ -101,11 +125,24 @@ Our analysis reveals that existing adaptive cache eviction algorithms are ineffe
 \PN{Cannot handle important access patterns.}
 
 
-\PN{}
+\PN{the activating algorithm hurts the management of another algorithm}
 \DZ{I know that use multiple algorithms is a problem, but what is the real limitation here?}
+%
+Cacheus~\cite{} and LeCaR~\cite{} invoke two basic static algorithms with different probabilities.
+%
+When they activate one algorithm, the other algorithm has to evict data that the active algorithm intends to keep, leading to a conflict between the two algorithms.
+%
+The activated algorithm does not consider the data priority defined by the other algorithm.
 
-\PN{}
+\PN{Feedback regulation lacks theoretical guidance.}
 \DZ{I know that adapt queue sizes is a problem, but what is the real limitation here?}
+CAR~\cite{} and ARC~\cite{} separate data into recency and frequency parts, and adjust the part sizes based on access in the ghost space.
+%
+The feedback regulation only considers cache misses in the ghost space not cache hits.
+%
+The empirical heuristics without theoretical guidance cannot judge the marginal benefit of adjusting part sizes accurately.
+%
+It has to rely on trial-and-error approaches, which are inefficient and may lead to suboptimal performance.
 
 \subsection{The Remaining Gaps in Adaptive Algorithms}
 
