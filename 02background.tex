@@ -7,25 +7,67 @@
 \subsection{Key Properties of Cache Eviction Algorithms}
 
 \DZ{Add a paragraph here to state that software cache is widely used and then discusses the the following key properties.}
+%
+Software caches, e.g., Memcached~\cite{}, Redis~\cite{}, and the page cache~\cite{}, are widely adopted across various fields to improve service performance.
+%
+In the KV store and CDN servers, software caches in memory reduce data access latency and alleviate backend load.
+%
+In operating systems, the page cache stores frequent data in memory to speed up file perations.
+%
+To effectively enhance system performance, a cache eviction algorithm should possess the following key properties.
 
 \PN{**Explain** and **motivate** each property below.}
 
-\PN{High hit rate.}
-
-\PN{Low latency.}
+\PN{High hit rate and Low latency.} 
+%
+In the cache system, there is a fast cache layer and a slow backend layer. 
+%
+If a requested data is found in the cache, system responses quickly with low latency; otherwise, it has to fetch data from the slow backend, incurring high latency.
+%
+A good cache eviction algorithm should maximize the hit rate to minimize serving latency.
 
 \PN{High throughput.}
+%
+A cache system often handles a large number of data requests per second~(QPS).
+%
+A high throughput cache system can process many requests concurrently, ensuring that the cache does not become a bottleneck in the data access path.
+%
+Otherwise, server providers have to increase resources to handle the same workload.
 
 \PN{Multicore Scalability.}
+%
+Modern servers have multiple CPU cores.
+%
+For example, AMD EPYC 9965 processor has 192 cores~\cite{}.
+%
+In an ideal scenario, throughput should scale linearly with the number of CPU cores.
+%
+However, updating metadata in a cache eviction algorithm often requires locks to ensure consistency, which limits multicore scalability.
+%
 
 \subsection{Static and Adaptive Cache Eviction Algorithms}
 
 \DZ{Define these two types of algorithms.}
 
 \PN{Static Eviction Algorithms.}
+%
+A static eviction algorithm has a fixed workflow whatever the access pattern is.
+%
+As the basic LRU algorithm, it has a certain insertion point for new data, a updating function for accessed data, and an priority metric for eviction.
+%
+S3-FIFO~\cite{}, LHD~\cite{}, and 2Q~\cite{} are typical static eviction algorithms.
 
 \PN{Adaptive Eviction Algorithms.}
-
+%
+An adaptive eviction algorithm adjusts its workflow based on observed access patterns.
+%
+Typically, an adaptive algorithm has multiple states as static algorithms.
+%
+Cacheus~\cite{} and LeCaR~\cite{} invoke two basic static algorithms with different probabilities.
+%
+ARC~\cite{} and CAR~\cite{} separate data into different parts based on access patterns, and adjust the part sizes adaptively.
+%
+\sys changes pattern classification functions and prepares different workflows for different access patterns.
 
 \section{How Modern Cache Workloads Behave}
 \label{s:motivation}
