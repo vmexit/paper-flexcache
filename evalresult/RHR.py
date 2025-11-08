@@ -23,13 +23,17 @@ out_row_rename = ["Twitter", "MetaKV", "MetaCDN", "TencentPhoto", "Wikimedia", "
 def getrelative(df):
     dfrelative = pd.DataFrame()
     mindf = df.min(axis=1)
+    #mindf = df["FlexCache"] #relative to FlexCache
     for column in df.columns:
         dfrelative[column] = (1-df[column])/(1-mindf)
+        #dfrelative[column] = df[column]-mindf
     dfrelative.fillna(1, inplace=True)
     return dfrelative  
 
 def getdfRHR(filepath, bench, cachesize):
     df = pd.read_csv(filepath,header=0,index_col=0)
+    df.columns = df.columns.str.replace("flex-0.10-0.05-1.00", "FlexCache")
+    df.columns = df.columns.str.replace("S3FIFO", "S3-FIFO")
     #keeyp rows with any value < 0.9
     #df = df[(df < 0.99).all(1)]
     #df = df[(df < 0.95).any(axis=1)]
@@ -38,8 +42,8 @@ def getdfRHR(filepath, bench, cachesize):
         if col in df.columns:
             df.drop(col, axis=1, inplace=True)
     dfret = getrelative(df)
-    dfret.columns = dfret.columns.str.replace("flex-0.10-0.05-1.00", "FlexCache")
-    dfret.columns = dfret.columns.str.replace("S3FIFO", "S3-FIFO")
+    #dfret.columns = dfret.columns.str.replace("flex-0.10-0.05-1.00", "FlexCache")
+    #dfret.columns = dfret.columns.str.replace("S3FIFO", "S3-FIFO")
     rhr = dfret.prod(axis=0)**(1/len(dfret))
     return dfret, rhr
 
@@ -105,6 +109,8 @@ def calculate(inputdir, outputdir):
         rhr = (total[cachesize].prod(axis=0))**(1/len(total[cachesize]))
         #storeCDFTail(total[cachesize], outputdir, "total", cachesize, rhr)
     for cachesize in totalB:
+        #print("Total B ", cachesize)
+        #print(totalB[cachesize].mean().T)
         rhr = (totalB[cachesize].prod(axis=0))**(1/len(totalB[cachesize]))
         storeCDFTail(totalB[cachesize], outputdir, "totalB", cachesize, rhr)
         print(cachesize)
