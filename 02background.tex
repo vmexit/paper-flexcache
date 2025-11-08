@@ -22,9 +22,9 @@
 
 \DZ{Define these two types of algorithms.}
 
-\PN{Static Cache Eviction Algorithms.}
+\PN{Static Eviction Algorithms.}
 
-\PN{Adaptive Cache Eviction Algorithms.}
+\PN{Adaptive Eviction Algorithms.}
 
 
 \section{How Modern Cache Workloads Behave}
@@ -40,14 +40,14 @@
 
 \subsection{How Existing Cache Eviction Algorithms Perform}
 
-\subsubsection{Static cache eviction algorithms.}
+\subsubsection{Static eviction algorithms.}
 
-\subsubsection{Adaptive cache eviction algorithms.}
+\subsubsection{Adaptive eviction algorithms.}
 %
-Adaptive cache eviction algorithms promise to efficiently handle modern 
+Adaptive eviction algorithms promise to efficiently handle modern 
 workloads by adjusting their behavior based on observed access patterns.
 %
-However, existing adaptive cache eviction algorithms fall short of this 
+However, existing adaptive eviction algorithms fall short of this 
 promise, to a degree that they are reported to even underperform their static 
 counterparts~\cite{}. 
 %
@@ -56,16 +56,26 @@ into an adaptive one even leads to performance degradation.
 
 Our analysis reveals that existing adaptive cache eviction algorithms are ineffective for the following three reasons. 
 
-\PN{Limitation \#1: Cannot handle important access patterns.}
+\PN{Cannot handle important access patterns.}
 
 
-\PN{Limitation \#2:.}
+\PN{}
 \DZ{I know that use multiple algorithms is a problem, but what is the real limitation here?}
 
-\PN{Limitation \#3:}
+\PN{}
 \DZ{I know that adapt queue sizes is a problem, but what is the real limitation here?}
 
+\subsection{The Remaining Gaps in Adaptive Algorithms}
 
+\DZ{Do not work on this subsection yet.}
+\DZ{This is a summary subsection.}
+\DZ{Make the case that existing adaptive algorithms fail in the following aspects.}
+
+\PN{Gap \#1: Classifying access patterns.}
+
+\PN{Gap \#2: Adapting to access patterns.}
+
+\PN{Gap \#3: Achieving high throughput and multicore scalability.}
 
 
 
