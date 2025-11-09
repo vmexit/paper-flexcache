@@ -122,8 +122,14 @@ into an adaptive one even leads to performance degradation.
 
 Our analysis reveals that existing adaptive cache eviction algorithms are ineffective for the following three reasons. 
 
-\PN{Cannot handle important access patterns.}
-
+\PN{Cannot handle important access patterns.}\XXX{maybe a example here?}
+\PN{Limited access patterns coverage.}
+%
+Prior adaptive algorithms have a limited pattern coverage for their binary classification. 
+%
+They classify functional parts into recency- and frequency-based categories, along with additional sub-functions. 
+%
+However, each time they invoke only one functional part, resulting in limited coverage.
 
 \PN{the activating algorithm hurts the management of another algorithm}
 \DZ{I know that use multiple algorithms is a problem, but what is the real limitation here?}
