@@ -1,55 +1,96 @@
+\clearpage
+
 \section{The \sys Design}
 \label{s:design}
-Inspired by \autoref{s:epoch-hotness}, we presents \sys, a epoch- and hotness-based adaptive cache eviction algorithm that covers access patterns space reliably.
+
+Following our approach to identify and classify workload access patterns 
+(\autoref{}), this section presents the design of \sys, an efficient cache 
+eviction algorithm that adapts to a broad spectrum of access patterns.
 %
-This section presents \sys's design goals~(\autoref{ss:design-goals}), an overview of \sys~(\autoref{ss:overview}), and concludes with a discussion~(\autoref{ss:discussion-and-limitations}).
-
-\subsection{Design goals}
-\label{ss:design-goals}
-
-The design of \sys is guided by the following goals.
-
-\PN{Cover most access patterns.}
-
-\PN{Self-adaptive parameters.}
-Tuning parameters is notoriously difficult for cache eviction algorithms~\cite{}.
-
-\PN{Lazy promotion and quick demotion.}
-%
-Recent advances in cache eviction algorithms~\cite{} have shown that lazy promotion and quick demotion can effectively improve cache performance.
-
-\PN{Uses Queues to achieve multicore scalability.}
-%
-Many Modern cache replacement algorithms are built with cache primitives, such as FIFO queues and LRU~\cite{}.
-%
-\sys uses FIFO queues to achieve multicore scalability.
+% This section presents the design goals of \sys (\autoref{ss:design-goals}), an overview of its components and workflow (\autoref{ss:overview}), and a discussion of its limitations (\autoref{ss:discussion-and-limitations}).
 
 
-
-
-\newpage
 \subsection{\sys Overview}
 \label{ss:overview}
 
-\textbf{\sys components.} 
+\autoref{fig:overview} shows the key components and the workflow of \sys. 
 %
-As shown in figure~\ref{fig:patternspace}, \sys has three queues~(\ABB{F}, \ABB{M}, and \ABB{S}) and three auxiliary structures~(\ABB{G}, \ABB{K}, and \ABB{H}).
+We next present the core design of \sys and explain how it meets the design goals~(\S\ref{}). 
 %
-The filter~(\ABB{F}), main~(\ABB{M}), and suspicious~(\ABB{S}) FIFO queues store metadata and values, while the ghost queue~(\ABB{G}) is a FIFO queue store only metadata.
-%
-Extra metadata includes a \textit{hotness counter}, a \textit{epoch counter}, a \textit{suspected flag}, and a \textit{access pattern field}.
-%
-The sketch~(\ABB{K}) records the number of epoches data appeared in the past.
-%
-The hotness recorder~(\ABB{H}) has \textit{a hotness threshold field} and an array for the \textit{hotness distribution}.
+To facilitate the presentation, we defer the discussion of the performance and 
+space optimizations to \autoref{s:impl}. 
 
-\squishlist
-\item{{\ABB{F} filters out \textbf{infrequent-ephemeral} data quickly}}
-\item{{\ABB{G} observes and suggests \textbf{frequent-ephemeral} data due to \ABB{F} space limitations for an epoch.}}
-\item{{\ABB{K} records data at the end of an epoch to find \textbf{infrequent-persistent} data.}}
-\item{{\ABB{M} holds most \textbf{frequent-persistent} data.}}
-\item{{\ABB{S} checks data guessed by \sys and confirms pattern changes at the end of an epoch.}}
-\squishend
+\PN{Components.}
+%
+\DZ{Need to see how we should define metadata}
+\DZ{Need to provide a high-level idea of how the algorithm works, especially connect to the access patterns.}
+The main part of \sys consists of four FIFO queues: a filter queue~(\ABB{F}), a core queue ~(\ABB{C}), a staging queue~(\ABB{S}), and a ghost queue~(\ABB{G}). 
+%
+In addition, \sys includes an auxiliary store~(\ABB{AUX}) that stores \XXX{}. 
+%
+The filter, core, and staging queues record both data and metadata. 
+%
+The ghost queue and the auxiliary store record only metadata. 
+
+We next explain how each of the \syss components works in concert to achieve the overall caching policy (\S\ref{}): screening out cold-rare objects, while retaining the other three types of objects. 
+%
+\DZ{Let me know if the term is correct.}
+The filter queue is a small queue that quickly \XXX{demotes} likely cold-rare objects, thereby minimizing their residency in the cache.  
+%
+The core queue consumes most of the cache space to store objects that survive the filter queue. 
+%
+The ghost queue stores metadata for objects demoted by the filter queue,  serving as a second chance to identify the access patterns of the objects. 
+%
+This is necessary since the filter queue may falsely filter some objects due to its aggressive, quick demotion policy.
+%
+
+The staging queue stores objects 1) evicted from the core queue, and 2) promoted from the ghost queue.
+%
+Upon object eviction, the staging queue verifies its access 
+patterns and reinserts it into the core queue if its access pattern is 
+not cold-rare.
+%
+For objects evicted from the core queue, the staging queue maximizes the 
+hit rate by retaining objects with good locality, following the spirit of FIFO-reinsertion~\cite{}.
+%
+For objects promoted from the ghost queue, the staging queue provides another chance to verify their access patterns before eviction. 
+
+
+\DZ{Need to explain somewhere that the length of the auxiliary store.}
+The auxiliary store operates independently from the aforementioned components. 
+%
+It records the hotness and popularity of objects to assist \sys in identifying object access patterns. 
+
+
+
+\PN{Space allocation.}
+%
+The filter queue, core queue, and the staging queue use \XXX{}
+of the cache place, respectively. 
+% 
+The ghost queue stores the metadata of one epoch, while the auxiliary store \XXX{}. 
+%
+We identify these values through sensitivity analysis~(\S\ref{}) and found that they work well across a wide range of real-world workloads. 
+
+\PN{Recording objects' hotness and popularity .}
+%
+\autoref{} presents the core algorithm of \sys. 
+%
+For each incoming object, regardless of whether it results in a cache hit or miss, \ABB{AUX} records \XXX{}
+
+%its hotness. 
+
+\PN{Cache hits.}
+%
+Upon a cache hit~(\ie, the object resides in one of the \ABB{F}, \ABB{C}, or \ABB{S} queues), \sys simply updates the hotness of the object (L\XXX{}). 
+
+\PN{Cache misses.}
+
+\PN{Adaptiveness.}
+%
+
+
+
 
 \textbf{Epoch awareness.} 
 %
@@ -69,35 +110,6 @@ In \ABB{H}, the \textit{hotness distribution} maps the hotness counter values wi
 %
 Therefore, once the hotness counter of an item changes, \sys updates the \textit{hotness distribution}, by decreasing the number of the old value and increasing the number of the new value, and acumulates the number of items from the hottest, until reaching the cache size to set the new \textit{hotness threshold field}.
 
-\textbf{Workflow.}
-%
-When cache hit occurs in \ABB{F}, \ABB{M}, or \ABB{S}, \sys increases the data's hotness counter by one (up to a predefined maximum) and updates \ABB{H} as discussed accordingly.
-%
-The data type is then re-evaluated based on the current hotness threshold.
-%
-In the case of a cache miss, if the data is not present in \ABB{G}, \sys inserts it into \ABB{F}; otherwise, it increases the hotness counter, updates \ABB{H}, and reassesses the data type.
-%
-Depending on the result, \sys promotes the data to \ABB{M} if identified as \textit{frequent-ephemeral}, or to \ABB{S} with \textit{suspected flag} if identified as \textit{infrequent-ephemeral}.
-
-When the cache is full, \sys will evict data and manage data movement among the queues based on their access patterns.
-%
-When \ABB{F} exceeds its size limit, \sys moves \textit{frequent-ephemeral} data to \ABB{M} and \textit{infrequent-ephemeral} data to \ABB{G}.
-%
-If data is evicted to \ABB{G}, \sys also compares its epoch count in \ABB{K} with data in the tail of \ABB{S}, making an educated guess as to whether the data may be \textit{infrequent-persistent}.
-%
-Data suspected to belong to this category are placed into \ABB{S} for verification, marked with a \textit{suspected flag}.
-%
-When \ABB{G} is full, \sys evicts the tail data, updates \ABB{H}, and records epoch information in \ABB{K}.
-%
-When \ABB{M} exceeds its size limit, \sys moves data to \ABB{S} for pattern verification.
-
-\ABB{S} serves as a verification area for data from \ABB{M} and suspected data from \ABB{F} and \ABB{G}.
-%
-If suspected data is accessed during observation, \sys confirms its pattern and promotes it to \ABB{M}; otherwise, \sys evicts it.
-%
-For data from \ABB{M}, \sys records its epoch information in \ABB{K}.
-%
-If its \textit{hotness counter} is zero, \sys evicts it; otherwise, \sys decreases the counter, updates \ABB{H}, increases its \textit{epoch counter}, and moves it to the head of \ABB{M} for another epoch.
 
 
 \textbf{Handling different access patterns.}
@@ -396,3 +408,24 @@ Most of equal hotness counters come from repeated accesses in a sequence, and pr
     \caption{\sys consists of two epoch flows.(1)Frequently accessed objects' movement from the main cache to the suspicious cache and reinsertion to the main cache. (2)Infrequently accessed objects' movement from the filter cache to the ghost cache. Objects' type changes with suspection in the filter and ghost cache.\TODO{update}}
     \label{fig:epochflow}
 \end{figure}
+
+
+\subsection{Properties}
+\label{ss:properties}
+
+\syss design achieve the following important properties mentioned in prior cache literature~\cite{}.
+
+% \PN{Cover a wide range of access patterns.}
+
+\PN{Self-adaptive parameters.}
+Tuning parameters is notoriously difficult for cache eviction algorithms~\cite{}.
+
+\PN{Lazy promotion and quick demotion.}
+%
+Recent advances in cache eviction algorithms~\cite{} have shown that lazy promotion and quick demotion can effectively improve cache performance.
+
+\PN{Multicore scalability.}
+%
+Many Modern cache replacement algorithms are built with cache primitives, such as FIFO queues and LRU~\cite{}.
+%
+\sys uses FIFO queues to achieve multicore scalability.
