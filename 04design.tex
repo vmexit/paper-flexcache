@@ -10,8 +10,8 @@ eviction algorithm that adapts to a broad spectrum of access patterns.
 % This section presents the design goals of \sys (\autoref{ss:design-goals}), an overview of its components and workflow (\autoref{ss:overview}), and a discussion of its limitations (\autoref{ss:discussion-and-limitations}).
 
 
-\subsection{\sys Overview}
-\label{ss:overview}
+\subsection{\sys Components}
+\label{ss:components}
 
 \autoref{fig:overview} shows the key components and the workflow of \sys. 
 %
@@ -20,7 +20,6 @@ We next present the core design of \sys and explain how it meets the design goal
 To facilitate the presentation, we defer the discussion of the performance and 
 space optimizations to \autoref{s:impl}. 
 
-\PN{Components.}
 %
 \DZ{Need to see how we should define metadata}
 \DZ{Need to provide a high-level idea of how the algorithm works, especially connect to the access patterns.}
@@ -32,8 +31,10 @@ The filter, core, and staging queues record both data and metadata.
 %
 The ghost queue and the auxiliary store record only metadata. 
 
-We next explain how each of the \syss components works in concert to achieve the overall caching policy (\S\ref{}): screening out cold-rare objects, while retaining the other three types of objects. 
+\PN{Task division.}
 %
+We next explain how \sys divides tasks among components to achieve the overall caching policy (\S\ref{}): screening out cold-rare objects, while retaining the other three types of objects. 
+
 \DZ{Let me know if the term is correct.}
 The filter queue is a small queue that quickly \XXX{demotes} likely cold-rare objects, thereby minimizing their residency in the cache.  
 %
@@ -62,7 +63,6 @@ The auxiliary store operates independently from the aforementioned components.
 It records the hotness and popularity of objects to assist \sys in identifying object access patterns. 
 
 
-
 \PN{Space allocation.}
 %
 The filter queue, core queue, and the staging queue use \XXX{}
@@ -72,9 +72,37 @@ The ghost queue stores the metadata of one epoch, while the auxiliary store \XXX
 %
 We identify these values through sensitivity analysis~(\S\ref{}) and found that they work well across a wide range of real-world workloads. 
 
-\PN{Recording objects' hotness and popularity .}
+\subsection{\sys Workflow}
+\label{ss:workflow}
+
+\PN{Overview.}
 %
-\autoref{} presents the core algorithm of \sys. 
+As shown in \autoref{}, for each object accessed for the first time, \sys places the object into the filter queue and observe its access pattern with the help of the auxiliary store.
+%
+Upon eviction from the filter queue, depending on its access pattern, \sys 
+either promotes the object to the core queue (for hot or popular objects), 
+or evicts the object but records its metadata in the ghost queue (offering a second chance to classify its access patterns as discussed in \S\ref{}).
+
+An object that enters the core queue will later be evicted to the staging queue.
+%
+Upon eviction from the staging queue, \sys reexamines the object's access pattern, and only evicts it if is cold and rare. 
+%
+Otherwise, \sys reinserts the object into the core queue.
+
+For an object that resides in the ghost queue, upon access, \sys must bring 
+the object back to the cache.
+%
+Upon such an access, \sys reexamines the object's access pattern and promotes it to the main queue if it is hot or popular.
+%
+Otherwise, \sys promotes it to the staging queue. 
+%
+For the latter case, if the object is evicted from the staging queue, \sys places it to the ghost queue again, ensuring that the access pattern of the objects is observed for a full epoch. 
+
+\XXX{The auxiliary store operates}
+
+We next present the detailed algorithm of \sys in \autoref{}. 
+
+\PN{Recording objects' hotness and popularity .}
 %
 For each incoming object, regardless of whether it results in a cache hit or miss, \ABB{AUX} records \XXX{}
 
@@ -82,9 +110,38 @@ For each incoming object, regardless of whether it results in a cache hit or mis
 
 \PN{Cache hits.}
 %
-Upon a cache hit~(\ie, the object resides in one of the \ABB{F}, \ABB{C}, or \ABB{S} queues), \sys simply updates the hotness of the object (L\XXX{}). 
+Upon a cache hit~(\ie, the object resides in one of the \ABB{F}, \ABB{C}, or \ABB{S} queues), \sys simply updates the hotness of the object~(L\XXX{}), 
+which willl later be used to \XXX{}
 
 \PN{Cache misses.}
+%
+\DZ{Lines 8 and 10 should have comments stating cache hits or miss.}
+%
+Upon a cache miss (L\XXX{}), \sys first checks if the cache is full, and if so, 
+evicts an object~(L\XXX{}).
+%
+Next, \sys checks if the object has been previously encountered and resides in the ghost queue~(L\XXX{}).
+%
+If not, \sys treats the object as a new object and inserts it into the filter queue~(L\XXX{}).
+%
+Otherwise, \sys checks the object's access pattern~(L\XXX{}-\XXX{}) and inserts it into either the core queue~(L\XXX{}) or the staging queue~(L\XXX{}). 
+
+\PN{Object eviction.}
+%
+When the cache is full, \sys first tries to evict from the filter queue~(L\XXX{}). 
+%
+If no object can be evicted~(due to \eg, all objects evicted from the filter queue go to the core queue), \sys first evicts objects from the core queue to the staging queue~(L\XXX{}). 
+%
+Next, \sys evicts objects from the staging queue~(L\XXX{}).
+%
+Such an eviction is guaranteed to succeed since \XXX{}. 
+%
+As discussed earlier, for an evicted object coming from the ghost queue, 
+\sys inserts it back~(L\XXX{}-\XXX{}). 
+
+
+
+
 
 \PN{Adaptiveness.}
 %
