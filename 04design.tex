@@ -198,39 +198,49 @@ If \ABB{G} cannot observe the repeatness, \sys guesses part of them to \ABB{S} w
 \section{Implementation}
 %
 \DZ{Where do we implement it? Lines of code to report?}
+We implement a prototype of \sys in CacheLib~\cite{} for about 1,500 lines of code.
+%
+The storage logic leverages a hash table to index the position of data, which is efficiency and scalable to find keys.
+%
+The eviction algorithm logic for FIFO-based queues~(filer, core, staging) manages the order of data in the cache, which is linked-list implementation.
+%
+Linked-list pointers can integrate with storage logic with a hook portability.
+%
+\sys decouples insertion and eviction positions for scalability when the queue is about to full.
+%
+The eviction algorithm logic evicts data from the tail of the queue, and inserts new data to the head of the queue with atomic compare and exchange operation.
+%
+
 
 \DZ{How do we immplement the FIFO queues, ghost queues, and K?}
 The storage logic leverages a hash table to index the position of data, which is efficiency and scalable.
 
-A FIFO-based queue in evcition algorithm logic has linked-list or ring-buffer implementation.
-%
-With linked-list implementation, linked-list pointers can intergate with storage logic with a hook portabliy, but have to manage pointers with atomic operations, which reduces scalability.
-%
-Ring-buffer implementation is more scalable with less atomic operations, but it requires extra space for the buffer, which also wastes space when workload has many \textit{delete} operations.
 
-\ABB{G} can be further simplified for efficiency and scalability.
+\ABB{G} can be further simplified for efficiency and scalability without linked-list pointers.
 %
-Since \ABB{G} will not delete data except for eviction~(\BC{6}), it has less operations and space overhead in both linked-list and ring-buffer implementations.
+\sys compresses the metadata in \ABB{G} to only a fingerprint, a timestamp, and a \hotness field in 8-bytes.
 %
-An accurate \ABB{G} can be used for prefetching~(\TODO{ref}), while a lossy \ABB{G} can instead evcition algorithm logic with a timestamp and fingerprint field.
+\sys stores metadata in a closed hash table with multiple slots.
 %
-For example, a fingerprint has 4 Byte of hashed key and a timestamp has 4 Byte of insertion time.
+If the fingerprint matches, \sys updates the \hotness field for hotness awareness as a hit in \ABB{G}.
 %
-\sys stores a scope of timestamps based on the epoch size and evicts data beyond the scope.
+Otherwise, \sys increases the global timestamp for epoch awareness.
+%
+\sys reserves slots whose timestamp ranges from $timestamp-\#epoch\_size$ to $timestamp$.
+%
+If all slots are occupied, \sys evicts a random slot for collision resolution.
 
-\ABB{K} with a forget function has many candidate implementations, which are scalable.
+For simplicity, we implement \ABB{K} with a sketch structure with a forget function.
 %
-A Counting Bloom Filter (CBF)~\cite{} increases all the indexed counters when recording data with less space overhead and false positives.
+In the sketch, each object maps a counter with a hash function.
 %
-A Count-Min Sketch (CMS)~\cite{} only increases the minimum indexed counter, which reduce false positives.
+To simulate the sliding window sketch~\cite{}, \ABB{K} has a global counter and a global indexer for forget function.
 %
-A sliding window sketch~\cite{} provides various forget functions, which separates \ABB{K} into many sub-sketches for different epochs.
+Once inserting an object, \ABB{K} increases the global counter and increases mapped counter for the object.
 %
-At the beginning of a new epoch, it inserts records into a new sub-sketch and forgets the oldest sub-sketch beyond many epochs.
+When the global counter reaches a threshold~(\eg 8), \ABB{K} halves the counter pointed by the global indexer to forget old records, and then increases the global indexer and resets the global counter for the next counter.
 %
-To improve the space utility, \ABB{K} is a sketch and clean a fraction of counters with a forget function periodically.
-%
-A fine-grained forget function ages counters one by one after a fixed number of inserations, which averages the operation overhead for efficiency.
+On average , each insertion only halves $1/threshold$ counters for 2 thresholds' epochs.
 
 \subsection{Overhead Analysis}
 
