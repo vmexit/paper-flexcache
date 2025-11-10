@@ -1,53 +1,49 @@
 \section{Cache Eviction Algorithms}
 \label{s:background}
 
-% This section provides background on classical access patterns~\cite{}~(\autoref{ss:access-pattern-based-analysis}) and on how prior work designs algorithms to cover them, both non-adaptively~\cite{} and adaptively~\cite{}~(\autoref{ss:non-adaptive-and-adaptive-algorithms}). However, the real-world access is much complex than ideal access patterns. We observe that most eviction algorithms operate in an unreliable metastable state, leading to a significant decrease in hit ratio for some benchmarks and configurations~(\autoref{ss:the-metastable-phenomenon}).
+Software caches are widely deployed in modern systems software to improve performance. 
+%
+\DZ{Find 8-9 citations for each example below.}
+For example, data centers often leverage key-value stores~(\eg, Memcached~\cite{}, Redis~\cite{}) as in-memory caches~\cite{}. 
+%
+% Ask Zonghao for the citations here.
+Almost all modern operating systems use page caches to speed up file 
+system operations~\cite{}.
+%
+Content delivery networks (CDNs)~(\eg, Akamai~\cite{}) cache data on edge servers that are close to end users, thereby minimizing access latency~\cite{}. 
+
+The efficiency of any cache system hinges on its eviction algorithm, since it decides which objects\footnote{We use the term ``object'' to collectively refer to various types of data stored in a cache.} stay in the scarce cache space. 
+%
+This section provides background on cache eviction algorithms by discussing their key performance metrics~(\S\ref{}) and surveying the state of the art~(\S\ref{}).
+%
 
 
-\subsection{Key Properties of Cache Eviction Algorithms}
+\subsection{Desired Properties of Cache Eviction Algorithms}
+%
 
-\DZ{Add a paragraph here to state that software cache is widely used and then discusses the the following key properties.}
+\PN{High hit rate.} 
 %
-Software caches, e.g., Memcached~\cite{}, Redis~\cite{}, and the page cache~\cite{}, are widely adopted across various fields to improve service performance.
+Hit rate is arguably the most important metric for an eviction algorithm.  
 %
-In the KV store and CDN servers, software caches in memory reduce data access latency and alleviate backend load.
+This is because backend storage is often orders of magnitude slower than the cache (consider, \eg, DRAM: access latency 100s of ns vs. SSD: access latency 10s-100s of $\mu$s).
 %
-In operating systems, the page cache stores frequent data in memory to speed up file perations.
-%
-To effectively enhance system performance, a cache eviction algorithm should possess the following key properties.
+Therefore, even a small improvement in hit rate leads to significant end-to-end performance gains.
 
-\PN{**Explain** and **motivate** each property below.}
 
-\PN{High hit rate and Low latency.} 
+\PN{Low latency and high throughput.}
 %
-A hit rate is the ratio of requests served from the cache to the total requests.
+A high hit rate does not necessarily imply low latency nor high throughput, since an eviction algorithm may incur high operation overhead per access~(\eg, lookup and metadata maintenance). 
 %
-In the cache system, there is a fast cache layer and a slow backend layer. 
-%
-If a requested data is found in the cache, system responses quickly with low latency; otherwise, it has to fetch data from the slow backend, incurring high latency.
-%
-A good cache eviction algorithm should maximize the hit rate to minimize serving latency.
+Thus, an eviction algorithm should minimize such operation overhead.  
 
-\PN{High throughput.}
-%
-A throughput is the number of requests processed per unit time~(QPS).
-%
-%A cache system often handles a large number of data requests per second.
-%
-A high throughput cache system can process many requests concurrently, ensuring that the cache does not become a bottleneck in the data access path.
-%
-Otherwise, server providers have to increase resources to handle the same workload.
 
 \PN{Multicore Scalability.}
 %
-In an ideal scenario, throughput should scale linearly with the number of CPU cores.
+\DZ{I guess cite some Juncheng Yang's work below and perhaps some other works}
+Multicore scalability is increasingly important for modern cache systems, 
+which exploit multiple cores to handle large volumes of requests~\cite{}.  
 %
-Modern servers have multiple CPU cores, and for example, AMD EPYC 9965 processor has 192 cores~\cite{}.
-%
-With a multicore scalable cache eviction algorithm, the cache system can fully utilize the computing resources of the server to achieve high throughput.
-%
-However, updating metadata in a cache eviction algorithm often requires locks to ensure consistency, which limits multicore scalability.
-%
+With today's servers often equipped with hundreds of CPU cores, an eviction algorithm must avoid scalability bottlenecks to benefit from such parallelism.
 
 \subsection{Static and Adaptive Cache Eviction Algorithms}
 
