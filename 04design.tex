@@ -10,6 +10,7 @@ eviction algorithm that adapts to a broad spectrum of access patterns.
 % This section presents the design goals of \sys (\autoref{ss:design-goals}), an overview of its components and workflow (\autoref{ss:overview}), and a discussion of its limitations (\autoref{ss:discussion-and-limitations}).
 
 
+
 \subsection{\sys Components}
 \label{ss:components}
 
@@ -72,6 +73,7 @@ The ghost queue stores the metadata of one epoch, while the auxiliary store \XXX
 %
 We identify these values through sensitivity analysis~(\S\ref{}) and found that they work well across a wide range of real-world workloads. 
 
+\DZ{Key invairant: observe the access of the data for one epoch.}
 \subsection{\sys Workflow}
 \label{ss:workflow}
 
@@ -99,7 +101,7 @@ In the latter case, if the object is evicted from the staging queue, \sys places
 
 We next present the detailed algorithm of \sys in \autoref{}. 
 
-\PN{Recording objects' hotness and popularity .}
+\PN{Recording objects' hotness and popularity.}
 %
 For each incoming object, regardless of whether it results in a cache hit or miss, \ABB{AUX} records \XXX{}
 
@@ -137,58 +139,51 @@ As discussed earlier, for an evicted object coming from the ghost queue,
 
 
 
+\subsection{Adapting to Various Access Patterns}
+
+\PN{Hotness and Popularity Thresholds.}
+%
+\autoref{} presents \syss adaptive algorithm. 
+%
+Departing from prior work that uses \XXX{} to achieve adaptiveness~(\S\ref{}), 
+%
+\syss adaptiveness is enabled by its use of dynamic thresholds to classify 
+an object's access pattern. 
+%
+An object is hot (and popular, respectively) if its \XXX{} exceeds the hotness (and popularity) threshold~(L\XXX{} in \autoref{}).
+
+\DZ{How does changing the thresholds adapt to different access patterns?}
+Intuitively, a higher hotness thresholds results in fewer objects being classified as hot, thereby \XXX{}. 
+
+\PN{Self-tuning the thresholds based on the cache size.}
+\XXX{Motivate why doing this.}
+%
+
+\XXX{Switch to implementationn from this point now.}
+To decide the hotness threshold, \sys maintains in the auxiliary store 
+the distribution of hotness counters~(\ie, how many cached objects fall under each specific \XXX{counter} value)~(L\XXX{}). 
+%
+\XXX{When does it got updated?}
+\XXX{How do we decide the popularity threshold?}
+
+\PN{Adapting to different access patterns.}
+\XXX{Perhaps list one trace that S3FIFO does not perform well and argue that 
+how \sys adapts to it}
+
+
+
+
+
+
+
+
+
+
 
 
 \PN{Adaptiveness.}
 %
 
-
-
-
-\textbf{Epoch awareness.} 
-%
-All the queues (\ABB{F}, \ABB{M}, \ABB{S}, \ABB{G}) are FIFO-based with a fixed size to keep relative access order for epoch awareness.
-%
-\ABB{F}, \ABB{M}, and \ABB{S} store epoch for data in the cache, while \ABB{G} contains epoch information for data not in the cache.
-%
-\sys maintains data for at least one epoch.
-%
-At the end of an epoch, \ABB{K} records data appears in the past epochs with a forget function, and \sys increases the \textit{epoch counter} and decreases the \textit{hotness counter} if it is still in the cache.
-
-\textbf{Hotness awareness.}
-%
-In \ABB{H}, the \textit{hotness distribution} maps the hotness counter values with the number of items in the cache~(\ABB{F}, \ABB{M}, \ABB{S}, and \ABB{G}) that have the corresponding value.
-%
-\sys adjusts the \textit{hotness threshold field}, assuming all the hotness data are stored in the cache.
-%
-Therefore, once the hotness counter of an item changes, \sys updates the \textit{hotness distribution}, by decreasing the number of the old value and increasing the number of the new value, and acumulates the number of items from the hottest, until reaching the cache size to set the new \textit{hotness threshold field}.
-
-
-
-\textbf{Handling different access patterns.}
-%
-The \ABB{F} filters out \textit{infrequent-ephemeral} data to \ABB{G} quickly, with which \sys saves space for other good locality data.
-%
-\sys leverages \ABB{F} and \ABB{G} to suggest \textit{frequent-ephemeral} data for an epoch and degrades its hotness counter every epoch to evict stale data.
-%
-For \textit{frequent-persistent} data, \sys holds them in \ABB{M} for most of the cache space to improve the hit ratio.
-%
-\ABB{K} could catch \textit{infrequent-persistent} data beyond epochs, which appears in many epochs.
-%
-\sys confirms them in \ABB{S} for the first guess and then checks their access for each epoch.
-
-It is significant to discuss how \sys handles data online, which also related to pattern changing.
-%
-When data is accessed without any information, \sys inserts it into \ABB{F} and treats it as \textit{infrequent-ephemeral}.
-%
-If it is frequently accessed in \ABB{F} as \textit{frequent-ephemeral}, \sys clears its hotness counter to check whether it is \textit{frequent-persistent}.
-%
-In another case, \ABB{F} is less than an epoch, so \sys moves it to \ABB{G} for epoch analysis.
-%
-Although hits in \ABB{G} do not controbute to cache utility, it helps \sys identify \textit{frequent-ephemeral} data.
-%
-\ABB{K} records data with long-term information, so \sys only makes educated guesses about \textit{infrequent-persistent} data and confirms them in \ABB{S}.
-%
 
 For example, repeated accesses~(Churn) have a good locality, but they will pollute cache if cache cannot hold them all.
 %
@@ -200,128 +195,11 @@ If \ABB{G} cannot observe the repeatness, \sys guesses part of them to \ABB{S} w
 
 
 
+\section{Implementation}
+%
+\DZ{Where do we implement it? Lines of code to report?}
 
-
-\newpage
-\textbf{Workflow of \sys.}
-%
-\BC{1} For epoch analysis, \ABB{K} records all the data movement out of \ABB{F} and checked data by \ABB{S} with a forget function.
-%
-\BC{2} For hotness analysis, \sys updates the hotness distribution and adjust the hotness threshold field whenever a cache hit or eviction occurs.
-%
-We will discuss the epoch and hotness in \sys later in details.
-
-For the data in \ABB{F} and \ABB{G}, \BC{3} All new data not in the cache are inserted into \ABB{F}.
-%
-\BC{4} \sys does not move data in \ABB{F} directly when its type changes.
-%
-Instead, \sys moves \textit{frequent-ephemeral} data to \ABB{M} and \textit{infrequent-ephemeral} data to \ABB{G} when \ABB{F} exceeds its size limit.
-%
-\BC{5} If hit occurs in \ABB{G}, \sys promotes \textit{frequent-ephemeral} data to \ABB{M} and evicts data when \ABB{G} exceeds its size limit.
-%
-\BC{6} \sys makes educated guesses about \textit{infrequent-ephemeral} data: when a hit occurs in \ABB{G}, it assumes the data belongs to the \textit{frequent-ephemeral};
-%
-when data is evicted from \ABB{F}, if it have been recorded in \ABB{K} for enough times, execeeding a threshold and more than the last data in \ABB{S}, it assumes to be \textit{infrequent-persistent}.
-%
-\sys places the suspected data into \ABB{S} for verification, while retaining its metadata in \ABB{G} for epoch analysis.
-%
-
-For the data in \ABB{M} and \ABB{S}, \BC{7} when \ABB{M} exceeds its size limit, \sys moves data in \ABB{M} to \ABB{S} for type verification.
-%
-\BC{8} In \ABB{S}, \sys checks whether data from \ABB{M} is accessed again in the last epoch.
-%
-If hit occurs, \sys confirms it as \textit{persistent} data and promotes it to \ABB{M}; otherwise, reduces its hotness counter, evicting it if the counter reaches zero.
-%
-\BC{9} For suspected data, \sys checks whether it is accessed again in \ABB{S} as an observation window, and promotes it to \ABB{M} if hit occurs; otherwise, it is evicted from \ABB{S}.
-
-\textbf{epochs Discussion.}
-%
-\sys integrates epoch analysis with cache size and maintains data in the cache for at least one epoch.
-%
-\ABB{M} occupies most of the cache space, \ABB{F} and \ABB{S} are small part of the cache, and \ABB{G} has the same number of metadata as the total size of other queues.
-%
-All the queues in \sys are FIFO-based which maintains the relative access order as discussed in \autoref{ss:adaptive-epochs}.
-%
-Therefore, data in \ABB{M} or \ABB{G} experiences a epoch size with a footprint approaching cache size, and we discuss the workflow between the queues for each classification.
-
-As shown in figure~\ref{fig:epochflow}, there are two epoch flows for fixed classification data: \textit{data-based} and \textit{metadata-based}.
-%
-(1) The \textit{infrequent-ephemeral} data experiences a \textit{metadata-based} epoch in \ABB{F} and \ABB{G}, and if there is no type change, it is evicted from \ABB{G} at the end of the epoch~(\BC{3},\BC{4},\BC{5}).
-%
-(2) The other types of data experience a \textit{data-based} epoch in \ABB{M} and \ABB{S}, and \sys examins its type in \ABB{S} at the end of the epoch~(\BC{7},\BC{8}).
-
-When type transitions or guess happen, there are three epoch flows.
-%
-(1) For certainty transitions, data moves to the \ABB{M} from \ABB{F} or \ABB{G} and enjoys a full epoch as \textit{frequent} data~(\BC{4},\BC{5}).
-%
-(2) For suspected transitions, if it is a right guess, data moves to \ABB{M} from \ABB{S} and enjoys a full epoch as \textit{frequent} data; otherwise, it is evicted from \ABB{S}~(\BC{6},\BC{9}).
-%
-(3) The false guess has a duplicate metadata in \ABB{G}~(\BC{6}), at least experiencing a full epoch as \textit{infrequent} data in \ABB{G}, which has multiple chances to be guessed or promoted.
-
-\ABB{K} collects epoch information beyond a epoch flow in the cache.
-%
-There are two major epoch flows in \sys for \ABB{M} and \ABB{G}, and data will experience at least one epoch in them.
-%
-Therefore, a basic version of \ABB{K} only needs to record data movement out of \ABB{M} and \ABB{G}.
-%
-While \ABB{K} targets for \textit{infrequent-persistent} data, to reduce the influence of other types, \ABB{K} delays recording data out of \ABB{M} and records data checked by \ABB{S}.
-%
-To reduce the influence of suspected data, \ABB{K} ignores data out of \ABB{G} and records data into \ABB{G}.
-%
-Finally, \ABB{K} conservatively proposes \textit{infrequent-persistent} data and leverages a forget function to forget old records beyond many epochs.
-
-
-\textbf{Hotness Discussion.}
-%
-\sys also integrates hotness analysis with cache size and adjust the hotness threshold field adaptively.
-%
-The hotness distribution records the hotness counter of all data in the cache, including metadata, in an array.
-%
-As discussed in \autoref{ss:hotness-during-epochs}, hotness threshold is a portion of the hottest data in the hotness distribution.
-%
-In \sys, the target portion is the proportion of number of data stored in \ABB{M}, \ABB{S}, and \ABB{F} to the total amount of metadata data in cache.
-
-\sys have an online hotness analysis.
-%
-In \sys, the hotness distribution represents the distribution of all hotness counter values, and \sys dynamically adjusts the hotness threshold based on this distribution and the target portion.
-%
-Whenever a cache hit occurs, \sys increases the hotness counter of the corresponding data, which has a maximum value.
-%
-Then, \sys updates the data type based on the hotness threshold if hit occurs in \ABB{F} or \ABB{G}. 
-%
-\sys only decreases the hotness counter when the object is evicted from \ABB{G} or aged in \ABB{S}.
-
-\textbf{Type identification.}
-%
-To reduce the operation overhead for efficiency, \sys only updates data type when needed, eventhough online algorithm can identify data type timely.
-%
-Therefore, type identification happens before data movement between queues or hit occurs in \ABB{G}.
-%
-All new data inserted into \ABB{F} is treated as \textit{infrequent-ephemeral} type initially~(\BC{3}).
-%
-If the hotness counter of an object in \ABB{F} or \ABB{G} exceeds the threshold, the \textit{infrequent-ephemeral} data becomes \textit{frequent-ephemeral} type~(\BC{4},\BC{5}).
-%
-
-Almost all type transitions happen in \ABB{S}, while \ABB{M} only stores data for epoch analysis~(\BC{7}).
-%
-\ABB{S} does not change \textit{frequent-persistent} and \textit{infrequent-persistent} data from \ABB{M} and only decreases their hotness counter when aged~(\BC{8}).
-%
-If \textit{frequent-ephemeral} data from \ABB{M} is alive in the new epoch, \sys transits it to \textit{frequent-persistent} type~(\BC{8}).
-%
-For suspected data from \ABB{F} and \ABB{G}~(\BC{6}), if hit occurs in \ABB{S}, \sys confirms the data type from \textit{infrequent-ephemeral} to \textit{infrequent-persistent} or to \textit{frequent-ephemeral} type~(\BC{9}).
-%
-\sys evicts data without access for many epochs based on hotness counter and does not change their types.
-
-
-\textbf{Implementation}
-The FIFO-based queues have different implementations for \textit{find}, \textit{delete}, \textit{insert}, and \textit{eviction} operations to improve efficiency and scalability.
-%
-It is efficient to operate \textit{insert} and \textit{eviction} operations in the head or tail of the queue.
-%
-However, it is impossiable to scan the whole queue for \textit{find} and \textit{delete} operations.
-%
-Therefore, \sys decouples the storage logic and evcition algorithm logic as prior work~\cite{}.
-%
+\DZ{How do we immplement the FIFO queues, ghost queues, and K?}
 The storage logic leverages a hash table to index the position of data, which is efficiency and scalable.
 
 A FIFO-based queue in evcition algorithm logic has linked-list or ring-buffer implementation.
@@ -354,24 +232,7 @@ To improve the space utility, \ABB{K} is a sketch and clean a fraction of counte
 %
 A fine-grained forget function ages counters one by one after a fixed number of inserations, which averages the operation overhead for efficiency.
 
-
-\subsection{Discussion and Limitations}
-\label{ss:discussion-and-limitations}
-\textbf{Online Adaption.} \sys integrates online epoch and hotness analysis with cache size to adapt to various access patterns.
-%
-With different cache sizes, data experiences different epoch sizes in \ABB{M} and \ABB{G}, and hotness threshold changes with epoch.
-%
-Therefore, to adjust the epoch size and hotness threshold, it is convenient to change the size of \ABB{M} and \ABB{G} and the target portion.
-%
-
-However, there is not a proper theoretical model to guide the adjustment of components size with changed types.
-%
-There are some theoretical models for fixed classification into different components, which generate the MRC of each components and optimize the overall hit ratio~\cite{}.
-%
-Therefore, we leave the adaption of \sys to future work and use fixed sizes for all the components in this paper.
-%
-The \ABB{F} is 10\% of the cache size, \ABB{S} is 5\%, and \ABB{M} is about 85\%.
-%
+\subsection{Overhead Analysis}
 
 \textbf{Computation overhead.} 
 %
@@ -401,6 +262,32 @@ In Count-Min Sketch~\cite{}, with a false positive error rate of 1\% and error r
 \ABB{K} comsumes about 0.13\% of the total memory space.
 %, and there are 40.5 bits for each object.
 %the space amplification is about 13.5.
+
+
+
+\subsection{Discussion and Limitations}
+\label{ss:discussion-and-limitations}
+
+
+\textbf{Online Adaption.} 
+%
+\DZ{One should change the sizes of components to adapt to different access patterns, but we didn't due to \XXX{}}
+\sys integrates online epoch and hotness analysis with cache size to adapt to various access patterns.
+%
+With different cache sizes, data experiences different epoch sizes in \ABB{M} and \ABB{G}, and hotness threshold changes with epoch.
+%
+Therefore, to adjust the epoch size and hotness threshold, it is convenient to change the size of \ABB{M} and \ABB{G} and the target portion.
+%
+
+However, there is not a proper theoretical model to guide the adjustment of components size with changed types.
+%
+There are some theoretical models for fixed classification into different components, which generate the MRC of each components and optimize the overall hit ratio~\cite{}.
+%
+Therefore, we leave the adaption of \sys to future work and use fixed sizes for all the components in this paper.
+%
+The \ABB{F} is 10\% of the cache size, \ABB{S} is 5\%, and \ABB{M} is about 85\%.
+%
+
 
 \textbf{Prefetching.} \sys can prefetch in \ABB{G} for \textit{infrequent-empheral} data or integrate with other prefetchers.
 %
@@ -454,14 +341,6 @@ Most of equal hotness counters come from repeated accesses in a sequence, and pr
     \caption{Overview for \sys. Cache space consists of five parts: filter cache, main cache, suspicious cache, ghost cache, and CBF. The workflow has three major parts, (1)cache promotion and eviction in four sub-cache. (2)IA-MP objects in the filter cache duels with the tail object in the suspicious cache with CBF. (3)Leverage the metadata in the ghost cache to find FA-FP objects and prefetch sequence accessed objects.\TODO{update}}
     \label{fig:overview}
 \end{figure}
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/phaseflow.drawio.pdf}
-    \caption{\sys consists of two epoch flows.(1)Frequently accessed objects' movement from the main cache to the suspicious cache and reinsertion to the main cache. (2)Infrequently accessed objects' movement from the filter cache to the ghost cache. Objects' type changes with suspection in the filter and ghost cache.\TODO{update}}
-    \label{fig:epochflow}
-\end{figure}
-
 
 \subsection{Properties}
 \label{ss:properties}
