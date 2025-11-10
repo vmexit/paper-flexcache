@@ -77,11 +77,9 @@ We identify these values through sensitivity analysis~(\S\ref{}) and found that 
 
 \PN{Overview.}
 %
-As shown in \autoref{}, for each object accessed for the first time, \sys places the object into the filter queue and observe its access pattern with the help of the auxiliary store.
+As shown in \autoref{}, for each object accessed for the first time, \sys places the object into the filter queue and observes its access pattern with the help of the auxiliary store.
 %
-Upon eviction from the filter queue, depending on its access pattern, \sys 
-either promotes the object to the core queue (for hot or popular objects), 
-or evicts the object but records its metadata in the ghost queue (offering a second chance to classify its access patterns as discussed in \S\ref{}).
+Upon eviction from the filter queue, depending on its access pattern, \sys either promotes the object to the core queue (for hot or popular objects), or evicts the object but records its metadata in the ghost queue (offering a second chance to classify its access patterns as discussed in \S\ref{}).
 
 An object that enters the core queue will later be evicted to the staging queue.
 %
@@ -89,14 +87,13 @@ Upon eviction from the staging queue, \sys reexamines the object's access patter
 %
 Otherwise, \sys reinserts the object into the core queue.
 
-For an object that resides in the ghost queue, upon access, \sys must bring 
-the object back to the cache.
+For an object in the ghost queue, upon access, \sys must bring it back into the cache.
 %
-Upon such an access, \sys reexamines the object's access pattern and promotes it to the main queue if it is hot or popular.
+Specifically, \sys reexamines the object's access pattern and promotes it to the main queue if it is hot or popular.
 %
 Otherwise, \sys promotes it to the staging queue. 
 %
-For the latter case, if the object is evicted from the staging queue, \sys places it to the ghost queue again, ensuring that the access pattern of the objects is observed for a full epoch. 
+In the latter case, if the object is evicted from the staging queue, \sys places it back in the ghost queue, ensuring that \sys observes the object's access pattern for a full epoch. 
 
 \XXX{The auxiliary store operates}
 
@@ -110,15 +107,13 @@ For each incoming object, regardless of whether it results in a cache hit or mis
 
 \PN{Cache hits.}
 %
-Upon a cache hit~(\ie, the object resides in one of the \ABB{F}, \ABB{C}, or \ABB{S} queues), \sys simply updates the hotness of the object~(L\XXX{}), 
-which willl later be used to \XXX{}
+Upon a cache hit~(\ie, the object resides in one of the \ABB{F}, \ABB{C}, or \ABB{S} queues), \sys simply updates the hotness of the object~(L\XXX{}),  which will later be used to \XXX{}
 
 \PN{Cache misses.}
 %
 \DZ{Lines 8 and 10 should have comments stating cache hits or miss.}
 %
-Upon a cache miss (L\XXX{}), \sys first checks if the cache is full, and if so, 
-evicts an object~(L\XXX{}).
+Upon a cache miss (L\XXX{}), \sys first checks if the cache is full, and if so, evicts an object~(L\XXX{}).
 %
 Next, \sys checks if the object has been previously encountered and resides in the ghost queue~(L\XXX{}).
 %
@@ -128,16 +123,17 @@ Otherwise, \sys checks the object's access pattern~(L\XXX{}-\XXX{}) and inserts 
 
 \PN{Object eviction.}
 %
-When the cache is full, \sys first tries to evict from the filter queue~(L\XXX{}). 
+When the cache is full, \sys first tries to evict from the filter queue (L\XXX{}). 
 %
 If no object can be evicted~(due to \eg, all objects evicted from the filter queue go to the core queue), \sys first evicts objects from the core queue to the staging queue~(L\XXX{}). 
 %
 Next, \sys evicts objects from the staging queue~(L\XXX{}).
 %
-Such an eviction is guaranteed to succeed since \XXX{}. 
+Such an eviction guarantees to succeed since \XXX{}. 
 %
 As discussed earlier, for an evicted object coming from the ghost queue, 
 \sys inserts it back~(L\XXX{}-\XXX{}). 
+
 
 
 
