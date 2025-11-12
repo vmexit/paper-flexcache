@@ -60,21 +60,36 @@ which data to evict when cache is full.
 %
 Some algorithms promote a lazy promotion~\cite{}, which delays the updating of data priority until eviction time.
 
-%
-It has a fixed workflow whatever the access pattern is.
-%
-As the basic LRU algorithm, it has a certain insertion point for new data, a updating function for accessed data, and an priority metric for eviction.
-%
-S3-FIFO~\cite{}, LHD~\cite{}, and 2Q~\cite{} are typical static eviction algorithms.
-
-\DZ{Need to discuss the remaining relevant static algorithms below.}
-\PN{Extending FIFO queues.}
-\sthreefifo 
-\sieve
-
 \PN{Extending LRU lists.}
 %
-\lhdc
+LRU is the most widely used static eviction algorithm, which inserts new data or updates accessed data to the head of list, and evicts data from the tail of list.
+%
+An extended LRU list proposes a new metric to measure data priority, modifying updating function.
+%
+\lhdc~\cite{} proposes a hit density metric and updates the priority of data when accessed.
+%
+Ideally, it will evict data with the lowest hit density.
+
+\PN{Extending FIFO queues.}
+FIFO-based queues leverage a lazy promotion, which holds a threshold to decide whether to promote data when eviction happens.
+%
+Clock~\cite{} uses a reference bit as the threshold, which promotes the tail data to the head of queue if the reference bit is set when eviction happens.
+%
+\sieve~\cite{} has a victim pointer scanning the queue from tail to head, evicting the first data whose access count is below a threshold.
+%
+\sthreefifo~\cite{} uses three FIFO queues 
+
+
+%
+%It has a fixed workflow whatever the access pattern is.
+%
+%As the basic LRU algorithm, it has a certain insertion point for new data, a updating function for accessed data, and an priority metric for eviction.
+%
+%S3-FIFO~\cite{}, LHD~\cite{}, and 2Q~\cite{} are typical static eviction algorithms.
+
+\DZ{Need to discuss the remaining relevant static algorithms below.}
+
+
 
 
 
