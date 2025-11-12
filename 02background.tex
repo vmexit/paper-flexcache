@@ -45,29 +45,61 @@ which exploit multiple cores to handle large volumes of requests~\cite{}.
 %
 With today's servers often equipped with hundreds of CPU cores, an eviction algorithm must avoid scalability bottlenecks to benefit from such parallelism.
 
-\subsection{Static and Adaptive Cache Eviction Algorithms}
+\subsection{Evolution of Cache Eviction Algorithms}
 
 \DZ{Define these two types of algorithms.}
 
 \PN{Static Eviction Algorithms.}
 %
-A static eviction algorithm has a fixed workflow whatever the access pattern is.
+A static algorithm employs a fixed set of rules all the time to 
+perform eviction.
+%
+
+has a fixed workflow whatever the access pattern is.
 %
 As the basic LRU algorithm, it has a certain insertion point for new data, a updating function for accessed data, and an priority metric for eviction.
 %
 S3-FIFO~\cite{}, LHD~\cite{}, and 2Q~\cite{} are typical static eviction algorithms.
 
+\DZ{Need to discuss the remaining relevant static algorithms below.}
+\PN{Extending FIFO queues.}
+\sthreefifo 
+\sieve
+
+\PN{Extending LRU lists.}
+%
+\lhdc 
+
+
+
+
 \PN{Adaptive Eviction Algorithms.}
+
+An adaptive eviction algorithm involves 1) observing and characterizing 
+workload access patterns and 2) adjusting its behavior accordingly~(by, \eg, automatically tuning internal parameters) to maximize performance. 
 %
-An adaptive eviction algorithm adjusts its workflow based on observed access patterns.
+Existing adaptive algorithms fall into two categories: 1) size-adaptive ones 
+and 2) policy-adaptive ones.
 %
-Typically, an adaptive algorithm has multiple states as static algorithms.
+
+A size-adaptive algorithm partitions the cache into multiple parts and adapts by adjusting each part's size based on access patterns.
 %
-Cacheus~\cite{} and LeCaR~\cite{} invoke two basic static algorithms with different probabilities.
+The representative examples are \arc~\cite{} and \car~\cite{}.
 %
-ARC~\cite{} and CAR~\cite{} separate data into different parts based on access patterns, and adjust the part sizes adaptively.
+Both works follow the principle of dynamically balancing recency and frequency objects.
 %
-\sys changes pattern classification functions and prepares different workflows for different access patterns.
+Specifically, \arc divides the cache into two LRU lists..
+
+% ARC divides the cache into two LRU lists, T1 and T2. T1 holds items accessed once while T2 keeps items accessed more than once since admission.
+
+
+A policy-adaptive algorithm adapts by switching between multiple internal 
+eviction algorithms according to their effectiveness under observed access 
+patterns.
+%
+\cacheus~\cite{} and \lecar~\cite{} are the state of the art. 
+%
+
 
 \section{How Modern Cache Workloads Behave}
 \label{s:motivation}
