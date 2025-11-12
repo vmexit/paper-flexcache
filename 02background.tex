@@ -54,8 +54,14 @@ With today's servers often equipped with hundreds of CPU cores, an eviction algo
 A static algorithm employs a fixed set of rules all the time to 
 perform eviction.
 %
+A static algorithm has an insertion point when new data arrives,
+an updating function when data is accessed, and a priority metric to decide
+which data to evict when cache is full.
+%
+Some algorithms promote a lazy promotion~\cite{}, which delays the updating of data priority until eviction time.
 
-has a fixed workflow whatever the access pattern is.
+%
+It has a fixed workflow whatever the access pattern is.
 %
 As the basic LRU algorithm, it has a certain insertion point for new data, a updating function for accessed data, and an priority metric for eviction.
 %
@@ -68,7 +74,7 @@ S3-FIFO~\cite{}, LHD~\cite{}, and 2Q~\cite{} are typical static eviction algorit
 
 \PN{Extending LRU lists.}
 %
-\lhdc 
+\lhdc
 
 
 
@@ -88,7 +94,13 @@ The representative examples are \arc~\cite{} and \car~\cite{}.
 %
 Both works follow the principle of dynamically balancing recency and frequency objects.
 %
-Specifically, \arc divides the cache into two LRU lists..
+Specifically, \arc divides the cache into two LRU lists, L1 and L2.
+%
+L1 holds new coming objects for recency, while L2 keeps objects accessed more than once since admission for frequency.
+%
+They have two ghost caches to record the access history of evicted objects from L1 and L2, respectively.
+%
+If requested data is in the ghost cache of L1, it indicates that there is not enough space for recency data, and thus \arc increases the size of L1, vice versa.
 
 % ARC divides the cache into two LRU lists, T1 and T2. T1 holds items accessed once while T2 keeps items accessed more than once since admission.
 
@@ -99,6 +111,16 @@ patterns.
 %
 \cacheus~\cite{} and \lecar~\cite{} are the state of the art. 
 %
+When a new request arrives or hits in the cache, they update multiple metadata for each algorithm.
+%
+When the cache is full, they ask each algorithm to propose an eviction candidate.
+%
+If multiple algorithms propose different candidates, they adopt one of them based on a probability distribution and record the result in the ghost cache for future reference.
+%
+If requested data is in the ghost cache, it indicates that the corresponding algorithm makes a wrong eviction decision, and thus the algorithm's probability is decreased, vice versa.
+%
+
+
 
 
 \section{How Modern Cache Workloads Behave}
