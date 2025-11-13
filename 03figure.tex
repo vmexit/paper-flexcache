@@ -1,0 +1,17 @@
+\begin{figure}
+  \includegraphics[width=\linewidth]{evalresult/relrank_one.png}
+  \caption{Performance improvement(\%) of state-of-the-art algorithms over LRU in various benchmarks.}
+  \label{fig:perf}
+\end{figure}
+
+\XXX{explain the figure~\ref{fig:perf}.} We evaluate 9 state-of-the-art cache eviction algorithms from 
+8 real-world benchmarks with \XXX{traces}.
+%
+These benchmarks come from diverse applications, including content delivery networks, key-value stores, and cloud block storage~(more details in \autoref{sec:eval}).
+%
+We do not consider the metadata size of different algorithms and assume all objects have the same size for an ideal case, 
+which concentrates the ability to capture access patterns.
+%
+We evaluate these algorithms in libcachesim~\cite{} with a trace specific cache sizes, 3\% of the working set size.
+%
+To exhibit the performance clearly, numbers in \autoref{fig:perf} present the average performance improvement(\%) of each algorithm over LRU.
