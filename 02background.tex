@@ -99,41 +99,50 @@ Clock~\cite{} uses a reference bit as the threshold, which promotes the tail dat
 An adaptive eviction algorithm involves 1) observing and characterizing 
 workload access patterns and 2) adjusting its behavior accordingly~(by, \eg, automatically tuning internal parameters) to maximize performance. 
 %
-Existing adaptive algorithms fall into two categories: 1) size-adaptive ones 
+
+One of the earliest adaptive algorithms is \XXX{}, which. 
+%
+Recent adaptive algorithms fall into two categories: 1) size-adaptive ones 
 and 2) policy-adaptive ones.
 %
 
 A size-adaptive algorithm partitions the cache into multiple parts and adapts by adjusting each part's size based on access patterns.
 %
-The representative examples are \arc~\cite{} and \car~\cite{}.
+The representative examples are \arc~\cite{} and \car~\cite{}, both following 
+the principle of dynamically balancing recency and frequency.
 %
-Both works follow the principle of dynamically balancing recency and frequency objects.
+\arc divides the cache into two LRU lists: a recency list~(that tracks recently-accessed objects) and a frequency list~(that tracks 
+frequently-accessed objects).
 %
-Specifically, \arc divides the cache into two LRU lists, L1 and L2.
+\DZ{Is this correct?}
+\XXX{A newly accessed object is first placed in the recency list and enters the frequency list upon a second access.}
 %
-L1 holds new coming objects for recency, while L2 keeps objects accessed more than once since admission for frequency.
+Upon a cache hit, \arc increases the size of the corresponding list~(and decreases the size of the other list), thereby favoring recency or frequency based on the current access pattern.
 %
-They have two ghost caches to record the access history of evicted objects from L1 and L2, respectively.
-%
-If requested data is in the ghost cache of L1, it indicates that there is not enough space for recency data, and thus \arc increases the size of L1, vice versa.
+\DZ{Add one sentence here to explain what \car does.}
+\car \XXX{}
 
 % ARC divides the cache into two LRU lists, T1 and T2. T1 holds items accessed once while T2 keeps items accessed more than once since admission.
 
 
-A policy-adaptive algorithm adapts by switching between multiple internal 
+A policy-adaptive algorithm adapts by switching between multiple base 
 eviction algorithms according to their effectiveness under observed access 
 patterns.
 %
 \cacheus~\cite{} and \lecar~\cite{} are the state of the art. 
 %
-When a new request arrives or hits in the cache, they update multiple metadata for each algorithm.
+Both works involve using two base eviction algorithms and maintaining a weight for each algorithm. 
 %
-When the cache is full, they ask each algorithm to propose an eviction candidate.
+Upon a cache miss, they select one base algorithm to perform the eviction 
+with probabilities proportional to the weights.
 %
-If multiple algorithms propose different candidates, they adopt one of them based on a probability distribution and record the result in the ghost cache for future reference.
+Next, they check if a wrongful eviction has occurred by finding if the wanted object was in the eviction history of either base algorithm.
 %
-If requested data is in the ghost cache, it indicates that the corresponding algorithm makes a wrong eviction decision, and thus the algorithm's probability is decreased, vice versa.
+If so, they penalize the corresponding algorithm by decreasing its weight. 
 %
+\XXX{Finally, both \cacheus and \lecar use machine learning to control the rate at which weights change.}
+%
+
 
 
 
