@@ -100,7 +100,7 @@ Both works use two base eviction algorithms and maintain a weight for each.
 %
 Upon a cache miss, they select one base algorithm to perform the eviction with probabilities proportional to the weights.
 %
-Next, they check whether a wrongful eviction has occurred by determining whether the wanted object appears in the eviction history of either base algorithm.
+Next, they check whether a wrongful eviction has occurred by determining whether the requested object appears in the eviction history of either base algorithm.
 %
 If so, they penalize the corresponding algorithm by decreasing its weight. 
 %
