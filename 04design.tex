@@ -234,6 +234,18 @@ Thus, any object with a sequence number less than the global sequence number min
 %
 Thanks to the sequence number, \sys lazily removes an evicted ghost object from the hash table only upon its access. 
 
+\textbf{Prefetching.} \sys can prefetch in \ABB{G} for \textit{infrequent-empheral} data or integrate with other prefetchers.
+%
+A typical \textit{Churn} pattern has a sequence of accesses, while \ABB{K} would not cover all of them for limited space.
+%
+As discussed in \autoref{ss:overview}, \ABB{G} also keeps the relative access order for epoch awareness, which provides an opportunity for prefetching.
+%
+When continueous data is accessed in \ABB{G}, \sys can prefetch the following data in the sequence to \ABB{F} and maintain metadata in \ABB{G}.
+%
+If prefetching hits in \ABB{F}, it would be treated as normal data; otherwise, \sys will evict it.
+%
+When \sys intergates with other prefetchers, \sys can leverage the prefetcher to insert data into \ABB{F} directly, which will not affect other queues.
+
 
 \XXX{Insert to the orignal position of G}
 
@@ -260,6 +272,7 @@ On average , each insertion only halves $1/threshold$ counters for 2 thresholds'
 \subsection{Overhead Analysis}
 %
 \XXX{detailed evaluation in \S\ref{}}
+
 
 \PN{Computation overhead.} 
 %
@@ -299,50 +312,33 @@ The ghost queue stores the same amount of objects as the main cache, and each ob
 Consider a typical object size of 4KB, the space overhead of \sys is \XXX{}. 
 
 
-\subsection{Discussion and Limitations}
+\subsection{Discussion}
 \label{ss:discussion-and-limitations}
 
+\XXX{Simplicity}
+\DZ{Argue that while \sys is complicated, it does not affect the efficiency, latency, and throughput of the cache.} 
 
-\textbf{Online Adaption.} 
+\XXX{Relationship with respect to S3FIFO}
+
+\PN{Adapting component size.}
 %
-\DZ{One should change the sizes of components to adapt to different access patterns, but we didn't due to \XXX{}}
-\sys integrates online epoch and hotness analysis with cache size to adapt to various access patterns.
+\sys currently uses fixed sizes for its components.
 %
-With different cache sizes, data experiences different epoch sizes in \ABB{M} and \ABB{G}, and hotness threshold changes with epoch.
+\XXX{Motivate why we need to adapt the sizes of components.}
 %
+
 Therefore, to adjust the epoch size and hotness threshold, it is convenient to change the size of \ABB{M} and \ABB{G} and the target portion.
 %
-
 However, there is not a proper theoretical model to guide the adjustment of components size with changed types.
 %
 There are some theoretical models for fixed classification into different components, which generate the MRC of each components and optimize the overall hit ratio~\cite{}.
 %
 Therefore, we leave the adaption of \sys to future work and use fixed sizes for all the components in this paper.
 %
-The \ABB{F} is 10\% of the cache size, \ABB{S} is 5\%, and \ABB{M} is about 85\%.
-%
 
 
-\textbf{Prefetching.} \sys can prefetch in \ABB{G} for \textit{infrequent-empheral} data or integrate with other prefetchers.
-%
-A typical \textit{Churn} pattern has a sequence of accesses, while \ABB{K} would not cover all of them for limited space.
-%
-As discussed in \autoref{ss:overview}, \ABB{G} also keeps the relative access order for epoch awareness, which provides an opportunity for prefetching.
-%
-When continueous data is accessed in \ABB{G}, \sys can prefetch the following data in the sequence to \ABB{F} and maintain metadata in \ABB{G}.
-%
-If prefetching hits in \ABB{F}, it would be treated as normal data; otherwise, \sys will evict it.
-%
-When \sys intergates with other prefetchers, \sys can leverage the prefetcher to insert data into \ABB{F} directly, which will not affect other queues.
 
-\textbf{Limitations.}
-%
-On workloads with tiny objects, linked-list implementation of FIFO queues would introduce high space overhead for pointers.
-%
-\ABB{G} and \ABB{K} would also introduce high space overhead for metadata, and \sys needs to limit their sizes.
-%
-
-\textbf{Adversarial workloads for \sys.}
+\PN{Adversarial workloads for \sys.}
 %
 \sys highly relies on epoch and hotness analysis to identify access patterns.
 %
