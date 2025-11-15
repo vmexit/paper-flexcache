@@ -195,40 +195,55 @@ If \ABB{G} cannot observe the repeatness, \sys guesses part of them to \ABB{S} w
 
 
 
-\section{Implementation}
-%
-\DZ{Where do we implement it? Lines of code to report?}
-We implement a prototype of \sys in CacheLib~\cite{} for about 1,500 lines of code.
-%
-The storage logic leverages a hash table to index the position of data, which is efficiency and scalable to find keys.
-%
-The eviction algorithm logic for FIFO-based queues~(filer, core, staging) manages the order of data in the cache, which is linked-list implementation.
-%
-Linked-list pointers can integrate with storage logic with a hook portability.
-%
-\sys decouples insertion and eviction positions for scalability when the queue is about to full.
-%
-The eviction algorithm logic evicts data from the tail of the queue, and inserts new data to the head of the queue with atomic compare and exchange operation.
+\section{Realizing \sys}
 %
 
+\subsection{XXX}
+%
+\DZ{Here, describe the difference between our implementation and the pseudo-code.}
 
-\DZ{How do we immplement the FIFO queues, ghost queues, and K?}
-The storage logic leverages a hash table to index the position of data, which is efficiency and scalable.
+\subsection{Optimizing \sys}
+% 
+We implemented \sys in both \cachelib~\cite{}, a development library for caching systems deployed at Facebook, and \libcachesim~\cite{}, an efficient cache simulator. 
+%
+We choose these two frameworks to benefit from that many eviction algorithms~(\S\ref{}) are already implemented on them.
+%
+We also contributed to \cachelib an implementation of \arc and \car, and \libcachesim an implementation of \car, respectively.  
 
 
-\ABB{G} can be further simplified for efficiency and scalability without linked-list pointers.
+% Cite a large number of papers that is implemented with CacheLib; systems 
+% reviewers might doubt the simulation.
+% Following much prior work~\cite{}, we evaluate \XXX{latency} and \XXX{throughput} in \cachelib~(\S\ref{}) and hit ratio in \libcachesim~(\S\ref{}). 
+% %
+
+\PN{Common optimizations.}
 %
-\sys compresses the metadata in \ABB{G} to only a fingerprint, a timestamp, and a \hotness field in 8-bytes.
+\sys applies several common performance and space optimizations in prior work. 
 %
-\sys stores metadata in a closed hash table with multiple slots.
+Following the existing implementation in \cachelib, \sys uses a hash table to index all cached objects to minimize the lookup time.
 %
-If the fingerprint matches, \sys updates the \hotness field for hotness awareness as a hit in \ABB{G}.
+Furthermore, following~\cite{}, \sys piggybacks the implementation of the ghost queue on this hash table. 
 %
-Otherwise, \sys increases the global timestamp for epoch awareness.
+For each ghost object, \sys stores in the hash table its fingerprint, \hotness counter, and a sequence number, for a total of 8 bytes.
 %
-\sys reserves slots whose timestamp ranges from $timestamp-\#epoch\_size$ to $timestamp$.
+\sys uses the sequence number to identify if an object is still in the ghost queue, facilitating lazy object deletion.
 %
-If all slots are occupied, \sys evicts a random slot for collision resolution.
+\sys increments a global sequence number upon each insertion to the ghost queue. 
+%
+Thus, any object with a sequence number less than the global sequence number minus ghost queue's size has already evicted from the ghost queue.
+%
+Thanks to the sequence number, \sys lazily removes an evicted ghost object from the hash table only upon its access. 
+
+
+\XXX{Insert to the orignal position of G}
+
+\PN{Other implementation.}
+%
+\sys uses three bits to store the \hotness counter.
+%
+\syss current implementation uses a linked list to implement the FIFO queues~(\ie, \XXX{the filter, core, and staging} queues), while one can also implement these queues with ring buffers.  
+%
+
 
 For simplicity, we implement \ABB{K} with a sketch structure with a forget function.
 %
@@ -243,36 +258,45 @@ When the global counter reaches a threshold~(\eg 8), \ABB{K} halves the counter 
 On average , each insertion only halves $1/threshold$ counters for 2 thresholds' epochs.
 
 \subsection{Overhead Analysis}
+%
+\XXX{detailed evaluation in \S\ref{}}
 
-\textbf{Computation overhead.} 
+\PN{Computation overhead.} 
 %
-\sys does not introduce extra computation overhead as prior work~\cite{}.
+Upon a cache access, \sys searches the object in the hash table. 
 %
-With a maximum value for hotness counter and delayed type checking, \sys thus performs negligible metadata updates on cache hits.
+A cache hit only requires updating the \hotness counter~(L\XXX{} in \S\ref{}) and the \hotness map, incurring minimal overhead. 
 %
-When cache miss occurs, \sys checks data in \ABB{S} gradually as prior work~\cite{}, and hotness distribution can be updated lock-free using atomic operations.
+On a cache miss, most of the processing time comes from evicting items from the filter or staging queues
 %
-Hash function is used widely in basic operations and \ABB{K}, while xxHash provides 31.5 GB/s operations~\cite{}, which is not a bottleneck for the performance.
+Both cases involve inserting objects from the filter queue to the main queue~(L\XXX{}), and the latter case requires inserting objects from the staging queue to the main queue~(L\XXX{}).
+%
+However, in practice, such reinsertions are rare since \XXX{}. 
+%
+The rest of the operations (\eg, \XXX{}) incur minimal overhead.
+
+
+\PN{Multicore scalability.}
+%
+\PN{Update on the hotness: atomic increment.}
+\PN{FIFO queues}
+\PN{Hash table.}
+\PN{Maintaining the metadata of \sys: hotness distribution.}
+
+
+
+\PN{Space overhead.} 
+%
+The space overhead of \sys mainly comes from 1) per-object metadata and 2) the ghost queue; and 3) the auxiliary store.
+%
+Each metadata is 4 bits, consisting of a \hotness counter~(3 bits) and a 1-bit flag recording if the object is from the ghost queue~(L\XXX{} in \S\ref{}).
+%
+The ghost queue stores the same amount of objects as the main cache, and each object consumes an additional of 8 bytes. 
+%
+\XXX{In Count-Min Sketch~\cite{}, with a false positive error rate of 1\% and error range of 1, a 8-epoch \textit{infrequent-persistent} data requires about 3 bits for record.}
 %
 
-\textbf{Space overhead.} 
-%
-\sys introduces space overhead for metadata and components \ABB{G} and \ABB{K}.
-%
-\sys uses 3 bits to store the access frequency, which is sufficient for most workloads.
-%
-With a bit for suspection, the 4 bits can often be piggybacked on the unused flags in the metadata.
-%
-\ABB{G} stores the same number of data (only metadata) as the total size of other queues.
-%
-Assuming the average object size is 4KB, and the object id is 4 bytes, \ABB{G} uses 0.1\% of the total memory space.
-%
-In Count-Min Sketch~\cite{}, with a false positive error rate of 1\% and error range of 1, a 8-epoch \textit{infrequent-persistent} data requires about 3 bits for record.
-%
-\ABB{K} comsumes about 0.13\% of the total memory space.
-%, and there are 40.5 bits for each object.
-%the space amplification is about 13.5.
-
+Consider a typical object size of 4KB, the space overhead of \sys is \XXX{}. 
 
 
 \subsection{Discussion and Limitations}
