@@ -181,6 +181,26 @@ If cache cannot hold all of them and \ABB{G} could observe the repeatness, \sys 
 %
 If \ABB{G} cannot observe the repeatness, \sys guesses part of them to \ABB{S} with the help of \ABB{K}.
 
+\subsection{Properties}
+\label{ss:properties}
+
+\syss design achieve the following important properties mentioned in prior cache literature~\cite{}.
+
+% \PN{Cover a wide range of access patterns.}
+
+\PN{Self-adaptive parameters.}
+Tuning parameters is notoriously difficult for cache eviction algorithms~\cite{}.
+
+\PN{Lazy promotion and quick demotion.}
+%
+Recent advances in cache eviction algorithms~\cite{} have shown that lazy promotion and quick demotion can effectively improve cache performance.
+
+\PN{Multicore scalability.}
+%
+Many Modern cache replacement algorithms are built with cache primitives, such as FIFO queues and LRU~\cite{}.
+%
+\sys uses FIFO queues to achieve multicore scalability.
+
 
 
 \section{Realizing \sys}
@@ -347,67 +367,76 @@ Consider a typical object size of 4KB, the space overhead of \sys is \XXX{}.
 \subsection{Discussion}
 \label{ss:discussion-and-limitations}
 
-\XXX{Simplicity}
-\DZ{Argue that while \sys is complicated, it does not affect the efficiency, latency, and throughput of the cache.} 
-
-\XXX{Relationship with respect to S3FIFO}
+\XXX{Relationship with respect to S3FIFO: move this to the evaluation.}
 
 \PN{Adapting component size.}
 %
-\sys currently uses fixed sizes for its components.
+While \syss current design partitions the cache into fixed portions for the filter, main, and staging queues, 
 %
-\XXX{Motivate why we need to adapt the sizes of components.}
-%
-
-Therefore, to adjust the epoch size and hotness threshold, it is convenient to change the size of \ABB{M} and \ABB{G} and the target portion.
-%
-However, there is not a proper theoretical model to guide the adjustment of components size with changed types.
-%
-There are some theoretical models for fixed classification into different components, which generate the MRC of each components and optimize the overall hit ratio~\cite{}.
-%
-Therefore, we leave the adaption of \sys to future work and use fixed sizes for all the components in this paper.
+we note that dynamically adjusting the sizes of these components further enhances \syss adaptiveness.  
 %
 
-\XXX{If we enlarge the filter cache, the new objects will stay longer in the filter cache.
+The size of the filter queue determines the duration for which a new object remains in the cache;
 %
-This will increase the performance of a little workloads, in which the new objects are accessed after a period of time.
+a larger filter queue increases the chances of a new object being stayed in 
+the cache, thereby improving performance if new objects exhibit 
+good locality. 
 %
-If the filter cache is larger than the time to live of the new objects, the performance will be improved, but we can analyze the workloads and set the filter cache size.
+However, if new objects exhibit poor locality, a larger filter queue may waste cache space on them, reducing performance. 
 %
-The size of the suspicious cache depends on the confidence level of the suspicious objects—if the objects are highly reliable, a larger suspicious cache is more appropriate. 
+The staging queue captures the same tradeoff for an object that was accessed before but is still classified as cold and rare in the ghost queue (since such objects are promoted to the staging queue upon access, see \XXX{} in 
+\autoref{}).
 %
-However, in our experiments, we found that the size of this portion of the cache has little impact on overall performance. 
-%
-When the cache is relatively small, the hit rate is very low, and many strategies can only guess which data is accessed more frequently. 
-%
-This explains why WTinyLFU exhibits significant performance fluctuations.}
 
-
+We find that adaptively adjusting component sizes remains relevant, 
+since tuning the sizes of the filter and staging queues can help \sys handle certain adversarial workloads, as detailed next.
+%
+Our view on the poor performance of existing size-adaptive algorithms~(\S\ref{}) is that they lack a theoretical model to guide the adaptation.
+%
+%There are some theoretical models for fixed classification into different components, which generate the MRC of each components and optimize the overall hit ratio~\cite{}.
+As future work, we plan to follow \XXX{} to develop a theoretical model for size adaptation. 
 
 \PN{Adversarial workloads for \sys.}
 %
-\sys highly relies on epoch and hotness analysis to identify access patterns.
-%
-(1) Workloads with large reuse which apporaches the epoch size are challenge for epoch analysis.
-%
-The large reuse would have many hits in \ABB{G} rather than \ABB{M} for the first epoch in \sys, and it will be evicted by suspected data in \ABB{S} at the end of the epoch, leading to many misses.
-%
-(2) Workloads with greatly changed hotness distribution are challenge for hotness analysis.
-%
-In this case, the hotness threshold would change frequently, and \ABB{K} takes time to learn it. 
+The remaining adversarial workloads for \sys fall into two categories: (1) those whose past access patterns do not predict future ones, and (2) those that goes against \syss fixed size cache partitioning.
 %
 
+For the first category, we observe traces that repeatedly alternate between two phases: a) accessing a large number of objects once (\ie, the scan pattern), and b) repeatedly accessing a small set of hot objects. 
+%
+However, the hot objects in the second phase differ in each iteration.
+%
+In this case, \sys fails to identify the hot objects in the second phase, as there is little prior indication of their hotness.
 
-Other algorithms also suffer from these workloads, and large cache size or prefetcher can mitigate the influence.
+For the second category, we find traces that access most objects twice, with 
+the interval between the two accesses slightly exceeding \syss filter queue 
+size.
 %
-Algorithms with a small filter queue~(S3-FIFO~\cite{}, 2Q~\cite{}) also evict data to ghost queue, leading to misses.
+This causes \sys to evict most objects before their second access, leading to poor performance.
 %
-Algorithms without a sketch~(ARC~\cite{},CACHEUS~\cite{}) also discard useful data due to limited accesses.
+A larger cache or adaptively adjusting the filter queue size, as discussed earlier, can avoid this issue. 
+
+We note that other adaptive algorithms also struggle with \syss adversarial workloads.
 %
-With large cache size, algorithms can catch marginal accesses.
+The first category breaks an inhernt assumption of all adaptive algorithms~(\ie, using the past to predict the future). 
 %
-Most of equal hotness counters come from repeated accesses in a sequence, and prefetchers can help to catch them.
+The second category, as reported in~\cite{}, is generally challenging for all algorithms that partitions cache spaces, including both adaptive ones~(\eg, \arc, \car, \cacheus, and \lecar) and non-adaptive ones~(\eg, \sthreefifo, \wtinylfu, and \lirs).
+
+\PN{Complexity.}
 %
+The complexity of \sys is modest.
+%
+\DZ{Can we make such an argument?}
+% its complexity is comparable to other state-of-the-art adaptive algorithms such as \arc~\cite{} and \car~\cite{}.
+While \sys is more complex than algorithms like \lru, \lfu, and \sieve~\cite{} 
+due to its use of multiple components, we argue that \sys is simpler than machine-learning-based algorithms such as \XXX{}. 
+% 
+In addition, the complexity does not translate to high overhead, as discussed 
+in \S\ref{}, and we found that \syss behavior is easy to reason 
+about~(\S\ref{}) thanks to its intuitive pattern 
+characterization~(\S\ref{}) and clean task division among components~(\S\ref{}).
+
+
+
 
 
 
@@ -418,22 +447,3 @@ Most of equal hotness counters come from repeated accesses in a sequence, and pr
     \label{fig:overview}
 \end{figure}
 
-\subsection{Properties}
-\label{ss:properties}
-
-\syss design achieve the following important properties mentioned in prior cache literature~\cite{}.
-
-% \PN{Cover a wide range of access patterns.}
-
-\PN{Self-adaptive parameters.}
-Tuning parameters is notoriously difficult for cache eviction algorithms~\cite{}.
-
-\PN{Lazy promotion and quick demotion.}
-%
-Recent advances in cache eviction algorithms~\cite{} have shown that lazy promotion and quick demotion can effectively improve cache performance.
-
-\PN{Multicore scalability.}
-%
-Many Modern cache replacement algorithms are built with cache primitives, such as FIFO queues and LRU~\cite{}.
-%
-\sys uses FIFO queues to achieve multicore scalability.
