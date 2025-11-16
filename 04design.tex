@@ -171,20 +171,8 @@ the distribution of hotness counters~(\ie, how many cached objects fall under ea
 how \sys adapts to it}
 
 
-
-
-
-
-
-
-
-
-
-
 \PN{Adaptiveness.}
 %
-
-
 For example, repeated accesses~(Churn) have a good locality, but they will pollute cache if cache cannot hold them all.
 %
 If cache could hold all of them, they are \textit{frequent-persistent} data and stay in \ABB{M}.
@@ -196,19 +184,69 @@ If \ABB{G} cannot observe the repeatness, \sys guesses part of them to \ABB{S} w
 
 
 \section{Realizing \sys}
-%
-
-\subsection{XXX}
-%
-\DZ{Here, describe the difference between our implementation and the pseudo-code.}
-
-\subsection{Optimizing \sys}
 % 
 We implemented \sys in both \cachelib~\cite{}, a development library for caching systems deployed at Facebook, and \libcachesim~\cite{}, an efficient cache simulator. 
 %
 We choose these two frameworks to benefit from that many eviction algorithms~(\S\ref{}) are already implemented on them.
 %
 We also contributed to \cachelib an implementation of \arc and \car, and \libcachesim an implementation of \car, respectively.  
+
+
+\PN{Minimizing the auxiliary store.}
+%
+A practical implementation of \sys must minimize the space overhead incurred by the auxiliary store.
+%
+The main overhead is that the auxiliary store records the access counts of each object in the past \XXX{} epochs. 
+%
+A naive implementation that records the object names~(\eg, block/page addresses, keys of key-value pairs) and \XXX{} counters would incur large overhead.
+
+Following \wtinylfu~\cite{}, \sys minimizes the aforementioned overhead using 
+a count-min sketch~\cite{} with a sliding window. 
+%
+A count-min sketch operates similar to a bloom filter~\cite{} (more specifically, a counting bloom filter~\cite{}), where it is equipped with multiple, say \ABB{H}, hash functions. 
+%
+A count-min sketch maintains a two-dimensional array where the number of rows equals the number of hash functions~(\ie, \ABB{H}), and the number of columns represents the tradeoff betwen space and accuracy.
+%
+When an item arrives, it is hashed by each hash function, where each hash function maps the item to a specific column in its corresponding row.
+%
+The counters of these \ABB{H} cells are incremented. 
+%
+Upon query, the minimum of the \ABB{H} counters mapped by the hash functions is returned as the estimated count of the item.
+%
+Therefore, a count-min sketch forgos the need to store each object's name. 
+
+In addition, rather than using a count-min sketch for each epoch, \sys uses only a single sketch. 
+%
+This is because multiple sketches incur space and performance overhead (since one must query all sketches to obtain the total access counts across all epochs).
+%
+To ensure that the sketch approximates the access counts in the past \XXX{} epochs, \sys periodically halves all counters in the sketch.  
+%
+\sys maintains a global counter which got incremented upon each item arrival. 
+%
+Once the global counter reaches a threshold, \sys halves the global counter and all the counters in the sketch.
+%
+\wtinylfu~\cite{} shows that this approach is reasonably accurate, supported by both theoretical guarantees on its error bounds and evaluation results. 
+
+
+
+
+
+
+
+
+
+% For simplicity, we implement \ABB{K} with a sketch structure with a forget function.
+% %
+% In the sketch, each object maps a counter with a hash function.
+% %
+% To simulate the sliding window sketch~\cite{}, \ABB{K} has a global counter and a global indexer for forget function.
+% %
+% Once inserting an object, \ABB{K} increases the global counter and increases mapped counter for the object.
+% %
+% When the global counter reaches a threshold~(\eg 8), \ABB{K} halves the counter pointed by the global indexer to forget old records, and then increases the global indexer and resets the global counter for the next counter.
+% %
+% On average , each insertion only halves $1/threshold$ counters for 2 thresholds' epochs.
+
 
 
 % Cite a large number of papers that is implemented with CacheLib; systems 
@@ -220,9 +258,9 @@ We also contributed to \cachelib an implementation of \arc and \car, and \libcac
 %
 \sys applies several common performance and space optimizations in prior work. 
 %
-Following the existing implementation in \cachelib, \sys uses a hash table to index all cached objects to minimize the lookup time.
-%
-Furthermore, following~\cite{}, \sys piggybacks the implementation of the ghost queue on this hash table. 
+First, following the existing implementation in \cachelib, \sys uses a hash table to index all cached objects to minimize the lookup time.
+
+Second, following~\cite{}, \sys implements the ghost queue with a hash table. 
 %
 For each ghost object, \sys stores in the hash table its fingerprint, \hotness counter, and a sequence number, for a total of 8 bytes.
 %
@@ -234,40 +272,33 @@ Thus, any object with a sequence number less than the global sequence number min
 %
 Thanks to the sequence number, \sys lazily removes an evicted ghost object from the hash table only upon its access. 
 
-\textbf{Prefetching.} \sys can prefetch in \ABB{G} for \textit{infrequent-empheral} data or integrate with other prefetchers.
+\PN{Other optimization/implementation.}
 %
-A typical \textit{Churn} pattern has a sequence of accesses, while \ABB{K} would not cover all of them for limited space.
-%
-As discussed in \autoref{ss:overview}, \ABB{G} also keeps the relative access order for epoch awareness, which provides an opportunity for prefetching.
-%
-When continueous data is accessed in \ABB{G}, \sys can prefetch the following data in the sequence to \ABB{F} and maintain metadata in \ABB{G}.
-%
-If prefetching hits in \ABB{F}, it would be treated as normal data; otherwise, \sys will evict it.
-%
-When \sys intergates with other prefetchers, \sys can leverage the prefetcher to insert data into \ABB{F} directly, which will not affect other queues.
-
-
-\XXX{Insert to the orignal position of G}
-
-\PN{Other implementation.}
-%
-\sys uses three bits to store the \hotness counter.
+\sys uses three bits to store the \hotness counter and uses \XXX{} hash for all relevant hash tables/count-min sketch. 
 %
 \syss current implementation uses a linked list to implement the FIFO queues~(\ie, \XXX{the filter, core, and staging} queues), while one can also implement these queues with ring buffers.  
 %
 
+\DZ{Modify the pseudocode to make this part more understandable}
+Another optimization in \sys is that it does not delete the object from the ghost queue upon its promotion to the staging queue~(L\XXX{} in \autoref{}).
+%
+Therefore, \sys does not need to record each object's position in the ghost queue~(L\XXX{}). 
+%
+This is possible since a stale object in the ghost queue does not affect the correctness of \sys; 
+%
+\sys only checks if the object is in the ghost queue upon a cache miss~(L\XXX{}), where the object must not be in the staging queue.  
 
-For simplicity, we implement \ABB{K} with a sketch structure with a forget function.
+\PN{Tradeoff between cache hit rates and overhead.}
 %
-In the sketch, each object maps a counter with a hash function.
+Using a count-min sketch for recording objects' popularity and a hash table for the ghost queue may reduce the hit rates of \sys. 
 %
-To simulate the sliding window sketch~\cite{}, \ABB{K} has a global counter and a global indexer for forget function.
+In the former case, multiple objects may map to the same counter and the reset operation is an estimation. 
 %
-Once inserting an object, \ABB{K} increases the global counter and increases mapped counter for the object.
+In the latter case, \sys may mistakenly view an object in the ghost queue due to fingerprint collisions.
 %
-When the global counter reaches a threshold~(\eg 8), \ABB{K} halves the counter pointed by the global indexer to forget old records, and then increases the global indexer and resets the global counter for the next counter.
-%
-On average , each insertion only halves $1/threshold$ counters for 2 thresholds' epochs.
+However, our evaluation shows that \XXX{}. 
+
+
 
 \subsection{Overhead Analysis}
 %
@@ -306,8 +337,9 @@ Each metadata is 4 bits, consisting of a \hotness counter~(3 bits) and a 1-bit f
 %
 The ghost queue stores the same amount of objects as the main cache, and each object consumes an additional of 8 bytes. 
 %
-\XXX{In Count-Min Sketch~\cite{}, with a false positive error rate of 1\% and error range of 1, a 8-epoch \textit{infrequent-persistent} data requires about 3 bits for record.}
+The count-min sketch in the auxiliary store uses \XXX{} bytes (\XXX{Row, Column, and Count bits}).
 %
+\XXX{map overhead, epoch counter, globalk counter} 
 
 Consider a typical object size of 4KB, the space overhead of \sys is \XXX{}. 
 
@@ -335,6 +367,20 @@ There are some theoretical models for fixed classification into different compon
 %
 Therefore, we leave the adaption of \sys to future work and use fixed sizes for all the components in this paper.
 %
+
+\XXX{If we enlarge the filter cache, the new objects will stay longer in the filter cache.
+%
+This will increase the performance of a little workloads, in which the new objects are accessed after a period of time.
+%
+If the filter cache is larger than the time to live of the new objects, the performance will be improved, but we can analyze the workloads and set the filter cache size.
+%
+The size of the suspicious cache depends on the confidence level of the suspicious objects—if the objects are highly reliable, a larger suspicious cache is more appropriate. 
+%
+However, in our experiments, we found that the size of this portion of the cache has little impact on overall performance. 
+%
+When the cache is relatively small, the hit rate is very low, and many strategies can only guess which data is accessed more frequently. 
+%
+This explains why WTinyLFU exhibits significant performance fluctuations.}
 
 
 
