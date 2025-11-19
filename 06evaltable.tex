@@ -1,21 +1,22 @@
-\begin{table}[t]
+\begin{table*}[t]
     \centering
-    \begin{tabular}{|l|l|l|l|}
+    \footnotesize
+    \begin{tabular}{|l|l|l|l|l|l|l|l|}
     \hline
-        Trace & Type & \# Traces & Log-scale fit for \\ 
-            &       &           &access distribution \\ \hline
-            AlibabaBlock & Block & 609 & -0.8953 \\ \hline
-            Cloudphysics & Block & 106 & -0.9454 \\ \hline
-            FIU & Block & 10 & -0.9239 \\ \hline
-            Systor & Block & 6 & -0.9752 \\ \hline
-            TencentBlock & Block & 4048 & -0.8148 \\ \hline
-            MSR & Block & 14 & -0.9377 \\ \hline
-            Meta CDN & Object & 3 & -1.2771 \\ \hline
-            TencentPhoto & Object & 2 & -1.0206 \\ \hline
-            Wikimedia & Object & 3 & -0.9957 \\ \hline
-            Meta KV & KV & 5 & -0.9805 \\ \hline
-            Twitter & KV & 50 & -0.8524 \\ \hline
+        Datasets & Type & \# Traces & \# Number of & \# Number of & Size  & Size  & Dominant Policy \\ 
+                   &      &           &  Requests(million) & Objects(million) & of Requests(TB) & of Objects(TB) &  \\ \hline
+            AlibabaBlock\cite{Alibaba} & Block  & 609  &  &  &  &  &  \\ \hline
+            Cloudphysics & Block  & 106  &  &  &  &  &  \\ \hline
+            FIU          & Block  & 10   &  &  &  &  &  \\ \hline
+            Systor       & Block  & 6    &  &  &  &  &  \\ \hline
+            TencentBlock & Block  & 4048 &  &  &  &  &  \\ \hline
+            MSR          & Block  & 14   &  &  &  &  &  \\ \hline
+            Meta CDN     & Object & 3    &  &  &  &  &   \\ \hline
+            TencentPhoto & Object & 2    &  &  &  &  &  \\ \hline
+            Wikimedia    & Object & 3    &  &  &  &  &  \\ \hline
+            Meta KV      & KV     & 5    &  &  &  &  &  \\ \hline
+            Twitter      & KV     & 50   &  &  &  &  &  \\ \hline
     \end{tabular}
-    \caption{Datasets used in this work.  \TODO{more information,footprint,\#requests,\#objects, details/dominant policy}.}
+    \caption{Datasets used in this work.  \TODO{Need to be filled with results and add refs}.}
     \label{tab:traces}
-\end{table}
+\end{table*}
