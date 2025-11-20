@@ -15,3 +15,32 @@ which concentrates the ability to capture access patterns.
 We evaluate these algorithms in libcachesim~\cite{} with a trace specific cache sizes, 3\% of the working set size.
 %
 To exhibit the performance clearly, numbers in \autoref{fig:perf} present the average performance improvement(\%) of each algorithm over LRU.
+
+\begin{figure*}
+    \centering
+
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/io_traces.ns269.oracleGeneral.zstcompare.jpg}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/io_traces.ns269.oracleGeneral.zstcomparearc.jpg}
+        \caption{arc}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/tencentBlock.ns10011.oracleGeneral.zstcompare.jpg}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/tencentBlock.ns16470.oracleGeneral.zstcompare.jpg}
+    \end{minipage}
+    
+  
+  \caption{access pattern}
+  \label{fig:cac}
+\end{figure*}
