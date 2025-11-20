@@ -313,5 +313,56 @@ Considering the significant backend latency caused by cache misses in actual pro
 %
 We evaluated its throughput under different workloads and cache sizes.
 
+\subsection{Flash-friendliness}
+\begin{figure*}[t]
+    \centering
+    \input{data/flash0.1}
+    \caption{The relative write bytes and hit ratio compared to FIFO(no admission) with 10\% WSS cache size. Left: DRAM:Flash = 0.1\%; Right: DRAM:Flash = 1\%.}
+    \label{fig:flash0.1}
+\end{figure*}
 
+%
+Typical production systems employ hierarchical caching structures.
+%
+Data exchange between memory and storage is the flow of data between DRAM and flash memory. 
+%
+Hot objects are usually retained in DRAM, while other objects are staged in flash.
+%
+However, write operations to flash incur significant wear due to the limited program/erase (P/E) cycles, ultimately shortening device lifespan.
+%
+Therefore, a flash-friendly caching design must minimize unnecessary erase operations and ensure that objects admitted into flash are likely to be accessed again in the future.
+%
 
+Surprisingly, the design of \sys naturally aligns with this principle.
+%
+\sys places the filter queue in DRAM, while the staging queue and core queue reside in flash.
+%
+Insertions and evictions occurring in the filter do not result in flash writes.
+%
+Only objects admitted to the core queue are written to flash, reducing both flash writes and the miss ratio.
+%
+
+We analyzed all traces from the CloudPhysics dataset to obtain a comprehensive view of the performance of \sys across diverse workloads.
+%
+To measure the flash-friendliness, we compared \sys, s3fifo, and fifo.
+%
+Because s3fifo adjusts the sizes of the \ABB{S} and \ABB{M} queues, we experimented with different DRAM-to-Flash ratios (0.1\%, 1\%, 10\%).
+%
+The same relative configurations were used for the filter and (staging + core) queues in \sys.
+%
+We obtained the write bytes and hit ratios for all traces under CloudPhysics.
+%
+For easier observation, we used relative write bytes:$\frac{\text{write\_bytes}_{algo}}{\text{write\_bytes}_{fifo}}$ and relative hit ratio:$\frac{\text{hit\_ratio}_{algo}}{\text{hit\_ratio}_{fifo}}$.
+%
+We ignore metadata overhead, as it constitutes only a small fraction (\XXX{a number, e.g. 0.4\%}) of overall cache capacity.
+%
+
+Fig.~\ref{fig:flash0.1} shows that \sys and s3fifo, compared to FIFO (no admission), typically have higher hit ratio and fewer write bytes.
+%
+This indicates that the admission policy can effectively reduce flash writes, thereby increasing flash lifespan.
+%
+When comparing s3fifo and \sys, we observe that \sys achieves a higher hit ratio, indicating that a larger portion of objects written to flash are eventually reused.
+%
+As a result, \sys may incur slightly more flash writes than s3fifo in some cases, but its higher hit ratio suggests that these writes correspond to more useful data.
+%
+From a long-term perspective, \sys therefore exhibits stronger flash-friendliness due to its higher overall utility per flash write.
