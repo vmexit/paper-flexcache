@@ -7,94 +7,82 @@ Our evaluation answers the following questions:
     \item Is \sys scalable compared to adaptive algorithms?
 \squishend
 
+\DZ{Move all tables under the \\tbl directory}
+\DZ{Check how do we draw tables in other SOSP papers in our lab repo.}
 \input{06evaltable}
-\subsection{Methodology}
-\paragraph{Traces.} 
+
+\subsection{Evaluation Setup}
+
+\PN{Environment.}
 %
-We used 11 open-source datasets with \XXX{wait for results} traces to analyze \sys. 
+\DZ{Do not mention Kunpeng... }
+We evaluate on a \XXX{}-socket machine equipped with \XXX{}-core \XXX{CPU name}.
 %
-These traces are diverse, including key-value, object CDN, and block caches, spanning from 2007 to 2023.
+The system runs \XXX{Ubuntu 22.04} and Linux \XXX{kernel 6.12.20}. 
 %
-\TODO{In total, these datasets contain ... requests, ... objects, ... TB of traffic for a total of ... TB of data.}
+We disable hyperthreading, turbo boost to obtain stable results. 
+
+\PN{Baseline.}
 %
-More details can be found in Table~\ref{tab:traces}.
+We compare \sys with \XXX{16} state-of-the-art replacement algorithms, including 1) classical algorithms: \lru, \lfu, and \twoqueue~\cite{}, 
 %
-In many large-scale distributed caching systems, traces in workloads are served by multiple servers for multi-tenant services.
+2) state-of-the-art static algorithms: \wtinylfu~\cite{}, \sthreefifo~\cite{}, \lirs~\cite{}, \XXX{} 
+and 3) state-of-the-art adaptive algorithms: \arc~\cite{}, \car~\cite{}, \cacheus~\cite{}, \lecar~\cite{}. 
 %
-Therefore, referring to previous work~\cite{yang2023fifo}, we split Tencent CBS~\cite{zhang2018tencent} and Alibaba~\cite{Alibaba} into per-tenant traces.
+Note that \XXX{} are based on machine learning. 
 %
 
-\paragraph{Metric.}
+We used the implementations from \XXX{\libcachesim~\cite{libcachesim}} for these baseline algorithms. 
 %
-We evaluated different algorithms across various cache sizes for robustness and efficiency. 
-%
-Cache size ranges from 0.3\% to 20\% of the working set size (WSS), defined as the total number of objects in the trace. 
-%
-In some cases, the 0.3\% WSS is too small to be practical when the cache size is less than 1000 objects, so we ignore it.
-%
-%
-The production systems store objects of similar sizes in the same slab class, which introduces fragmentation but simplifies memory management.
-%
-It is non-trivial to consider the object size in a system without a slab-based memory management.
-%
-With the help of slabs, we can ignore the impact of object size.
+\XXX{We have checked that the implementations conform to the original papers, and used the default parameters from the original papers.}
 %
 
-We evaluated 16 state-of-the-art algorithms and compare them with the dominant algorithm, which achieves the highest hit ratio for a specific trace with a particular cache size.
+We compare \sys with all the baseline algorithms for hit ratio. 
 %
-This can be used as a metric to demonstrate an algorithm's robustness.
-%
-Compared with the dominant algorithm, each policy has a relative hit ratio:$\frac{HR_{algo}}{HR_{dominant}}$ distribution for datasets in different cache sizes.
-%
-Additionally, we also calculate performance improvement relative to LRU:$\frac{HR_{algo} - HR_{lru}}{HR_{lru}}$. 
-%
-For datasets with more than 100 traces, we report both the distribution of relative hit rates and tail performance. 
-%
-For those with fewer than 100 traces, we only calculate the average performance.
-%
-To evaluate the efficiency of the cache utility, we also analyzed the byte miss ratio.
+For the \XXX{}, we select \XXX{representative algorithms from each category}
 
-\paragraph{Simulator.} 
-We implemented the \sys simulator in the libCacheSim~\cite{libcachesim} library.
+
+
+\PN{Workload.} 
 %
-For all state-of-the-art algorithms, we used the original implementations and parameters from their papers. 
+\DZ{Consider adding more datasets}
 %
-We do not consider metadata size across algorithms, as \sys requires less metadata than production systems typically use.
+We used \XXX{11} open-source datasets with \XXX{} traces to evaluate \sys, as shown in~\autoref{tab:traces}.
+%
+These traces are diverse in both application domains, including key-value, object CDN, and block caches, and time periods, spanning from 2008 to 2023.
+%
+In total, these datasets contain \XXX{} requests, \XXX{} objects, \XXX{} TB of traffic for a total of \XXX{} TB of data.
+%
+To facilitate analysis, following prior work~\cite{}, we split Tencent 
+CBS~\cite{zhang2018tencent} and Alibaba~\cite{Alibaba} into per-tenant traces.
 %
 
-\paragraph{\TODO{Sensitive Analysis}.}
+\PN{Methodology.}
 %
-We evaluated the impact of different modules on \sys. 
+\DZ{Cite as many prior work as possible to justify our methodology. Systems folks are very unhappy about simulation.}
 %
-In the experiments, we individually disabled the prefetching and CBF modules to analyze their respective contributions to performance.
+Due to a large number of traces, following the conventional evaluation approach in prior work~\cite{}, we used a high-performance simulator \libcachesim~\cite{}
+to evaluate hit ratio. 
 %
-Additionally, we adjusted the size of the staging space to determine how different the filter and staging queue size affect overall performance.
+In total, we ran \XXX{} requests, using \XXX{a million CPU hours}.
 
-\paragraph{Prototype.} 
+We report the hit ratio using two metrics. 
 %
-Our prototype is implemented based on CacheLib~\cite{cachelib}, a production-level caching library developed by Meta, which employs slab memory management and has highly optimized the LRU-based replacement algorithm.
+\XXX{Need to motivate why doing so...}
+The first one is the hit ratio improvement over \lru~(\ie, $\frac{HR_{algo} - HR_{lru}}{HR_{lru}}$), a metric widely used in prior work~\cite{}.
 %
-CacheLib uses extensive metaprogramming, many components are tightly coupled.
+The second one is the relative hit ratio compared to the dominant algorithm(\ie, $\frac{HR_{algo}}{HR_{dominant}}$), where the dominant algorithm is the one with the highest hit ratio. 
 %
-Therefore, we used linked lists to implement the filter, staging, and core queue, a hash table to implement the ghost queue, and a new atomic data structure sketch to implement the auxiliary store.
+This metric reflects how well an algorithm generalizes across different workloads.
 %
-To enable trace reading, we referenced the previous code~\cite{yang2023fifo}, allowing it to replay traces in a closed loop for benchmarking. 
-%
-Considering the significant backend latency caused by cache misses in actual production, we added a latency penalty to each cache miss to ensure it reflects real-world production conditions. 
-%
-We evaluated its throughput under different workloads and cache sizes.
 
-\paragraph{Open source. }
-%
-We have open-sourced our code with more details at the end of the paper.
 
-\paragraph{Environment setup. }
+
+\XXX{For datasets with more than 100 traces, we report both the distribution of relative hit rates and tail performance. 
 %
-The simulations used a server equipped with \XXX{the specifications of the kunpeng}.
+For those with fewer than 100 traces, we only calculate the average performance.}
 %
-The prototype experiments were conducted on a server with \XXX{the specifications of the avalon}. 
-%
-We pinned one thread to one core and used \texttt{numactl} to bind the experiments to a single NUMA node, ensuring consistent memory access latency. 
+
 
 \begin{figure*}[t]
     \centering
@@ -109,7 +97,19 @@ We pinned one thread to one core and used \texttt{numactl} to bind the experimen
     \caption{Relative hit ratio improvements based on LRU.}
     \label{fig:hitimpall}
 \end{figure*}
-\subsection{Performance for different cache sizes}
+
+\subsection{Hit Ratio}
+%
+For each trace, we evaluate the hit ratio with cache sizes ranging from \XXX{0.3\%} to \XXX{20\%} of the working set size~(\ie, the total number of objects in the trace) 
+%
+Following prior work~\cite{}, we omit the results if the absolute cache size is less than 100 objects, since the size is too small to be practical, 
+
+
+
+
+
+
+
 \textbf{Average relative hit ratio.} We evaluate \sys and SOTA policies with benchmarks in table~\ref{tab:traces} in different cache size. 
 %
 The SOTA policies are widely used in production systems or compared in prior work.
@@ -253,6 +253,15 @@ This is helpful for the tail performance, but it is not the best performance in 
 \end{figure}
 
 \subsection{Breakdown performance}
+
+\paragraph{\TODO{Sensitive Analysis}.}
+%
+We evaluated the impact of different modules on \sys. 
+%
+In the experiments, we individually disabled the prefetching and CBF modules to analyze their respective contributions to performance.
+%
+Additionally, we adjusted the size of the staging space to determine how different the filter and staging queue size affect overall performance.
+
 \textbf{CBF}
 %
 We disable the CBF and show the performance of \sys-C in figure~\ref{fig:break}.
@@ -296,7 +305,13 @@ With large cache size, \sys has more space to hold the objects for perfetching, 
 \textbf{Ghost cache size.}
 
 \subsection{Throughput}
-\TODO{}
+
+
+To enable trace reading, we referenced the previous code~\cite{yang2023fifo}, allowing it to replay traces in a closed loop for benchmarking. 
+%
+Considering the significant backend latency caused by cache misses in actual production, we added a latency penalty to each cache miss to ensure it reflects real-world production conditions. 
+%
+We evaluated its throughput under different workloads and cache sizes.
 
 
 
