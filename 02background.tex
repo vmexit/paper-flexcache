@@ -196,6 +196,63 @@ We next details the performance gaps in existing static~(\S\ref{}) and adaptive 
 
 
 
+Figure~\ref{fig:patterns}~(c) exhibits a mixed pattern of LRU-friendly and Churn (large reuse distance), where \sys outperforms \lirs significantly.
+%
+\lirs has a large fixed lru-list to hold objects accessed more than once, a small lru-list for others, and a ghost list to track evicted objects.
+%
+Each object in \lirs has a timestamp of the last access, 0 for newly added objects, which is updated on each hit.
+%
+\lirs will compare the timestamp of the accessed object with the minimum timestamp in the large lru-list (tail of the large lru-list).
+%
+If the accessed timestamp is larger, the object is promoted to the large lru-list; otherwise, it is added to the small lru-list.
+%
+This helps \lirs filters churn objects effectively when the churn size is large.
+%
+However, when LRU-friendly objects appear with churn or repeated objects with different reuse distances, \lirs holds repeated objects in the small lru-list in a reservation manner.
+%
+\sys will not be affected by this situation, as it identifies \popular objects and holds them.
+
+Figure~\ref{fig:patterns}~(d)
+%
+S3-FIFO has a strict threshold to filter one-hit wonder (Scan) in the small cache, which prefers burst data accessed in a short period. 
+%
+When churn appears with LRU-friendly data, S3-FIFO evicts churn and other infrequently accessed data in the ghost cache for observation. 
+%
+If the amount of data exceeds the ghost size, S3-FIFO cannot capture any of it. 
+%
+In contrast, \sys has a dynamic threshold, which avoids threshing the ghost. In another case, if the churn size is larger than the cache size, \sys will hold part of them as \cold \popular data.
+
+\subsection{The Remaining Gaps in Adaptive Algorithms}
+
+
+
+
+To cover all the patterns, \cacheus have to switch its policy between SR-LRU and CR-LRU frequently.
+%
+However, SR-LRU evicts frequently accessed objects especially Churn, and CR-LRU prefers to evict data comes frist.
+%
+If none of sub-algorithm dominants, \cacheus suffers from confliction and degrades its performance.
+%
+\arc adjusts cache size for recency and frequency adaptively, but when the churn size is large, \arc cannot capture the frequently accessed objects effectively.
+%
+In this case, \sys captures them with two methods. 
+%
+First, \sys has a small cache to observe the access new objects, which avoids evicting them too early.
+%
+Second, \sys analysises the access patterns to find \cold \popular objects and holds \popular ones.
+
+\PN{Why adaptiveness in \cacheus and \arc fails?}
+%
+\cacheus leverages two sub-algorithms to capture different access patterns and switches between them adaptively.
+%
+However, when multiple patterns coexist, the two sub-algorithms conflict with each other, degrading the performance.
+%
+There are multiple sub-optimal points for parameters (non-convex) in \cacheus, making it hard to find the best one.
+%
+\arc adjusts the cache size for recency and frequency adaptively.
+%
+It fails to identify complex patterns for \arc splitting objects into new objects and accessed more than once.
+
 
 
 
