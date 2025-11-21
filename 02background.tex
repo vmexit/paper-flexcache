@@ -94,6 +94,7 @@ Upon a cache hit, \arc increases the size of the corresponding list~(and decreas
 
 \PN{A policy-adaptive algorithm} adapts by switching between multiple base eviction algorithms according to their effectiveness under observed access patterns.
 %
+\XXX{Add access pattern classification.}
 \cacheus~\cite{} and \lecar~\cite{} are the state of the art. 
 %
 Both works use two base eviction algorithms and maintain a weight for each. 
@@ -111,40 +112,148 @@ Finally, both \cacheus and \lecar use machine learning to control the rate at wh
 
 
 
-\section{How Modern Cache Workloads Behave}
+\section{How Modern Algorithms Perform}
 \label{s:motivation}
-\input{03figure}
-\subsection{Characteristics of Modern Cache Workloads}
 
-\DZ{Make the case that most modern cache workloads are diverse and evolving.}
+This section analyzes the characteristics of modern cache workloads~(\S\ref{}), evaluates how existing cache eviction algorithms perform on modern workloads~(\S\ref{}), and identifies the remaining gaps in modern algorithms~(\S\ref{}).
+
+\subsection{Characteristics of Modern Cache Workloads}
+%
+It is well known that modern cache workloads 1) exhibit diverse access patterns and 2) and furthermore, these access patterns evolve over time~\cite{}
+%
+We confirm this conclusion by analyzing \XXX{} real-world datasets with a total of \XXX{} traces~(\autoref{tbl:traces}). 
+%
+To our knowledge, this is the largest scale of such analysis to date, where prior work~\cite{} only analyzes \XXX{} workloads with \XXX{} traces.
+
+Figure~\ref{} summarizes our analysis. 
+%
+As we do not find a prior metric to quantify the diversity and evolution of access patterns, we propose a \XXX{proxy} metric
+%
+\XXX{}. 
+
+Figure~\ref{} shows 3 examples of evolving and diverse access 
+patterns.
+%with \XXX{} figures~\footnote{To our knowledge, \XXX{} first proposes this kind of figures without naming them. We name them \textit{} as they \XXX{}}. 
+%
+In terms of diversity, following the classification in \cacheus~(\S\ref{}), all four patterns appears in these three traces.
+%
+In terms of evolution, in all three traces, a major access pattern shifts no later than every 10,000 accesses.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{evalresult/relrank_one.png}
+  \caption{The average \hitrate improvement over LRU for 9 representative eviction algorithms on 8 real-world workloads. 
+  %
+  The cache size is set to 3\% of the working set size.
+  %
+  The larger the value, the better the performance.
+  %
+  \sys achieves the highest \hitrate in 5 workloads with close to the best performance in 3 workloads.
+  }  
+  \label{fig:perf}
+\end{figure}
+
+\subsection{Performance of Existing Algorithms}
+%
+\DZ{Everywhere hit/miss ratio --> hit/miss rate. Perhap just replace "ratio" with "rate"}
+%
+We evaluate the hit rate of \XXX{16} state-of-the-art cache eviction algorithms 
+on the real-world workloads discussed in \S\ref{}, and 
+%
+\autoref{} shows a subset of the results~(See \autoref{} for full results).
+%
+The subset includes the best-performing algorithms in both the static and adaptive categories~(\S\ref{}).
+%
+
+We draw two conclusions from the results. 
+%
+First, in terms of static algorithms, there is no ``silver bullet'' one that consistently outperforms  others across all workloads.
+%
+\sthreefifo achieves the highest hit rate in 5 datasets~(excluding \sys), in some cases by a significant margin over the runner-up.
+%
+In the remaining 3 datasets, \lirs performs the best.
+%
+As detailed in \S\ref{}, such limitation stems from the inherent nature of static algorithms; 
+%
+a fixed set of rules seems to be a poor match for the diverse and evolving access patterns.
+
+Second, adaptive algorithms consistently underperform the static 
+ones. 
+%
+None of the adaptive algorithms 1) achieves the highest hit rate in any workload; nor 2) matches the performance of the best static algorithms~(\ie, \sthreefifo) and arguably the second-best one~(\ie, \lirs) across all workloads.
+%
+
+This result is surprising, as adaptiveness in cache algorithms is expected to match the diverse and evolving access patterns~(\S\ref{}).
+%
+Indeed, we view this as an \XXX{outlier} in systems research, as adaptiveness enjoys widespread success in other domains~(\eg, scheduling~\cite{}, \DZ{@Liujia, find more fields, this is an important argument}), 
+often resulting in significant performance gains over static approaches.
+%
+This forms a strong motivation for \sys, that advanced adaptiveness in eviction algorithms to close this gap. 
+
+We next details the performance gaps in existing static~(\S\ref{}) and adaptive algorithms~(\S\ref{}), which serves to explain the two conclusions above. 
+
+
+\subsection{No ``One-Size-Fits-All'' Static Rules}
+
+
+
+
+
+
+
+\begin{figure*}
+    \centering
+
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/io_traces.ns269.oracleGeneral.zstcompare.jpg}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/io_traces.ns269.oracleGeneral.zstcomparearc.jpg}
+        \caption{arc}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/tencentBlock.ns10011.oracleGeneral.zstcompare.jpg}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.24\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/tencentBlock.ns16470.oracleGeneral.zstcompare.jpg}
+    \end{minipage}
+    
+  \caption{The accessed object over time of three traces~(\XXX{}) from production datasets. 
+  %
+  The $x$-axis is the access sequence number, and the $y$-axis is the object ID sorted by the first access time.
+  %
+  A point means that the object is accessed at that time.
+  %
+  We do not show the full traces for clarity. 
+  }
+  \label{fig:cac}
+\end{figure*}
+
 
 \PN{Diverse Access Patterns.}
 %
-Prior work classifies access space into several primitive patterns, including \textit{LFU-friendly}, \textit{LRU-friendly}, \textit{Churn}, and \textit{Scan}~\cite{}.
-%
-There are also \textit{One-hit wonder}~\cite{} and \textit{Inter-Reference Recency}~\cite{} patterns.
-%
-Real-world workloads are often a complex mixture of these primitive access patterns with different contributions.
+\XXX{\textit{Inter-Reference Recency}~\cite{}} 
 
-\PN{Evolving Access Patterns.}
 %
 With the time passing, the access pattern of a workload may change.\XXX{do we need a figure here?}
 %
 In the cloud block storage~\cite{}, a \textit{Scan} pattern becomes a \textit{Churn} after some repeated accesses.
 %
-In the KV store and CDN workloads~\cite{}, the \textit{One-hit wonder} pattern evolves into a \textit{LRU-friendly} or \textit{LFU-friendly} pattern as popular objects emerge.
 
-\subsection{How Existing Cache Eviction Algorithms Perform}
-
-\subsubsection{Static eviction algorithms.}
-%
-Static eviction algorithms target for predefined access patterns.
-%
 2Q~\cite{} has a limited ghost space to record the access history, which prefers data hitted more than once in the ghost space.
 %
 TinyLFU~\cite{} uses a Count-Bloom filter~\cite{} to record access frequency, which favors frequently accessed data.
 %
 They usually perform well in specific access patterns but poorly in others.
+
+
+
 
 \subsubsection{Adaptive eviction algorithms.}
 %
@@ -164,8 +273,6 @@ Our analysis reveals that existing adaptive cache eviction algorithms are ineffe
 \PN{Limited access patterns coverage.}
 %
 Prior adaptive algorithms have a limited pattern coverage for their binary classification. 
-%
-They classify functional parts into recency- and frequency-based categories, along with additional sub-functions. 
 %
 However, each time they invoke only one functional part, resulting in limited coverage.
 
