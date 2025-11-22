@@ -1,222 +1,103 @@
-\section{Identifying Workload Access Patterns}
+\section{Characterizing Workload Access Patterns}
 \label{s:access-patterns}
 
-This section presents how does \sys overcome the 
+This section presents how \sys overcomes the first gap of the prior 
+adaptive algorithms by proposing an novel and fine-grained 
+pattern characterization approach.
+%
+We first discuss \XXX{This section shows how \sys characterizes access patterns with a few representative examples.}
 
-\subsection{Object-level Access Pattern Classification}
+\subsection{Fine-Grained Access Pattern Characterization}
 
-\PN{Prior attempts to classify access patterns.}
+To capture the diverse access patterns, \sys characterizes access patterns in fine-grained at the object-level, thereby departing from the prior coarse-grained subtrace-level approaches.
 %
-\DZ{Make important prior works, such as Cacheus and S3FIFO, as latex macro.}
-\DZ{Explain what Cacheus does and why it fails}
-\DZ{This may overlap with the content in \autoref{s:motivation}. Let's decide which place is the best to put the content upon writing.}
+As shown in \S\ref{}, \syss approach is more flexible, \XXX{covering} many more access patterns. 
+%
+There are three rationales behind \syss characterization approach, as detailed next. 
+%
 
-\PN{Hotness.}
+\PN{Object-level characterization.}
+%
+The first rationale is that classifying subtraces into fixed set of simple access patterns, as employed in prior work, is inherently difficult in characterizing the wide spectrum of real-world access patterns. 
+%
+Therefore, \sys characterizes access patterns at the object level, the finest granularity possible.
+%
+given a sequence of accesses, \sys characterizes its pattern by evaluating each accessed object with specific metrics~(specifically, \hotness and \popularity, as detailed next).
+%
+Therefore, the access pattern of a workload is characterized by the distribution of the metrics of all the accessed patterns. 
 
-\PN{Popularity.}
+\PN{Characterization metrics: \hotness and \popularity.}
+%
+The second rationale is that object metrics should reflect access locality, as this is essential reason why caching works. 
+%
+Following prior work~\cite{}, \sys uses two common proxies, recency and frequency, to approximate locality.
+%
+% The second rationale lies in deciding the specific metrics for characterizing each object. 
+% %
+% Our observation is that, fundamentally, the effectiveness of caching relies on the temporal and spatial locality.  
+% %
+% A cache eviction algorithm largely depends on how well it exploits temporal locality (as spatial locality is often addressed by techniques like prefetching). 
+% %
+% Hence, following prior work~\cite{}, \sys uses two popular proxy, recency and frequency to approximate temporal locality.  
+% %
 
-\DZ{Make "Hotness", "Hot", "Cold", "Popularity", "Popular", "Rare" as a macro, since we may change the term in the future.}
+\DZ{Have we acheived this?}
+However, unlike prior work, \sys decouples recency and frequency into two independent metrics to improve classification accuracy. 
+%
+Specifically, \sys divides a trace into epochs, each containing as many unique object accesses as the cache size. 
+%
+\sys measures object recency using \textit{\hotness}, the number of times an object is accessed in the current epoch.
+%
+It measures frequency using \textit{\popularity}, the number of times an object was accessed across earlier epochs, excluding the current one.
 
-\subsection{Adjusting Thresholds Based on Cache Size}
+\PN{Using cache size to decide thresholds}
+%
+The third rationale is that characterization must account for cache size, since the same access sequence can produce different patterns under different cache sizes.
+%
+\DZ{@Liujia, give a simple example here. Avoid using the churn --> LFU example if possible as that's boring.}
 
+\sys accounts for cache size with two steps. 
+%
+First, \sys introduces a threshold for both \hotness and \popularity to classify objects.  
+%
+In the \hotness dimension, an object is marked as \hot or \cold based on whether its hotness is above or below the hotness threshold.
+%
+Likewise, in the \popularity dimension, an object is marked as \popular or \rare depending on whether its popularity exceeds or gets below the popularity threshold. 
 
-\section{Phase and hotness aware classification}
-\label{s:phase-hotness}
-It is a challenge to identify different access patterns in the workload.
+Next, the thresholds are dynamically adjusted by considering cache sizes.
 %
-Prior work classifies primitive access patterns based on access frequency and recency as we discussed in \S\ref{ss:access-pattern-based-analysis}.
+Suppose that the cache size is $S$, the \hotness (and \popularity) threshold is the \hotness (and \popularity) count of the $S$-th most \hot (and \popular) object. 
 %
-Unfortunately, this type of classification leaves a huge portion of undefined accesses between the discrete access patterns, and the non-adaptive analysis has limited capability to guide the design of online algorithms.
+The reason is intuitive: the cache should ideally hold the $S$ most \hot and \popular objects to maximize hit rate. 
 %
-To overcome this challenge, this paper proposes a new perspective to \textbf{adaptively} classify the workload into \textbf{cooperative} types based on \textit{phase and hotness} and converts it into an \textbf{online} version to guide the design of a reliable cache eviction algorithm in different cache sizes~(\TODO{ref design}).
-
-This section presents how phase size reveals the intrinsic locality property of workloads~(\autoref{ss:adaptive-phases}), how different hotness during phases reflects locality changes~(\autoref{ss:hotness-during-phases}), and the characteristics of the four primitive types based on phase and hotness~(\autoref{ss:phase-hotness-based-types}).
-\XXX{llj: maybe, online phase version is designed for online property, hotness is designed for cooperative property, and \sys classifies the types adaptively based on both phase and hotness.}
-
-\subsection{Locality in phases}
-\label{ss:adaptive-phases}
-Phase analysis is significant to understand the locality of workloads.
-%
-Prior work analyzes phases based on a fixed interval to capture the periodicity of accesses~\cite{}.
-%
-Predefined intervals are helpful to find the \textit{daily or long-term periodicity} of accesses, indicating user behaviors, and adjust the cache behavior periodicity.
-%
-However, this kind of metric does not a guidance for access patterns and design of cache eviction algorithms.
-%
-This paper analyzes the phase adaptively and reveals the intrinsic locality property of workloads.
-
-Rather than splitting the trace based on a \textit{fixed time interval} or a \textit{fixed number} of accesses, we split the trace based on a relative size of working set size (WSS).
-%
-More specifically, the number of accesses in a phase is changed adaptively, but the unique data in a phase is limited to a predefined size called footprint size.
-%
-We analyze the workload with different footprint sizes, a relative size of WSS, and the length of a phase indicates the locality of filling an empty cache.
-%
-With a fixed footprint size for a workload, the less number of phases and the longer the phase, the better locality it has.
-
-We classify the data into \textbf{persistent} and \textbf{ephemeral} types dynamically based on the number of phases in which the data appears, which reveals the intrinsic locality property of workloads.
-%
-Phase size also affects the data that appears in different phases.
-%
-With a large phase size equal to WSS, there is only one phase, and all data appears in this phase as persistent types, which means that if the cache size is large enough, all data can be cached with good locality.
-%
-With a small phase size as footprint one, almost all accesses are in different phases, and there is no locality for extremely small cache size to store ephemeral types.
-%
-In the other cases, the data is distributed in different phases, and persistent types appear more often than ephemeral types.
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/cachesizeaware.drawio.pdf}
-    \caption{Phase-based classification.(1) Split the workload into phases based on the footprint size. 
-    (2) The sliding window and aging function dynamically mark the object types.
-    With a large phase size as footprint six, \cc{A}, \cc{B}, and \cc{C} appears for all phases.
-    With a small phase size as footprint four, only \cc{A} appears in all phases, and \cc{B} and \cc{C} occur in some phases.
-    }
-    \label{fig:Phase-based}
-\end{figure}
-
-As shown in figure~\ref{fig:Phase-based}(1), we demonstrate how to split the trace into phases based on the footprint size and type the accesses dynamically in contiguous phase type space.
-%
-For the access \cc{ABCDABEFABACGAH}, if we use footprint four to split the trace, there are three phases: \cc{ABCDAB}, \cc{EFABA}, and \cc{CGAH}.
-%
-\cc{A} appears in all phases as a persistent type, and \cc{D}, \cc{E}, \cc{F}, \cc{G}, and \cc{H} appear in only one phase as ephemeral types.
-%
-Compared to ephemeral types, \cc{B} and \cc{C} appear in two phases and are more likely to be persistent type in a contiguous phase type space.
-%
-While if we use footprint six to split the trace, there are two phases: \cc{ABCDABEF} and \cc{ABACGAH}.
-%
-\cc{A}, \cc{B}, and \cc{C} appear in all phases as persistent types, and \cc{D}, \cc{E}, \cc{F}, \cc{G}, and \cc{H} appear in only one phase as ephemeral types.
-
-Splitting a workload into phases does not match the online algorithm's workflow, and we propose an optimized \textbf{online version} for \sys~(\TODO{ref}).
-%
-A sliding window with a fixed footprint size provides the same effect to splitting the trace into phases in a fine-grained manner.
-%
-To reduce the space overhead of recording all accesses in the sliding window, a FIFO queue with a hotness counter has a similar effect to the sliding window, which also hold the relative access sequence.
-%
-An object enters the head of FIFO queue when its phase begins.
-%
-Hotness analysis increases the hotness counter when hit occurs and ages the object at the tail of the queue, indicating the end of the phase.
-%
-As shown in figure~\ref{fig:Phase-based}(2), with footprint four, \cc{ABCDAB} fill the FIFO queue, and the aging function is halfing the hotness counter and evicting the object with a zero counter.
-%
-In this case, \cc{A} and \cc{B} are persistent types, others are ephemeral types, and \sys will catch \cc{C} with a Sketch~\cite{}.
-%
-While with footprint six, \cc{ABC} are persistent types, and others are ephemeral types.
-
-\subsection{Hotness during phases}
-\label{ss:hotness-during-phases}
-Phase analysis splits the workload adaptively, and hotness analysis reveals the locality changes during phases.
-%
-The hotness of data indicates how frequently it is accessed in a phase, and the more times it is accessed, the hotter it is with better locality for caching.
-%
-When we conpare the hotness of data in different phases, changed hotness indicates the transformation of locality.
-%
-The hotness analysis is a compensation for phase analysis.
-
-Data are dynamically classified into \textbf{frequent} and \textbf{infrequent} categories based on a hotness threshold determined within each phase.
-%
-To achieve accurate classification, each data item is assigned a hotness counter, and the overall distribution of these counters within the phase is collected as hotness information.
-%
-Without lose of generality, only a subset of data can reside in the cache, a target caching proportion is defined according to the system configuration.
-%
-All data items are then sorted in descending order of their hotness counters, and entries are progressively selected to fill the target cache portion.
-%
-The hotness counter corresponding to the boundary of this portion is designated as the hotness threshold, which serves to distinguish frequent data from infrequent data.
-%
-This threshold adapts across phases in response to variations in the target cache proportion, thereby maintaining classification consistency under different workload dynamics.
-
-As shown in figure~\ref{fig:wss}, hotness changes with phase and phase size.
-%
-In the figure, a workload slice from Alibaba~\cite{} is split into phases with different phase sizes, and the hotness distribution is shown in heatmap.
-%
-\XXX{For visualization, we cap the maximum hotness counters at 4; values above 4 are still represented as 4, and we cut off some data accessed only once in this slice.}
-%
-Frequent data (accessed more than four times in a phase) are more likely to be accessed in the following phases, indicating good locality for caching.
-%
-For example, in figure~\ref{fig:wss}(a), half of the objects accessed in phase 0 are active in the rest phase.
-%
-If not, phase access preference changes, and for example, frequent data in phase 3, 7 and 11 have a huge gap.
-%
-When the phase size is larger, frequent data are concentrated exhibiting better locality, as shown in figure~\ref{fig:wss}(b).
-
-Hotness analysis is also an offline version, and it can cope with the online phase analysis~(\ref{ss:adaptive-phases}) to form an online version for \sys~(\TODO{ref}).
-%
-The offline hotness analysis collects the hotness distribution and classifies data based on the threshold at the end of each phase.
-%
-In the online version, hotness distribution manages data in the FIFO queue for a phase.
-%
-When access or eviction occurs, it uses the new distribution to update the threshold dynamically.
-%
-With the new threshold, the online analysis classifies data into frequent and infrequent types.
-%
-It can also classify data when threshold changes due to access or eviction occurs to reduce the overhead.
+Figure~\ref{} shows an example. 
 
 
-\subsection{Phase and hotness based types}
-\label{ss:phase-hotness-based-types}
-We classify data into four cooperative types based on phase and hotness analysis.
+\PN{Putting it together.}
 %
-Phase analysis captures the intrinsic locality property in long-term scale, and hotness analysis reveals the locality changes in short-term scale.
+\sys characterizes workload access pattern by classifying each accessed object into one of the four types based on its \hotness and \popularity: \hot-\popular, \hot-\rare, \cold-\popular, and \cold-\rare.
 %
-With phase analysis, data is either persistent or ephemeral, and with hotness analysis, data is either frequent or infrequent.
-%
-Therefore, we classify data into four types: \textit{frequent-persistent}, \textit{frequent-ephemeral}, \textit{infrequent-persistent}, and \textit{infrequent-ephemeral}.
+% The characterization considers cache sizes by using it to adjust the thresholds for \hotness and \popularity.
+The cache size decides the thresholds for \hotness and \popularity. 
 
-The analysis is fine-grained in phase and hotness dimensions, so the contiguous values support an adaptive classification of data types.
+\subsection{How \sys Characterizes Access Patterns}
 %
-Once finished analysis, data has a phase information, how many phases it appears, and a hotness information, how many times it is accessed in the phase.
+\PN{The primitive access patterns.}
 %
-Taking hotness information as x-axis and phase information as y-axis as shown in figure~\ref{fig:insight}, each data point has a coordinate in the phase-hotness space.
+An \textit{LRU-friendly} pattern is one in which most objects are \hot~(\hot-\popular or \hot-\rare), whereas an \textit{LFU-friendly} pattern is one in which most objects are \popular~(\hot-\popular or \cold-\popular).
 %
-To adaptively classify data, changeable thresholds for phase and hotness dimensions separate the space smoothly, which moves zero point in the figure.
+A \textit{Churn} pattern \XXX{}
 %
-Online version of the classification method in \sys dynamically adjusts the thresholds based on the overall access information, which changes the coordinate of data points and moves the separation lines together.
+A \textit{Scan} pattern consists of all \cold-\rare objects.
+%
+\XXX{\lirs~\cite{} proposes a recency-based pattern IRR by reuse interval of objects.
+}
+\XXX{The one-hit wonders are also \cold-\rare objects.}
+\XXX{relative concept.}
+% an \textit{LFU-friendly} pattern occurs frequently lasting many phases as \hot-\popular type, and an \textit{LRU-friendly} pattern trends to reaccess recently, which has a concentrated access in a small number of phases as \hot-\rare type.
+% %
+% A \textit{Churn} pattern repeats in many phases with equal probability, and if the phase size matches the repeated periods, it is \cold-\popular type.
+% %
+% A \textit{Scan} pattern appears only once in a phase as \cold-\rare type.
+% %
 
-The four primitive types covers all four typical primitive access patterns and their properties~(\S\ref{ss:access-pattern-based-analysis}).
-%
-With an appropriate phase size, an \textit{LFU-friendly} pattern occurs frequently lasting many phases as \textit{frequent-persistent} type, and an \textit{LRU-friendly} pattern trends to reaccess recently, which has a concentrated access in a small number of phases as \textit{frequent-ephemeral} type.
-%
-A \textit{Churn} pattern repeats in many phases with equal probability, and if the phase size mathches the repeated periods, it occurs in many phases and a few times in each phase as \textit{infrequent-persistent} type.
-%
-A \textit{Scan} pattern appears only once in a phase as \textit{infrequent-ephemeral} type.
-%
-This classification method covers recency property by hotness distribution in a phase and frequency property by the number of phases, and we will discuss spatial locality with prefetching in \TODO{ref}.
-
-We also observe some properties of the four primitive types and how they change with phase size and hotness threshold.
-%
-The \textit{frequent-persistent} type is a small portion of data, and some frequent data in a phase will reduce its access times in the following phases and becomes \textit{infrequent-persistent} type.
-%
-This is because new data arrives and competes for access opportunities, filling the phase more quickly.
-%
-The \textit{frequent-ephemeral} type always bursts in a phase, then disappears in the following phases, and reappears in a phase. 
-%
-With a larger phase size, some \textit{frequent-ephemeral} and \textit{infrequent-ephemeral} types become \textit{frequent-persistent} type.
-%
-The large phase size captures more accesses, so some infrequent data occurs more in a phase becoming frequent type.
-%
-Accordingly, there are less phases in larger phase size, so the proportion of phases in which the data appears has increased, indicating persistent data.
-
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/phase.png}
-    \caption{Access phases in Alibaba for different cache sizes.\TODO{update}}
-    \label{fig:wss}
-\end{figure}
-
-\begin{figure}[t]
-    \centering
-    %\subfigure[MRC]{\input{data/fiumrc}}
-    \subfigure[Phases for 2MB]{\includegraphics[width=0.47\columnwidth]{fig/fiuwss.png}}
-    \caption{Miss ratio and analysis for fiu.\TODO{rewrite MRC without prefetching}}
-    \label{fig:fiu}
-\end{figure}
-
-%As shown in figure~\ref{fig:fiu}(b), when we analyze the workload with a cache size of 2MB, there are two kinds of phases: one is the phase 0 with a frequently accessed object, and the other is the phase 4 with a few accessed objects.
-%
-%If the cache size is small, phase 0 contains important patterns, and phase 4 contains interference patterns.
-%
-%As we mentioned in~(\autoref{ss:adaption-criteria}), policies store the filtered objects in the ghost cache, so when the cache size is close to 1MB, they can record the objects in phase 4 to the ghost cache.
-%
-%Then, phase 10 repeats the phase 4, and the policies evict the objects in phase 0 to keep the phase 4, leading to a performance drop.
-%
-%\sys integrates the phase information and the access frequency distribution to dynamically adjust the criteria~(\S\ref{ss:integrate}), which filters the objects in phase 4 and keeps the objects in phase 0.
-%

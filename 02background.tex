@@ -76,6 +76,18 @@ However, despite their elegant designs, existing static algorithms still struggl
 
 \XXX{Perhaps uses PN for \lirs and \sthreefifo?}
 
+% \textbf{An LFU-friendly pattern} has a skewed access frequency distribution, where a small portion of objects are accessed frequently, and most objects are accessed infrequently.
+% %
+% The \textit{LFU} eviction algorithm is the best choice for this pattern, which keeps the frequently accessed objects in the cache and evicts the infrequently accessed ones.
+
+% \textbf{An LRU-friendly pattern} has good temporal locality with a small reuse distance, where the recently accessed objects are likely to be accessed again soon.
+% %
+% The \textit{LRU} eviction algorithm is the best choice for this pattern, which keeps the recently accessed objects in the cache and evicts the least recently used ones.
+
+% \textbf{A \XXX{Churn} pattern} is a set of repeated accesses, where all objects are accessed with equal probability~\cite{}.
+
+% \textbf{A Scan pattern} is a set of accesses where all objects are accessed only once, which means it is an interference with no reuse.
+
 
 \subsubsection{Adaptive Eviction Algorithms}
 
@@ -235,22 +247,16 @@ In contrast, \sys has a dynamic threshold, which avoids threshing the ghost. In 
 
 \subsection{The Remaining Gaps in Adaptive Algorithms}
 
-Our analysis reveals two main reasons for the poor performance of existing adaptive algorithms. 
-%
-First, their design inherently 
-
-\XXX{Need to better summary here?}
+Our analysis reveals two three limitations in existing adaptive algorithms that lead to their poor performance.
 
 \XXX{Consider a table to make the argument.}
-\PN{Limited access pattern coverage.}
+\PN{Limitation \#1: Corase-grained characterization approach.}
 %
-\XXX{Adpativeness: failing to cover acccess patterns.}
 An inherent limitation of prior adaptive algorithms is that they can adapt to 
 only a narrow set of access patterns.
 %
-\autoref{} summarizes the access patterns that existing adaptive algorithms can handle. 
-
-
+\autoref{} summarizes the access patterns that existing adaptive algorithms can handle.
+%
 As we elaborate next, the root cause lies in their approaches to characterize workload access patterns. 
 
 The design of \arc and \car considers only three primitive 
@@ -288,7 +294,8 @@ In this case, SR-LRU evicts the \XXX{}, while CR-LFU evicts \XXX{}.
 The poor performance of both base algorithms leads to the poor performance of \cacheus.
 
 
-\PN{}
+% Adapting to access patterns 
+\PN{Limitation \#2: Ineffective \XXX{to adapt}}
 %
 There are multiple sub-optimal points for parameters (non-convex) in \cacheus, making it hard to find the best one.
 %
@@ -296,7 +303,7 @@ There are multiple sub-optimal points for parameters (non-convex) in \cacheus, m
 %
 
 
-\PN{Poor multicore performanace.}
+\PN{Limitation \#3: Poor multicore performanace.}
 %
 The first two limitations concern hit rate, but even with high hit rates, existing adaptive algorithms still suffer from poor multicore scalability, an increasingly important criterion for eviction algorithms~(\S\ref{}).
 %
@@ -342,196 +349,9 @@ This is because both algorithms use LRU, which requires locking the whole list t
   \label{fig:cac}
 \end{figure*}
 
-
-\PN{Diverse Access Patterns.}
-%
-\XXX{\textit{Inter-Reference Recency}~\cite{}} 
-
-%
-With the time passing, the access pattern of a workload may change.\XXX{do we need a figure here?}
-%
-In the cloud block storage~\cite{}, a \textit{Scan} pattern becomes a \textit{Churn} after some repeated accesses.
-%
-
-2Q~\cite{} has a limited ghost space to record the access history, which prefers data hitted more than once in the ghost space.
-%
-TinyLFU~\cite{} uses a Count-Bloom filter~\cite{} to record access frequency, which favors frequently accessed data.
-%
-They usually perform well in specific access patterns but poorly in others.
+\XXX{Conflict}
+\XXX{binary classification}
+\XXX{It has to rely on trial-and-error approaches,}
+\XXX{Robust across cache sizes}
 
 
-
-
-\subsubsection{Adaptive eviction algorithms.}
-%
-Adaptive eviction algorithms promise to efficiently handle modern 
-workloads by adjusting their behavior based on observed access patterns.
-%
-However, existing adaptive eviction algorithms fall short of this 
-promise, to a degree that they are reported to even underperform their static 
-counterparts~\cite{}. 
-%
-Indeed, as mentioned in prior work~\cite{}, converting a static cache eviction 
-into an adaptive one even leads to performance degradation.
-
-Our analysis reveals that existing adaptive cache eviction algorithms are ineffective for the following three reasons. 
-
-\PN{Cannot handle important access patterns.}\XXX{maybe a example here?}
-\PN{Limited access patterns coverage.}
-%
-Prior adaptive algorithms have a limited pattern coverage for their binary classification. 
-%
-However, each time they invoke only one functional part, resulting in limited coverage.
-
-\PN{the activating algorithm hurts the management of another algorithm}
-\DZ{I know that use multiple algorithms is a problem, but what is the real limitation here?}
-%
-Cacheus~\cite{} and LeCaR~\cite{} invoke two basic static algorithms with different probabilities.
-%
-When they activate one algorithm, the other algorithm has to evict data that the active algorithm intends to keep, leading to a conflict between the two algorithms.
-%
-The activated algorithm does not consider the data priority defined by the other algorithm.
-
-\PN{Feedback regulation lacks theoretical guidance.}
-\DZ{I know that adapt queue sizes is a problem, but what is the real limitation here?}
-CAR~\cite{} and ARC~\cite{} separate data into recency and frequency parts, and adjust the part sizes based on access in the ghost space.
-%
-The feedback regulation only considers cache misses in the ghost space not cache hits.
-%
-The empirical heuristics without theoretical guidance cannot judge the marginal benefit of adjusting part sizes accurately.
-%
-It has to rely on trial-and-error approaches, which are inefficient and may lead to suboptimal performance.
-
-\subsection{The Remaining Gaps in Adaptive Algorithms}
-
-\DZ{Do not work on this subsection yet.}
-\DZ{This is a summary subsection.}
-\DZ{Make the case that existing adaptive algorithms fail in the following aspects.}
-
-\PN{Gap \#1: Classifying access patterns.}
-
-\PN{Gap \#2: Adapting to access patterns.}
-
-\PN{Gap \#3: Achieving high throughput and multicore scalability.}
-
-
-
-\subsection{Access pattern-based analysis}
-\label{ss:access-pattern-based-analysis}
-Many work analyzes access streams based on metrics to classify them into specific discrete access patterns~\cite{}. 
-%
-The locality of accesses is an intrinsic property of workloads, which reveals the potential for caching.
-%
-The temporal locality focuses on the time interval between two accesses to the same object, which is typically measured by the reuse distance~\cite{}.
-%
-The spatial locality concentrates on the correlation between accesses to different objects, (\eg, adjacent accesses and adjacent addresses)~\cite{}.
-%
-A frequency-based analysis checks whether the access frequency distribution follows a specific distribution, (\eg, Zipfian distribution)~\cite{}.
-%
-On the other hand, some work againsts inference accesses, which deviates from the typical access patterns~\cite{}.
-%
-To deal with real-world behaviors, some work analyzes the daily or long time periodicity of accesses~\cite{}, but this paper discusses the logical access only.
-%
-Based on the above metrics, there are four typical primitive access patterns: \textit{LFU-friendly}, \textit{LRU-friendly}, \textit{Churn}, and \textit{Scan}~\cite{}.
-
-\textbf{An LFU-friendly pattern} has a skewed access frequency distribution, where a small portion of objects are accessed frequently, and most objects are accessed infrequently.
-%
-The \textit{LFU} eviction algorithm is the best choice for this pattern, which keeps the frequently accessed objects in the cache and evicts the infrequently accessed ones.
-
-\textbf{An LRU-friendly pattern} has good temporal locality with a small reuse distance, where the recently accessed objects are likely to be accessed again soon.
-%
-The \textit{LRU} eviction algorithm is the best choice for this pattern, which keeps the recently accessed objects in the cache and evicts the least recently used ones.
-
-\textbf{A \XXX{Churn} pattern} is a set of repeated accesses, where all objects are accessed with equal probability~\cite{}.
-
-\textbf{A Scan pattern} is a set of accesses where all objects are accessed only once, which means it is an interference with no reuse.
-
-However, prior work cannot separate a workload into the above four primitive access patterns perfectly.
-%
-Most workloads are a mixture of the above primitive access patterns, and the mixture is complex.
-%
-Some of them are a combination of two or more primitive access patterns, and some of them are not similar to any primitive access patterns.
-
-\subsection{Non-adaptive and adaptive algorithms}
-\label{ss:non-adaptive-and-adaptive-algorithms}
-Guided by access patterns, an algorithm either covers them statically or adapts to them. 
-%
-An adaptive algorithm will adjust the operation or cache size for data in different patterns, whereas a non-adaptive algorithm consistently uses a fixed criterion and workflow. 
-%
-However, adaptive algorithms are not the best choice for various patterns, and a non-adaptive algorithm, S3FIFO, outperforms them in many workloads.
-
-Non-adaptive algorithms make a predefined assumption about access distribution and mainly filter a major access pattern from interference patterns.
-%
-Deviated from the LRU algorithm, SLRU~\cite{} changes the insertion point to filter out the \textit{Scan} pattern from the \textit{LRU-friendly} pattern.
-%
-As an algorithm that focuses more on access frequency, WTinyLFU~\cite{} uses a Count-Min Sketch~\cite{} to record long-term access counts for \textit{LFU-friendly} pattern.
-%
-2Q~\cite{} separates the first access and subsequent accesses to filter out the \textit{Scan} pattern, and S3FIFO~\cite{} leverage three FIFO queues to quickly demote \textit{Scan} pattern.
-%
-Hyperbolic~\cite{}, LHD~\cite{}, and GDSF~\cite{} consider both access frequency and recency with a new metric to cover both \textit{LFU-friendly} and \textit{LRU-friendly} patterns.
-%
-With the fixed criterion metric and workflow, these non-adaptive algorithms are reliable in specific access patterns.
-
-Adaptive algorithms adjust the subpart size for patterns or the criterion metric for spatial or temporal adaptive. 
-%
-Spatial adaptive algorithms, ARC~\cite{} and CAR~\cite{}, separate data into recency and frequency parts, which means \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
-%
-Then, they use two ghost caches with only metadata for the marginal hit ratios to guide the adjustment of the two parts.
-%
-Temporal adaptive algorithms, LeCaR~\cite{} and Cacheus~\cite{}, propose a framework, which leverages two basic policies and invokes them with different probabilities.
-%
-LeCaR uses LRU and LFU as two basic policies, and Cacheus uses LRU-Scan-Resistant and LFU-Churn-Resistant as two basic policies.
-%
-However, adaptive algorithms cannot separate primitive access patterns perfectly in either spatial or temporal dimensions, and thus subparts of adaptive algorithms duels with each other, rather than cooperating to improve the hit ratio, which incurs a great overhead in the framework.
-
-\subsection{The metastable phenomenon}
-\label{ss:the-metastable-phenomenon}
-SOTA algorithms are metastable in many benchmarks, which means that they unreliably perform poorly in some workloads.
-%
-First, we evaluate algorithms in many workloads with different cache sizes and select the algorithm with the highest hit rate in each configuration as the \textbf{dominant algorithm}.
-%
-Then, we calculate the relative hit ratio to the dominant algorithm for each algorithm.
-%
-Finally, we group the results by cache size or workload and form CDFs to show the metastable phenomenon.
-%
-For a workload, the dominant algorithm changes with the cache size.
-%
-What is more, there are more than \XXX{10\%} of workloads that lose more than \XXX{20\%} performance with a specific algorithm for a given cache size.
-
-The metastable phenomenon of cache eviction algorithms poses a challenge for cache deployment.
-%
-As shown in figure~\ref{fig:cloudphysics}, when an administrator deploys a single algorithm, about 10\% of workloads tend to have more than 20\% performance loss than expected dominant algorithm.
-%
-As the cache size changes, the dominant algorithm gradually shifts.
-%
-Keeping the same eviction algorithm under such changes prevents full utilization of system performance, while using multiple eviction algorithms simultaneously increases management complexity.
-\TODO{details}
-
-\textbf{Non-adaptive algorithms} are limited by their design space. 
-%
-They makes a predefined assumption about access distribution and work well in specific access patterns.
-%
-However, the filtering mechanism will make wrong decisions in complex access patterns, failed to cover the full spectrum of access patterns.
-%
-S3FIFO~\cite{} filters out \textit{Scan} pattern, also one-hit wonders, from other patterns, and outperforms others in a small cache size for KV and CDN benchmarks~\cite{}.
-%
-While a large cache size and block access benchmarks~\cite{} has less one-hit wonders, S3FIFO evicts \textit{infrequent-ephemeral} data, leading to a significant performance degradation.
-%
-
-\textbf{Spatial adaptive algorithms} are influenced by changed access patterns. 
-%
-ARC~\cite{} and CAR~\cite{} separate data into recency and frequency parts, and pattern transition happens only once from recency to frequency.
-%
-When the access pattern changes, it takes time to evict old data and adjust the part size.
-%
-To rebalance the marginal hit ratios, they always make a wrong decision, leading to a low hit ratio even with a large cache size.
-%
-The one-side transition framework explores only a part of interpolation between \textit{LRU-friendly} and \textit{LFU-friendly} patterns.
-
-\textbf{Temporal adaptive algorithms} suffer from a conflict of sub-policies. 
-%
-CACHEUS~\cite{} and LeCaR~\cite{} invoke two basic policies with different probabilities to cover the design scopes of each base policy.
-%
-However, in practice, probabilistic invocation can only account for one policy's design scope at a time, leading to a sub-optimal result. 
-%
-Moreover, under such a framework, policy A may evict the data that policy B focuses on, and the confliction breaks the originally intended interpolated space.
