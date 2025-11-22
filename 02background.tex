@@ -70,6 +70,13 @@ Finally, recent developments in machine learning have led to algorithms that lev
 
 However, despite their elegant designs, existing static algorithms still struggle to handle the diverse access patterns of modern workloads~(\S\ref{}). 
 
+\XXX{Need to include the description of \lirs here.}
+%
+\XXX{Need to ensure that the connect of \sthreefifo with the access patterns is clear here.}
+
+\XXX{Perhaps uses PN for \lirs and \sthreefifo?}
+
+
 \subsubsection{Adaptive Eviction Algorithms}
 
 An adaptive eviction algorithm involves 1) observing and characterizing workload access patterns and 2) adjusting its behavior accordingly~(by, \eg, automatically tuning internal parameters) to maximize performance. 
@@ -95,6 +102,9 @@ Upon a cache hit, \arc increases the size of the corresponding list~(and decreas
 \PN{A policy-adaptive algorithm} adapts by switching between multiple base eviction algorithms according to their effectiveness under observed access patterns.
 %
 \XXX{Add access pattern classification.}
+\XXX{Access pattern: widely defined and used}
+\XXX{Access pattern --> base algorithms}
+
 \cacheus~\cite{} and \lecar~\cite{} are the state of the art. 
 %
 Both works use two base eviction algorithms and maintain a weight for each. 
@@ -194,6 +204,7 @@ We next details the performance gaps in existing static~(\S\ref{}) and adaptive 
 
 \subsection{No ``One-Size-Fits-All'' Static Rules}
 
+\DZ{Waiting for the updates on the \sthreefifo pattern.}
 
 
 Figure~\ref{fig:patterns}~(c) exhibits a mixed pattern of LRU-friendly and Churn (large reuse distance), where \sys outperforms \lirs significantly.
@@ -224,37 +235,76 @@ In contrast, \sys has a dynamic threshold, which avoids threshing the ghost. In 
 
 \subsection{The Remaining Gaps in Adaptive Algorithms}
 
+Our analysis reveals two main reasons for the poor performance of existing adaptive algorithms. 
+%
+First, their design inherently 
+
+\XXX{Need to better summary here?}
+
+\XXX{Consider a table to make the argument.}
+\PN{Limited access pattern coverage.}
+%
+\XXX{Adpativeness: failing to cover acccess patterns.}
+An inherent limitation of prior adaptive algorithms is that they can adapt to 
+only a narrow set of access patterns.
+%
+\autoref{} summarizes the access patterns that existing adaptive algorithms can handle. 
 
 
+As we elaborate next, the root cause lies in their approaches to characterize workload access patterns. 
 
-To cover all the patterns, \cacheus have to switch its policy between SR-LRU and CR-LRU frequently.
+The design of \arc and \car considers only three primitive 
+access patterns~(\S\ref{}): \textit{LRU-friendly}, \textit{LFU-friendly}, and \textit{Scan}, while ignoring the \textit{Churn} pattern. 
 %
-However, SR-LRU evicts frequently accessed objects especially Churn, and CR-LRU prefers to evict data comes frist.
+Specifically, \DZ{@Liujia, explain how does \arc and \car adapt to these three patterns, and why it fails on the churn pattern.}
 %
-If none of sub-algorithm dominants, \cacheus suffers from confliction and degrades its performance.
-%
-\arc adjusts cache size for recency and frequency adaptively, but when the churn size is large, \arc cannot capture the frequently accessed objects effectively.
-%
-In this case, \sys captures them with two methods. 
-%
-First, \sys has a small cache to observe the access new objects, which avoids evicting them too early.
-%
-Second, \sys analysises the access patterns to find \cold \popular objects and holds \popular ones.
 
-\PN{Why adaptiveness in \cacheus and \arc fails?}
+\autoref{} shows an representative trace that \car performs poorly.
 %
-\cacheus leverages two sub-algorithms to capture different access patterns and switches between them adaptively.
+In this case, \car fails to cache those frequently accessed 
+objects in the churn pattern, but rather wastes cache space on \XXX{}, leading 
+to a low hit rate. 
 %
-However, when multiple patterns coexist, the two sub-algorithms conflict with each other, degrading the performance.
+
+While \cacheus improves upon \arc and \car by considering the \textit{Churn} pattern~(\S\ref{}), it still fails to adapt to many real-world access patterns.
+%
+The issue lies in the granularity of its access pattern characterization approach. 
+%
+\cacheuss characterization, while complete, is too corase-grained. 
+%
+The four primitive access patterns characterize workload behavior at the \XXX{subtrace} level, that is, the access patterns of a group of objects over a 
+period of time. 
+%
+
+However, as shown in \autoref{}, multiple primitive patterns~(in this case, all four of them) may coexist.  
+%
+Therefore, in most of the time, the access pattern do not fall into any one of the four primitive patterns.
+%
+\XXX{Hint in the background that they are designed for primitive patterns only.}
+This renders both base algorithms in \cacheus ineffective, as the base algorithms are designed to handle these primitive patterns~(\S\ref{}). 
+%
+In this case, SR-LRU evicts the \XXX{}, while CR-LFU evicts \XXX{}. 
+%
+The poor performance of both base algorithms leads to the poor performance of \cacheus.
+
+
+\PN{}
 %
 There are multiple sub-optimal points for parameters (non-convex) in \cacheus, making it hard to find the best one.
 %
 \arc adjusts the cache size for recency and frequency adaptively.
 %
-It fails to identify complex patterns for \arc splitting objects into new objects and accessed more than once.
 
 
+\PN{Poor multicore performanace.}
+%
+The first two limitations concern hit rate, but even with high hit rates, existing adaptive algorithms still suffer from poor multicore scalability, an increasingly important criterion for eviction algorithms~(\S\ref{}).
+%
 
+\autoref{} shows the multicore scalability of \arc and \cacheus, where 
+the throughput of both algorithms stop increasing after \XXX{} threads with a significant gap to state-of-the-art static algorithms. 
+%
+This is because both algorithms use LRU, which requires locking the whole list to move an object to the head upon each access.
 
 
 \begin{figure*}
